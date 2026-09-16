@@ -1,33 +1,78 @@
 import 'dart:async';
+import 'dart:io' show Platform;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:tithinow/theme/design_system.dart';
+import 'package:tithinow/views/splash_view.dart';
 
 void main() {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
-  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
+  final bool isMobile = !kIsWeb && (Platform.isAndroid || Platform.isIOS);
+  if (isMobile) {
+    FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
+  }
   runApp(const MyApp());
 }
 
 class MyApp extends StatefulWidget {
-  const MyApp({super.key});
+  final Widget? home;
+  final bool? showSplash;
+  final Duration splashDuration;
+
+  const MyApp({
+    super.key,
+    this.home,
+    this.showSplash,
+    this.splashDuration = const Duration(seconds: 2),
+  });
 
   @override
   State<MyApp> createState() => _MyAppState();
 }
 
 class _MyAppState extends State<MyApp> {
+  late bool _isSplashVisible;
+  Timer? _splashTimer;
+
   @override
   void initState() {
     super.initState();
-    _initSplashTimer();
+    _isSplashVisible = widget.showSplash ?? (widget.home == null);
+    _initSplash();
   }
 
-  void _initSplashTimer() async {
-    // Keep native splash screen visible for 5 seconds
-    await Future.delayed(const Duration(seconds: 5));
-    // Dismiss native splash screen to reveal main home screen
-    FlutterNativeSplash.remove();
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_isSplashVisible) {
+      precacheImage(const AssetImage('assets/images/SplashIcon.png'), context);
+    }
+  }
+
+  @override
+  void dispose() {
+    _splashTimer?.cancel();
+    super.dispose();
+  }
+
+  void _initSplash() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final bool isMobile = !kIsWeb && (Platform.isAndroid || Platform.isIOS);
+      if (isMobile) {
+        FlutterNativeSplash.remove();
+      }
+    });
+
+    if (_isSplashVisible) {
+      _splashTimer = Timer(widget.splashDuration, () {
+        if (mounted) {
+          setState(() {
+            _isSplashVisible = false;
+          });
+        }
+      });
+    }
   }
 
   @override
@@ -36,7 +81,9 @@ class _MyAppState extends State<MyApp> {
       title: 'TithiNow',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.darkTheme,
-      home: const MyHomePage(title: 'TithiNow'),
+      home: _isSplashVisible
+          ? const SplashView()
+          : (widget.home ?? const MyHomePage(title: 'TithiNow')),
     );
   }
 }
