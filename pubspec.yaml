@@ -58,14 +58,14 @@ flutter_launcher_icons:
   remove_alpha_ios: true
   macos:
     generate: true
-    image_path: "assets/images/LauncherIcon.png"
+    image_path: "assets/images/LauncherIcon_macos.png"
   windows:
     generate: true
-    image_path: "assets/images/LauncherIcon.png"
-    icon_size: 48
+    image_path: "assets/images/LauncherIcon_macos.png"
+    icon_size: 256
   linux:
     generate: true
-    image_path: "assets/images/LauncherIcon.png"
+    image_path: "assets/images/LauncherIcon_macos.png"
   web:
     generate: true
     image_path: "assets/images/LauncherIcon.png"
