@@ -1,3 +1,5 @@
+import 'dart:io' show Platform;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -186,6 +188,13 @@ class AppTheme {
 }
 
 extension DesignSystemContext on BuildContext {
-  bool get isDesktop => MediaQuery.of(this).size.width >= 768;
+  /// True if running on desktop (macOS, Windows, Linux) OR if screen width >= 720.
+  bool get isDesktop {
+    if (!kIsWeb && (Platform.isMacOS || Platform.isWindows || Platform.isLinux)) {
+      return true;
+    }
+    return MediaQuery.sizeOf(this).width >= 720;
+  }
+
   AppTypography get appTypography => AppTypography(isDesktop: isDesktop);
 }

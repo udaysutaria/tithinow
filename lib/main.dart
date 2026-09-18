@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:tithinow/theme/design_system.dart';
 import 'package:tithinow/views/splash_view.dart';
+import 'package:tithinow/views/widget_preview_view.dart';
 
 void main() {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
@@ -83,7 +84,7 @@ class _MyAppState extends State<MyApp> {
       theme: AppTheme.darkTheme,
       home: _isSplashVisible
           ? const SplashView()
-          : (widget.home ?? const MyHomePage(title: 'TithiNow')),
+          : (widget.home ?? const WidgetPreviewView()),
     );
   }
 }
