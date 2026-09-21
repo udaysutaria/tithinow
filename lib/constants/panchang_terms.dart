@@ -1,5 +1,7 @@
 library;
 
+import 'package:flutter/foundation.dart' show ValueNotifier;
+
 /// Supported languages in the application.
 enum AppLanguage {
   english('English'),
@@ -15,6 +17,10 @@ enum AppLanguage {
         _ => AppLanguage.english,
       };
 }
+
+/// Global reactive notifier for the active application language.
+final ValueNotifier<AppLanguage> appLanguageNotifier =
+    ValueNotifier<AppLanguage>(AppLanguage.english);
 
 /// Auspiciousness / nature of a timing period (Good or Bad).
 enum PeriodNature {
@@ -102,6 +108,93 @@ class PanchangLabels {
         AppLanguage.gujarati => 'ચોઘડિયા',
       };
 
+  static String alarms(AppLanguage lang) => switch (lang) {
+        AppLanguage.english => 'Alarms',
+        AppLanguage.hindi => 'अलार्म',
+        AppLanguage.gujarati => 'એલાર્મ',
+      };
+
+  static String today(AppLanguage lang) => switch (lang) {
+        AppLanguage.english => 'Today',
+        AppLanguage.hindi => 'आज के दिन',
+        AppLanguage.gujarati => 'આજના દિવસે',
+      };
+
+  static String navToday(AppLanguage lang) => switch (lang) {
+        AppLanguage.english => 'Today',
+        AppLanguage.hindi => 'आज',
+        AppLanguage.gujarati => 'આજ',
+      };
+
+  static String settings(AppLanguage lang) => switch (lang) {
+        AppLanguage.english => 'Settings',
+        AppLanguage.hindi => 'सेटिंग्स',
+        AppLanguage.gujarati => 'સેટિંગ્સ',
+      };
+
+  static String lunarCalendarSystem(AppLanguage lang) => switch (lang) {
+        AppLanguage.english => 'Lunar Calendar System',
+        AppLanguage.hindi => 'चंद्र पंचांग प्रणाली',
+        AppLanguage.gujarati => 'ચંદ્ર પંચાંગ પદ્ધતિ',
+      };
+
+  static String purnimanta(AppLanguage lang) => switch (lang) {
+        AppLanguage.english => 'Purnimanta',
+        AppLanguage.hindi => 'पूर्णिमांत',
+        AppLanguage.gujarati => 'પૂર્ણિમાંત',
+      };
+
+  static String amanta(AppLanguage lang) => switch (lang) {
+        AppLanguage.english => 'Amanta',
+        AppLanguage.hindi => 'अमांत',
+        AppLanguage.gujarati => 'અમાંત',
+      };
+
+  static String fullMoonEnding(AppLanguage lang) => switch (lang) {
+        AppLanguage.english => 'Full Moon ending (North India)',
+        AppLanguage.hindi => 'पूर्णिमा को समाप्त (उत्तर भारत)',
+        AppLanguage.gujarati => 'પૂર્ણિમાએ સમાપ્ત (ઉત્તર ભારત)',
+      };
+
+  static String newMoonEnding(AppLanguage lang) => switch (lang) {
+        AppLanguage.english => 'New Moon ending (Gujarat, South India)',
+        AppLanguage.hindi => 'अमावस्या को समाप्त (गुजरात, दक्षिण भारत)',
+        AppLanguage.gujarati => 'અમાસે સમાપ્ત (ગુજરાત, દક્ષિણ ભારત)',
+      };
+
+  static String city(AppLanguage lang) => switch (lang) {
+        AppLanguage.english => 'City',
+        AppLanguage.hindi => 'शहर',
+        AppLanguage.gujarati => 'શહેર',
+      };
+
+  static String language(AppLanguage lang) => switch (lang) {
+        AppLanguage.english => 'Language',
+        AppLanguage.hindi => 'भाषा',
+        AppLanguage.gujarati => 'ભાષા',
+      };
+
+
+
+  static String about(AppLanguage lang) => switch (lang) {
+        AppLanguage.english => 'About',
+        AppLanguage.hindi => 'परिचय',
+        AppLanguage.gujarati => 'પરિચય',
+      };
+
+  static String aboutDescription(AppLanguage lang) => switch (lang) {
+        AppLanguage.english =>
+          'TithiNow brings accurate daily Panchang information to your fingertips with support for Tithi, Nakshatra, Paksha, Muhurta, and Choghadiya. Designed for simplicity and precision, it helps you stay connected with important Hindu timings, festivals, and vrats based on your selected location.',
+        AppLanguage.hindi =>
+          'TithiNow आपको तिथि, नक्षत्र, पक्ष, मुहूर्त और चौघड़िया सहित सटीक दैनिक पंचांग जानकारी एक क्लिक में उपलब्ध कराता है। सरलता और सटीकता को ध्यान में रखकर बनाया गया यह ऐप आपके चुने हुए स्थान के अनुसार महत्वपूर्ण हिंदू समय, त्योहारों और व्रतों से जुड़े रहने में आपकी मदद करता है।',
+        AppLanguage.gujarati =>
+          'TithiNow તમને તિથિ, નક્ષત્ર, પક્ષ, મુહૂર્ત અને ચોઘડિયા સહિત ચોક્કસ દૈનિક પંચાંગ માહિતી એક ક્લિકમાં આપે છે. સરળતા અને ચોકસાઈને ધ્યાનમાં રાખીને બનાવવામાં આવેલી આ એપ તમારા પસંદ કરેલા સ્થળ પ્રમાણે મહત્વના હિંદુ સમય, તહેવારો અને વ્રતો સાથે જોડાયેલા રહેવામાં તમારી મદદ કરે છે.',
+      };
+
+  static String aboutText(AppLanguage lang) => aboutDescription(lang);
+  static String aboutAppDescription(AppLanguage lang) => aboutDescription(lang);
+
+
   static String yoga(AppLanguage lang) => switch (lang) {
         AppLanguage.english => 'Yoga',
         AppLanguage.hindi => 'योग',
@@ -119,6 +212,197 @@ class PanchangLabels {
         AppLanguage.hindi => 'राशि',
         AppLanguage.gujarati => 'રાશિ',
       };
+
+  static String vrat(AppLanguage lang) => switch (lang) {
+        AppLanguage.english => 'Vrat',
+        AppLanguage.hindi => 'व्रत',
+        AppLanguage.gujarati => 'વ્રત',
+      };
+
+  static String festival(AppLanguage lang) => switch (lang) {
+        AppLanguage.english => 'Festival',
+        AppLanguage.hindi => 'त्योहार',
+        AppLanguage.gujarati => 'તહેવાર',
+      };
+
+  static String noVrat(AppLanguage lang) => switch (lang) {
+        AppLanguage.english => 'No Vrat',
+        AppLanguage.hindi => 'कोई व्रत नहीं',
+        AppLanguage.gujarati => 'કોઈ વ્રત નથી',
+      };
+
+  static String noFestival(AppLanguage lang) => switch (lang) {
+        AppLanguage.english => 'No Festival',
+        AppLanguage.hindi => 'कोई त्योहार नहीं',
+        AppLanguage.gujarati => 'કોઈ તહેવાર નથી',
+      };
+
+  static String now(AppLanguage lang) => switch (lang) {
+        AppLanguage.english => 'Now',
+        AppLanguage.hindi => 'अभी',
+        AppLanguage.gujarati => 'અત્યારે',
+      };
+
+  static String day(AppLanguage lang) => switch (lang) {
+        AppLanguage.english => 'Day',
+        AppLanguage.hindi => 'दिन',
+        AppLanguage.gujarati => 'દિવસ',
+      };
+
+  static String night(AppLanguage lang) => switch (lang) {
+        AppLanguage.english => 'Night',
+        AppLanguage.hindi => 'रात्रि',
+        AppLanguage.gujarati => 'રાત્રિ',
+      };
+
+  static String dayChoghadiya(AppLanguage lang) => switch (lang) {
+        AppLanguage.english => 'Day Choghadiya',
+        AppLanguage.hindi => 'दिन चौघड़िया',
+        AppLanguage.gujarati => 'દિવસ ચોઘડિયા',
+      };
+
+  static String nightChoghadiya(AppLanguage lang) => switch (lang) {
+        AppLanguage.english => 'Night Choghadiya',
+        AppLanguage.hindi => 'रात्रि चौघड़िया',
+        AppLanguage.gujarati => 'રાત્રિ ચોઘડિયા',
+      };
+
+  static String auspiciousMuhurta(AppLanguage lang) => switch (lang) {
+        AppLanguage.english => 'Auspicious Muhurta',
+        AppLanguage.hindi => 'शुभ मुहूर्त',
+        AppLanguage.gujarati => 'શુભ મુહૂર્ત',
+      };
+
+  static String inauspiciousMuhurta(AppLanguage lang) => switch (lang) {
+        AppLanguage.english => 'Inauspicious Muhurta',
+        AppLanguage.hindi => 'अशुभ मुहूर्त',
+        AppLanguage.gujarati => 'અશુભ મુહૂર્ત',
+      };
+
+  static String endsIn(AppLanguage lang) => switch (lang) {
+        AppLanguage.english => 'Ends in',
+        AppLanguage.hindi => 'समाप्त होने में',
+        AppLanguage.gujarati => 'સમાપ્ત થવામાં',
+      };
+
+  static String good(AppLanguage lang) => PeriodNature.good.label(lang);
+
+  static String bad(AppLanguage lang) => PeriodNature.bad.label(lang);
+
+  static String nakshatras(AppLanguage lang) => switch (lang) {
+        AppLanguage.english => 'Nakshatras',
+        AppLanguage.hindi => 'नक्षत्र',
+        AppLanguage.gujarati => 'નક્ષત્ર',
+      };
+
+  static String month(AppLanguage lang) => switch (lang) {
+        AppLanguage.english => 'Month',
+        AppLanguage.hindi => 'मास',
+        AppLanguage.gujarati => 'માસ',
+      };
+
+  static String sunrise(AppLanguage lang) => switch (lang) {
+        AppLanguage.english => 'Sunrise',
+        AppLanguage.hindi => 'सूर्योदय',
+        AppLanguage.gujarati => 'સૂર્યોદય',
+      };
+
+  static String sunset(AppLanguage lang) => switch (lang) {
+        AppLanguage.english => 'Sunset',
+        AppLanguage.hindi => 'सूर्यास्त',
+        AppLanguage.gujarati => 'સૂર્યાસ્ત',
+      };
+
+  static String moonrise(AppLanguage lang) => switch (lang) {
+        AppLanguage.english => 'Moonrise',
+        AppLanguage.hindi => 'चन्द्रोदय',
+        AppLanguage.gujarati => 'ચંદ્રોદય',
+      };
+
+  static String moonset(AppLanguage lang) => switch (lang) {
+        AppLanguage.english => 'Moonset',
+        AppLanguage.hindi => 'चन्द्रास्त',
+        AppLanguage.gujarati => 'ચંદ્રાસ્ત',
+      };
+
+  /// Known translations for active demo/common Vrats.
+  static const Map<String, ({String hi, String gu})> knownVrats = {
+    'parivartini ekadashi': (hi: 'परिवर्तिनी एकादशी', gu: 'પરિવર્તિની અગિયારસ'),
+    'vamana jayanti': (hi: 'वामन जयंती', gu: 'વામન જયંતી'),
+    'pradosh vrat': (hi: 'प्रदोष व्रत', gu: 'પ્રદોષ વ્રત'),
+    'ekadashi': (hi: 'एकादशी', gu: 'અગિયારસ'),
+    'satyanarayan vrat': (hi: 'सत्यनारायण व्रत', gu: 'સત્યનારાયણ વ્રત'),
+    'karwa chauth': (hi: 'करवा चौथ', gu: 'કરવા ચોથ'),
+    'maha shivaratri': (hi: 'महाशिवरात्रि', gu: 'મહાશિવરાત્રી'),
+    'mahashivratri': (hi: 'महाशिवरात्रि', gu: 'મહાશિવરાત્રી'),
+    'navratri': (hi: 'नवरात्रि', gu: 'નવરાત્રી'),
+    'janmashtami': (hi: 'जन्माष्टमी', gu: 'જન્માષ્ટમી'),
+  };
+
+  /// Known translations for active demo/common Festivals.
+  static const Map<String, ({String hi, String gu})> knownFestivals = {
+    'anant chaturdashi': (hi: 'अनंत चतुर्दशी', gu: 'અનંત ચતુર્દશી'),
+    'bhadrapada purnima': (hi: 'भाद्रपद पूर्णिमा', gu: 'ભાદ્રપદ પૂર્ણિમા'),
+    'pitrupaksha begins': (hi: 'पितृपक्ष प्रारंभ', gu: 'પિતૃપક્ષ પ્રારંભ'),
+    'ganesh visarjan': (hi: 'गणेश विसर्जन', gu: 'ગણેશ વિસર્જન'),
+    'diwali': (hi: 'दीपावली', gu: 'દિવાળી'),
+    'deepavali': (hi: 'दीपावली', gu: 'દિવાળી'),
+    'holi': (hi: 'होली', gu: 'હોળી'),
+    'raksha bandhan': (hi: 'रक्षाबंधन', gu: 'રક્ષાબંધન'),
+    'rakshabandhan': (hi: 'रक्षाबंधन', gu: 'રક્ષાબંધન'),
+    'dussehra': (hi: 'दशहरा', gu: 'દશેરા'),
+    'vijayadashami': (hi: 'विजयादशमी', gu: 'વિજયાદશમી'),
+    'makar sankranti': (hi: 'मकर संक्रांति', gu: 'મકર સંક્રાંતિ'),
+    'ram navami': (hi: 'राम नवमी', gu: 'રામ નવમી'),
+  };
+
+  /// Determines if a Vrat/Festival string is inactive (empty, "No Vrat", etc.).
+  static bool isInactiveValue(String? value) {
+    if (value == null) return true;
+    final trimmed = value.trim().toLowerCase();
+    return trimmed.isEmpty ||
+        trimmed == 'no vrat' ||
+        trimmed == 'no festival' ||
+        trimmed == 'none' ||
+        trimmed == 'n/a' ||
+        trimmed == '-' ||
+        trimmed == 'कोई व्रत नहीं' ||
+        trimmed == 'कोई त्योहार नहीं' ||
+        trimmed == 'व्रत नहीं' ||
+        trimmed == 'त्योहार नहीं' ||
+        trimmed == 'કોઈ વ્રત નથી' ||
+        trimmed == 'કોઈ તહેવાર નથી' ||
+        trimmed == 'વ્રત નથી' ||
+        trimmed == 'તહેવાર નથી';
+  }
+
+  /// Resolves the localized Vrat string.
+  static String resolveVrat(String? raw, AppLanguage lang) {
+    if (isInactiveValue(raw)) {
+      return noVrat(lang);
+    }
+    final text = (raw ?? '').trim();
+    if (lang == AppLanguage.english) return text;
+    final lower = text.toLowerCase();
+    if (knownVrats.containsKey(lower)) {
+      return lang == AppLanguage.hindi ? knownVrats[lower]!.hi : knownVrats[lower]!.gu;
+    }
+    return text;
+  }
+
+  /// Resolves the localized Festival string.
+  static String resolveFestival(String? raw, AppLanguage lang) {
+    if (isInactiveValue(raw)) {
+      return noFestival(lang);
+    }
+    final text = (raw ?? '').trim();
+    if (lang == AppLanguage.english) return text;
+    final lower = text.toLowerCase();
+    if (knownFestivals.containsKey(lower)) {
+      return lang == AppLanguage.hindi ? knownFestivals[lower]!.hi : knownFestivals[lower]!.gu;
+    }
+    return text;
+  }
 }
 
 // =============================================================================
@@ -215,6 +499,21 @@ enum EnglishMonth {
   /// Resolves an [EnglishMonth] from a 1-based month number (1 to 12).
   static EnglishMonth fromMonthNumber(int month) =>
       EnglishMonth.values[month - 1];
+
+  /// Resolves an [EnglishMonth] from a month name (full, 3-letter prefix, or localized).
+  static EnglishMonth? fromName(String name) {
+    final clean = name.trim().toLowerCase();
+    for (final m in EnglishMonth.values) {
+      final prefix3 = m.en.toLowerCase().substring(0, 3);
+      if (clean.startsWith(prefix3) ||
+          clean.startsWith(m.en.toLowerCase()) ||
+          clean == m.hi.toLowerCase() ||
+          clean == m.gu.toLowerCase()) {
+        return m;
+      }
+    }
+    return null;
+  }
 }
 
 // =============================================================================
@@ -287,6 +586,21 @@ enum Weekday {
         DateTime.saturday => Weekday.saturday,
         _ => Weekday.sunday,
       };
+
+  /// Resolves a [Weekday] from a weekday name (full, 3-letter prefix, or localized).
+  static Weekday? fromName(String name) {
+    final clean = name.trim().toLowerCase();
+    for (final w in Weekday.values) {
+      final prefix3 = w.en.toLowerCase().substring(0, 3);
+      if (clean.startsWith(prefix3) ||
+          clean.startsWith(w.en.toLowerCase()) ||
+          clean.startsWith(w.hi.toLowerCase()) ||
+          clean.startsWith(w.gu.toLowerCase())) {
+        return w;
+      }
+    }
+    return null;
+  }
 }
 
 // =============================================================================
@@ -377,6 +691,20 @@ enum HinduMonth {
 
   /// 1-based month number (1 to 12).
   int get number => index + 1;
+
+  /// Resolves a [HinduMonth] from its English, Hindi, or Gujarati name.
+  static HinduMonth? fromName(String name) {
+    final clean = name.trim().toLowerCase().replaceAll(' ', '');
+    if (clean.isEmpty) return null;
+    for (final m in HinduMonth.values) {
+      if (m.en.toLowerCase() == clean ||
+          m.hi.replaceAll(' ', '') == clean ||
+          m.gu.replaceAll(' ', '') == clean) {
+        return m;
+      }
+    }
+    return null;
+  }
 }
 
 // =============================================================================
@@ -420,6 +748,22 @@ enum Paksha {
   static Paksha fromLunarDay(int day) {
     final normalized = ((day - 1) % 30) + 1;
     return normalized <= 15 ? Paksha.shukla : Paksha.krishna;
+  }
+
+  /// Resolves a [Paksha] from a string (e.g. 'Shukla', 'Krishna', 'Shukla Paksha', 'शुक्ल', etc.).
+  static Paksha? fromName(String name) {
+    final clean = name.trim().toLowerCase();
+    if (clean.contains('shukla') ||
+        clean.contains('शुक्ल') ||
+        clean.contains('શુક્લ')) {
+      return Paksha.shukla;
+    }
+    if (clean.contains('krishna') ||
+        clean.contains('कृष्ण') ||
+        clean.contains('કૃષ્ણ')) {
+      return Paksha.krishna;
+    }
+    return null;
   }
 }
 
@@ -539,6 +883,29 @@ enum Tithi {
     if (normalized == 30) return Tithi.amavasya;
     final baseIndex = (normalized > 15 ? normalized - 15 : normalized) - 1;
     return Tithi.values[baseIndex];
+  }
+
+  /// Resolves a [Tithi] from its English, Hindi, or Gujarati name or phonetic variants.
+  static Tithi? fromName(String name) {
+    final clean = name.trim().toLowerCase().replaceAll(' ', '');
+    if (clean.isEmpty) return null;
+    for (final t in Tithi.values) {
+      if (t.en.toLowerCase() == clean ||
+          t.hi == name.trim() ||
+          t.gu == name.trim()) {
+        return t;
+      }
+    }
+    return switch (clean) {
+      'dvitiya' => Tithi.dwitiya,
+      'trutiya' => Tithi.tritiya,
+      'panchmi' => Tithi.panchami,
+      'shasthi' => Tithi.shashthi,
+      'dashmi' => Tithi.dashami,
+      'ekaadashi' => Tithi.ekadashi,
+      'dvadashi' => Tithi.dwadashi,
+      _ => null,
+    };
   }
 }
 
@@ -705,6 +1072,20 @@ enum Nakshatra {
 
   /// 1-based index (1 to 27) matching standard Vedic enumeration.
   int get number => index + 1;
+
+  /// Resolves a [Nakshatra] from its English, Hindi, or Gujarati name.
+  static Nakshatra? fromName(String name) {
+    final clean = name.trim().toLowerCase().replaceAll(' ', '');
+    if (clean.isEmpty) return null;
+    for (final n in Nakshatra.values) {
+      if (n.en.toLowerCase() == clean ||
+          n.hi.replaceAll(' ', '') == clean ||
+          n.gu.replaceAll(' ', '') == clean) {
+        return n;
+      }
+    }
+    return null;
+  }
 }
 
 // =============================================================================

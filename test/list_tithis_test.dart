@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tithinow/theme/design_system.dart';
-import 'package:tithinow/widgets/button_alarm.dart';
-import 'package:tithinow/widgets/list_tithis.dart';
+import 'package:tithinow/widgets/widgets.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -328,6 +327,86 @@ void main() {
       expect(items[4].state, ItemTemporalState.future);
       expect(items[5].state, ItemTemporalState.future);
       expect(items[6].state, ItemTemporalState.future);
+    });
+
+    testWidgets('Renders demo items in Hindi when language is AppLanguage.hindi', (tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: SingleChildScrollView(
+              child: ListTithis(
+                language: AppLanguage.hindi,
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Check Hindi Tithi names
+      expect(find.text('दशमी'), findsOneWidget);
+      expect(find.text('एकादशी'), findsOneWidget);
+      expect(find.text('द्वादशी'), findsOneWidget);
+      expect(find.text('त्रयोदशी'), findsOneWidget);
+      expect(find.text('चतुर्दशी'), findsOneWidget);
+      expect(find.text('पूर्णिमा'), findsOneWidget);
+      expect(find.text('प्रतिपदा'), findsOneWidget);
+
+      // Check Hindi Paksha names
+      expect(find.text('शुक्ल'), findsNWidgets(6));
+      expect(find.text('कृष्ण'), findsOneWidget);
+
+      // Check Hindi Active Vrat / Festival
+      expect(find.text('परिवर्तिनी एकादशी'), findsOneWidget);
+      expect(find.text('अनंत चतुर्दशी'), findsOneWidget);
+
+      // Check Hindi Date
+      expect(find.text('रविवार, 20 सितंबर 2026'), findsOneWidget);
+    });
+
+    testWidgets('Renders demo items in Gujarati when language is AppLanguage.gujarati', (tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: SingleChildScrollView(
+              child: ListTithis(
+                language: AppLanguage.gujarati,
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Check Gujarati Tithi names
+      expect(find.text('દશમ'), findsOneWidget);
+      expect(find.text('અગિયારસ'), findsOneWidget);
+      expect(find.text('બારસ'), findsOneWidget);
+      expect(find.text('તેરસ'), findsOneWidget);
+      expect(find.text('ચૌદસ'), findsOneWidget);
+      expect(find.text('પૂનમ'), findsOneWidget);
+      expect(find.text('પડવો'), findsOneWidget);
+
+      // Check Gujarati Paksha names
+      expect(find.text('શુક્લ'), findsNWidgets(6));
+      expect(find.text('કૃષ્ણ'), findsOneWidget);
+
+      // Check Gujarati Active Vrat / Festival
+      expect(find.text('પરિવર્તિની અગિયારસ'), findsOneWidget);
+      expect(find.text('અનંત ચતુર્દશી'), findsOneWidget);
+
+      // Check Gujarati Date
+      expect(find.text('રવિવાર, 20 સપ્ટેમ્બર 2026'), findsOneWidget);
+    });
+
+    test('createDemoItems respects language parameter', () {
+      final hindiItems = ListTithis.createDemoItems(language: AppLanguage.hindi);
+      expect(hindiItems.length, 7);
+      expect(hindiItems[0].language, AppLanguage.hindi);
+
+      final gujaratiItems = ListTithis.createDemoItems(language: AppLanguage.gujarati);
+      expect(gujaratiItems.length, 7);
+      expect(gujaratiItems[0].language, AppLanguage.gujarati);
     });
   });
 }

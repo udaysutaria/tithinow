@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tithinow/theme/design_system.dart';
-import 'package:tithinow/widgets/button_alarm.dart';
-import 'package:tithinow/widgets/list_item_tithi.dart';
+import 'package:tithinow/widgets/widgets.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -114,6 +113,92 @@ void main() {
       // Tap ButtonAlarm
       await tester.tap(find.byType(ButtonAlarm));
       expect(alarmToggled, isTrue);
+    });
+
+    testWidgets('Renders properly in Hindi (date, tithi, paksha, inactive and active badges)', (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Center(
+              child: ListItemTithi.current(
+                date: 'Thu, 24 Sep 2026',
+                tithi: 'Trayodashi',
+                paksha: 'Shukla',
+                vrat: 'Pradosh Vrat',
+                festival: 'No Festival',
+                language: AppLanguage.hindi,
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Date in Hindi: गुरुवार, 24 सितंबर 2026
+      expect(find.text('गुरुवार, 24 सितंबर 2026'), findsOneWidget);
+      // Tithi in Hindi: त्रयोदशी
+      expect(find.text('त्रयोदशी'), findsOneWidget);
+      // Paksha in Hindi: शुक्ल
+      expect(find.text('शुक्ल'), findsOneWidget);
+      // Active Vrat in Hindi: प्रदोष व्रत
+      expect(find.text('प्रदोष व्रत'), findsOneWidget);
+      // Inactive Festival in Hindi: कोई त्योहार नहीं
+      expect(find.text('कोई त्योहार नहीं'), findsOneWidget);
+    });
+
+    testWidgets('Renders properly in Gujarati (date, tithi, paksha, inactive and active badges)', (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Center(
+              child: ListItemTithi.future(
+                date: 'Fri, 25 Sep 2026',
+                tithi: 'Chaturdashi',
+                paksha: 'Shukla',
+                vrat: 'No Vrat',
+                festival: 'Anant Chaturdashi',
+                language: AppLanguage.gujarati,
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Date in Gujarati: શુક્રવાર, 25 સપ્ટેમ્બર 2026
+      expect(find.text('શુક્રવાર, 25 સપ્ટેમ્બર 2026'), findsOneWidget);
+      // Tithi in Gujarati: ચૌદસ
+      expect(find.text('ચૌદસ'), findsOneWidget);
+      // Paksha in Gujarati: શુક્લ
+      expect(find.text('શુક્લ'), findsOneWidget);
+      // Inactive Vrat in Gujarati: કોઈ વ્રત નથી
+      expect(find.text('કોઈ વ્રત નથી'), findsOneWidget);
+      // Active Festival in Gujarati: અનંત ચતુર્દશી
+      expect(find.text('અનંત ચતુર્દશી'), findsOneWidget);
+    });
+
+    testWidgets('Formats date from explicit dateTime parameter when supplied', (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Center(
+              child: ListItemTithi.current(
+                date: '',
+                dateTime: DateTime(2026, 9, 21),
+                tithi: 'Ekadashi',
+                paksha: 'Shukla',
+                language: AppLanguage.gujarati,
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Monday, 21 September 2026 in Gujarati: સોમવાર, 21 સપ્ટેમ્બર 2026
+      expect(find.text('સોમવાર, 21 સપ્ટેમ્બર 2026'), findsOneWidget);
+      // Ekadashi in Gujarati: અગિયારસ
+      expect(find.text('અગિયારસ'), findsOneWidget);
     });
   });
 }

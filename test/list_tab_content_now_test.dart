@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:tithinow/constants/panchang_terms.dart';
-import 'package:tithinow/widgets/list_item_tab_content.dart';
-import 'package:tithinow/widgets/list_tab_content_now.dart';
+import 'package:tithinow/database/app_database.dart';
+import 'package:tithinow/widgets/widgets.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -67,6 +66,40 @@ void main() {
       expect(find.text('અભિજિત મુહૂર્ત'), findsOneWidget);
       expect(find.text('રાહુ કાળ'), findsOneWidget);
       expect(find.text('મુહૂર્ત'), findsNWidgets(2));
+    });
+
+    testWidgets('Reacts dynamically when AppDatabase.languageNotifier changes', (tester) async {
+      AppDatabase.instance.languageNotifier.value = AppLanguage.english;
+
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: ListTabContentNow(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Amrit'), findsOneWidget);
+      expect(find.text('Choghadiya'), findsOneWidget);
+
+      // Switch to Hindi
+      AppDatabase.instance.languageNotifier.value = AppLanguage.hindi;
+      await tester.pumpAndSettle();
+
+      expect(find.text('अमृत'), findsOneWidget);
+      expect(find.text('चौघड़िया'), findsOneWidget);
+
+      // Switch to Gujarati
+      AppDatabase.instance.languageNotifier.value = AppLanguage.gujarati;
+      await tester.pumpAndSettle();
+
+      expect(find.text('અમૃત'), findsOneWidget);
+      expect(find.text('ચોઘડિયા'), findsOneWidget);
+
+      // Reset
+      AppDatabase.instance.languageNotifier.value = AppLanguage.english;
+      await tester.pumpAndSettle();
     });
   });
 }

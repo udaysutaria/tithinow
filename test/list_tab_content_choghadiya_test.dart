@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:tithinow/database/app_database.dart';
 import 'package:tithinow/theme/design_system.dart';
-import 'package:tithinow/widgets/button_alarm.dart';
-import 'package:tithinow/widgets/list_item_tab_content.dart';
-import 'package:tithinow/widgets/list_tab_content_choghadiya.dart';
+import 'package:tithinow/widgets/widgets.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -174,6 +173,80 @@ void main() {
 
       // "Ended" string is never present in the widget tree
       expect(find.text('Ended'), findsNothing);
+    });
+
+    testWidgets('Supports Hindi localization for headers and choghadiya names', (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: ListTabContentChoghadiya(
+              date: DateTime(2026, 9, 6),
+              language: AppLanguage.hindi,
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('दिन चौघड़िया'), findsOneWidget);
+      expect(find.text('रात्रि चौघड़िया'), findsOneWidget);
+      expect(find.text('अमृत'), findsWidgets);
+      expect(find.text('शुभ'), findsWidgets);
+    });
+
+    testWidgets('Supports Gujarati localization for headers and choghadiya names', (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: ListTabContentChoghadiya(
+              date: DateTime(2026, 9, 6),
+              language: AppLanguage.gujarati,
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('દિવસ ચોઘડિયા'), findsOneWidget);
+      expect(find.text('રાત્રિ ચોઘડિયા'), findsOneWidget);
+      expect(find.text('અમૃત'), findsWidgets);
+      expect(find.text('શુભ'), findsWidgets);
+    });
+
+    testWidgets('Reacts dynamically when AppDatabase.languageNotifier changes', (tester) async {
+      AppDatabase.instance.languageNotifier.value = AppLanguage.english;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: ListTabContentChoghadiya(
+              date: DateTime(2026, 9, 6),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Day Choghadiya'), findsOneWidget);
+      expect(find.text('Night Choghadiya'), findsOneWidget);
+
+      // Switch to Hindi
+      AppDatabase.instance.languageNotifier.value = AppLanguage.hindi;
+      await tester.pumpAndSettle();
+
+      expect(find.text('दिन चौघड़िया'), findsOneWidget);
+      expect(find.text('रात्रि चौघड़िया'), findsOneWidget);
+
+      // Switch to Gujarati
+      AppDatabase.instance.languageNotifier.value = AppLanguage.gujarati;
+      await tester.pumpAndSettle();
+
+      expect(find.text('દિવસ ચોઘડિયા'), findsOneWidget);
+      expect(find.text('રાત્રિ ચોઘડિયા'), findsOneWidget);
+
+      // Reset
+      AppDatabase.instance.languageNotifier.value = AppLanguage.english;
+      await tester.pumpAndSettle();
     });
   });
 }

@@ -35,9 +35,12 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
   flutter_native_splash: ^2.4.4
-  google_fonts: ^6.2.1
+  google_fonts: ^8.2.1
   sweph: ^4.1.0+2.10.3
   flutter_svg: ^2.3.0
+  sqflite: ^2.4.4
+  path: ^1.9.1
+  sqflite_common_ffi: ^2.4.3
 
 dev_dependencies:
   flutter_test:
@@ -97,8 +100,9 @@ flutter:
   assets:
     - assets/images/
     - assets/icons/
-    - assets/fonts/
     - assets/moon_phases/
+    - assets/data/
+    - assets/audio/
 
   fonts:
     - family: Sora

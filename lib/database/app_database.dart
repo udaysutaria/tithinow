@@ -1,0 +1,549 @@
+import 'dart:convert';
+import 'dart:io' show Platform;
+import 'package:flutter/foundation.dart' show ValueNotifier, kIsWeb;
+import 'package:flutter/services.dart' show rootBundle;
+import 'package:path/path.dart' as p;
+import 'package:sqflite/sqflite.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import '../constants/panchang_terms.dart';
+import '../models/city.dart';
+
+/// SQLite Database manager for TithiNow.
+///
+/// Features:
+/// - Manages SQLite database lifecycle across mobile, desktop, and tests.
+/// - Imports 7,100+ cities and coordinates from `assets/data/cities.csv` on app first launch.
+/// - Provides fast indexed queries for city search and location coordinate lookups.
+class AppDatabase {
+  static final AppDatabase instance = AppDatabase._init();
+  static Database? _database;
+
+  AppDatabase._init();
+
+  /// Reactive notifier for the active application language.
+  ValueNotifier<AppLanguage> get languageNotifier => appLanguageNotifier;
+
+  /// Default database file name.
+  static const String dbName = 'tithinow.db';
+
+  /// Table names.
+  static const String tableCities = 'cities';
+  static const String tableMeta = 'app_meta';
+
+  /// Meta keys.
+  static const String metaCitiesImported = 'cities_imported';
+  static const String metaOnboardingCompleted = 'onboarding_completed';
+  static const String metaLunarSystem = 'lunar_system';
+  static const String metaCityId = 'city_id';
+  static const String metaCityName = 'city_name';
+  static const String metaCityState = 'city_state';
+  static const String metaCityLat = 'city_lat';
+  static const String metaCityLng = 'city_lng';
+  static const String metaLanguage = 'language';
+
+  /// Ensures SQLite FFI is initialized for Linux, Windows, or unit tests.
+  static void initializeFfiIfNeeded() {
+    if (!kIsWeb &&
+        (Platform.isWindows ||
+            Platform.isLinux ||
+            Platform.environment.containsKey('FLUTTER_TEST'))) {
+      sqfliteFfiInit();
+      databaseFactory = databaseFactoryFfi;
+    }
+  }
+
+  /// Returns the singleton [Database] instance, initializing it if necessary.
+  Future<Database> get database async {
+    if (_database != null && _database!.isOpen) return _database!;
+    _database = await _initDB(dbName);
+    return _database!;
+  }
+
+  /// Initializes the SQLite database file and schema.
+  Future<Database> _initDB(String fileName, {bool inMemory = false}) async {
+    initializeFfiIfNeeded();
+
+    if (inMemory) {
+      return await openDatabase(
+        inMemoryDatabasePath,
+        version: 1,
+        onCreate: _createDB,
+      );
+    }
+
+    final dbPath = await getDatabasesPath();
+    final path = p.join(dbPath, fileName);
+
+    return await openDatabase(
+      path,
+      version: 1,
+      onCreate: _createDB,
+      onOpen: (db) async {
+        // Check if cities need to be imported on first launch
+        await _checkAndImportCities(db);
+      },
+    );
+  }
+
+  /// Helper for unit tests to initialize an isolated in-memory or custom database.
+  static Future<Database> initCustomDatabase({
+    bool inMemory = true,
+    String? path,
+  }) async {
+    initializeFfiIfNeeded();
+    final db = await openDatabase(
+      inMemory ? inMemoryDatabasePath : (path ?? inMemoryDatabasePath),
+      version: 1,
+      onCreate: instance._createDB,
+    );
+    _database = db;
+    return db;
+  }
+
+  /// Creates schema tables and search indexes.
+  Future<void> _createDB(Database db, int version) async {
+    // 1. Cities Table
+    await db.execute('''
+      CREATE TABLE $tableCities (
+        id INTEGER PRIMARY KEY,
+        name TEXT NOT NULL,
+        state TEXT NOT NULL,
+        latitude REAL NOT NULL,
+        longitude REAL NOT NULL
+      )
+    ''');
+
+    // Indexes for fast auto-complete & filtering
+    await db.execute(
+      'CREATE INDEX idx_cities_name ON $tableCities (name COLLATE NOCASE)',
+    );
+    await db.execute(
+      'CREATE INDEX idx_cities_state ON $tableCities (state COLLATE NOCASE)',
+    );
+
+    // 2. App Metadata Table (Tracks migrations, initial import flags, etc.)
+    await db.execute('''
+      CREATE TABLE $tableMeta (
+        key TEXT PRIMARY KEY,
+        value TEXT NOT NULL
+      )
+    ''');
+  }
+
+  /// Checks if cities CSV was already imported. If not, imports it.
+  Future<void> _checkAndImportCities(Database db) async {
+    final count = await getCitiesCount(db: db);
+    if (count == 0) {
+      await importCitiesFromCsv(db: db);
+    }
+  }
+
+  /// Imports cities from `assets/data/cities.csv` into the SQLite database.
+  ///
+  /// Uses a high-performance batched transaction to import ~7,100 records in milliseconds.
+  /// If [csvData] is provided, parses from string directly (useful for tests).
+  Future<int> importCitiesFromCsv({
+    Database? db,
+    String? csvData,
+    String csvAssetPath = 'assets/data/cities.csv',
+  }) async {
+    final targetDb = db ?? await database;
+
+    final String content;
+    if (csvData != null) {
+      content = csvData;
+    } else {
+      content = await rootBundle.loadString(csvAssetPath);
+    }
+
+    final lines = const LineSplitter().convert(content);
+    if (lines.isEmpty) return 0;
+
+    // Batch insert inside a single transaction for maximum speed
+    final batch = targetDb.batch();
+    int importedCount = 0;
+
+    // Line 0 is header: id,name,state,latitude,longitude
+    for (int i = 1; i < lines.length; i++) {
+      final line = lines[i].trim();
+      if (line.isEmpty) continue;
+
+      final parts = line.split(',');
+      if (parts.length < 5) continue;
+
+      final id = int.tryParse(parts[0].trim());
+      final name = parts[1].trim();
+      final state = parts[2].trim();
+      final lat = double.tryParse(parts[3].trim());
+      final lon = double.tryParse(parts[4].trim());
+
+      if (id != null && lat != null && lon != null && name.isNotEmpty) {
+        batch.insert(
+          tableCities,
+          {
+            'id': id,
+            'name': name,
+            'state': state,
+            'latitude': lat,
+            'longitude': lon,
+          },
+          conflictAlgorithm: ConflictAlgorithm.replace,
+        );
+        importedCount++;
+      }
+    }
+
+    // Record meta flag
+    batch.insert(
+      tableMeta,
+      {'key': metaCitiesImported, 'value': DateTime.now().toIso8601String()},
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+
+    await batch.commit(noResult: true);
+    return importedCount;
+  }
+
+  /// Returns total number of cities in the database.
+  Future<int> getCitiesCount({Database? db}) async {
+    final targetDb = db ?? await database;
+    final result = await targetDb.rawQuery('SELECT COUNT(*) as count FROM $tableCities');
+    return Sqflite.firstIntValue(result) ?? 0;
+  }
+
+  /// Searches cities by name or state with prefix prioritizing and limit.
+  ///
+  /// Example: `searchCities('Mum')` returns `[City(name: 'Mumbai', ...)]`.
+  Future<List<City>> searchCities(String query, {int limit = 50, Database? db}) async {
+    final targetDb = db ?? await database;
+    final trimmed = query.trim();
+
+    if (trimmed.isEmpty) {
+      // Default: Return major cities (or first N cities)
+      final maps = await targetDb.query(
+        tableCities,
+        limit: limit,
+        orderBy: 'id ASC',
+      );
+      return maps.map(City.fromMap).toList();
+    }
+
+    // Tier 1: Fast exact prefix match on city name (uses B-Tree index idx_cities_name)
+    final prefixMaps = await targetDb.query(
+      tableCities,
+      where: 'name LIKE ?',
+      whereArgs: ['$trimmed%'],
+      orderBy: 'name ASC',
+      limit: limit,
+    );
+
+    if (prefixMaps.length >= limit) {
+      return prefixMaps.map(City.fromMap).toList();
+    }
+
+    // Tier 2: If additional results are needed to fulfill limit, query substring & state matches
+    final remainingLimit = limit - prefixMaps.length;
+    final List<Map<String, dynamic>> secondaryMaps;
+
+    if (prefixMaps.isEmpty) {
+      secondaryMaps = await targetDb.rawQuery(
+        '''
+        SELECT * FROM $tableCities
+        WHERE name LIKE ? OR state LIKE ?
+        ORDER BY
+          CASE
+            WHEN name LIKE ? THEN 0
+            WHEN state LIKE ? THEN 1
+            ELSE 2
+          END,
+          name ASC
+        LIMIT ?
+        ''',
+        [
+          '%$trimmed%',
+          '%$trimmed%',
+          '%$trimmed%',
+          '$trimmed%',
+          remainingLimit,
+        ],
+      );
+    } else {
+      final existingIds = prefixMaps.map((m) => m['id'] as int).toList();
+      final idPlaceholders = List.filled(existingIds.length, '?').join(',');
+      secondaryMaps = await targetDb.rawQuery(
+        '''
+        SELECT * FROM $tableCities
+        WHERE id NOT IN ($idPlaceholders)
+          AND (name LIKE ? OR state LIKE ?)
+        ORDER BY
+          CASE
+            WHEN name LIKE ? THEN 0
+            WHEN state LIKE ? THEN 1
+            ELSE 2
+          END,
+          name ASC
+        LIMIT ?
+        ''',
+        [
+          ...existingIds,
+          '%$trimmed%',
+          '%$trimmed%',
+          '%$trimmed%',
+          '$trimmed%',
+          remainingLimit,
+        ],
+      );
+    }
+
+    return [
+      ...prefixMaps.map(City.fromMap),
+      ...secondaryMaps.map(City.fromMap),
+    ];
+  }
+
+  /// Returns a specific city by its [id].
+  Future<City?> getCityById(int id, {Database? db}) async {
+    final targetDb = db ?? await database;
+    final maps = await targetDb.query(
+      tableCities,
+      where: 'id = ?',
+      whereArgs: [id],
+      limit: 1,
+    );
+    if (maps.isNotEmpty) {
+      return City.fromMap(maps.first);
+    }
+    return null;
+  }
+
+  /// Returns a city matching [name] and optional [state].
+  Future<City?> getCityByName(String name, {String? state, Database? db}) async {
+    final targetDb = db ?? await database;
+    final whereClause = state != null ? 'name = ? AND state = ?' : 'name = ?';
+    final whereArgs = state != null ? [name, state] : [name];
+
+    final maps = await targetDb.query(
+      tableCities,
+      where: whereClause,
+      whereArgs: whereArgs,
+      limit: 1,
+    );
+    if (maps.isNotEmpty) {
+      return City.fromMap(maps.first);
+    }
+    return null;
+  }
+
+  /// Returns all cities belonging to a particular [state].
+  Future<List<City>> getCitiesByState(String state, {Database? db}) async {
+    final targetDb = db ?? await database;
+    final maps = await targetDb.query(
+      tableCities,
+      where: 'state = ?',
+      whereArgs: [state],
+      orderBy: 'name ASC',
+    );
+    return maps.map(City.fromMap).toList();
+  }
+
+  /// Returns an alphabetically sorted list of all unique states.
+  Future<List<String>> getAllStates({Database? db}) async {
+    final targetDb = db ?? await database;
+    final maps = await targetDb.rawQuery(
+      'SELECT DISTINCT state FROM $tableCities ORDER BY state ASC',
+    );
+    return maps.map((row) => row['state'] as String).toList();
+  }
+
+  /// Checks if the initial CSV import has been performed.
+  Future<bool> isCitiesImported({Database? db}) async {
+    final targetDb = db ?? await database;
+    final maps = await targetDb.query(
+      tableMeta,
+      where: 'key = ?',
+      whereArgs: [metaCitiesImported],
+      limit: 1,
+    );
+    return maps.isNotEmpty;
+  }
+
+  /// Retrieves a value from the app metadata table.
+  Future<String?> getMeta(String key, {Database? db}) async {
+    final targetDb = db ?? await database;
+    final maps = await targetDb.query(
+      tableMeta,
+      where: 'key = ?',
+      whereArgs: [key],
+      limit: 1,
+    );
+    if (maps.isNotEmpty) {
+      return maps.first['value'] as String?;
+    }
+    return null;
+  }
+
+  /// Sets or replaces a key-value pair in the app metadata table.
+  Future<void> setMeta(String key, String value, {Database? db}) async {
+    final targetDb = db ?? await database;
+    await targetDb.insert(
+      tableMeta,
+      {'key': key, 'value': value},
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  /// Checks if the user has completed initial onboarding.
+  Future<bool> isOnboardingCompleted({Database? db}) async {
+    final val = await getMeta(metaOnboardingCompleted, db: db);
+    return val == 'true';
+  }
+
+  /// Sets the onboarding completion flag.
+  Future<void> setOnboardingCompleted(bool completed, {Database? db}) async {
+    await setMeta(
+      metaOnboardingCompleted,
+      completed ? 'true' : 'false',
+      db: db,
+    );
+  }
+
+  /// Retrieves all saved user preferences.
+  Future<Map<String, String?>> getUserPreferences({Database? db}) async {
+    final targetDb = db ?? await database;
+    final maps = await targetDb.query(tableMeta);
+    final result = <String, String?>{};
+    for (final row in maps) {
+      final key = row['key'] as String?;
+      final value = row['value'] as String?;
+      if (key != null) {
+        result[key] = value;
+      }
+    }
+    return result;
+  }
+
+  /// Atomically saves the user's preferences to the database.
+  Future<void> saveUserPreferences({
+    required String lunarSystem,
+    required City city,
+    required String language,
+    bool markOnboardingCompleted = false,
+    Database? db,
+  }) async {
+    final targetDb = db ?? await database;
+    final batch = targetDb.batch();
+    batch.insert(
+      tableMeta,
+      {'key': metaLunarSystem, 'value': lunarSystem},
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+    batch.insert(
+      tableMeta,
+      {'key': metaCityId, 'value': city.id.toString()},
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+    batch.insert(
+      tableMeta,
+      {'key': metaCityName, 'value': city.name},
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+    batch.insert(
+      tableMeta,
+      {'key': metaCityState, 'value': city.state},
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+    batch.insert(
+      tableMeta,
+      {'key': metaCityLat, 'value': city.latitude.toString()},
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+    batch.insert(
+      tableMeta,
+      {'key': metaCityLng, 'value': city.longitude.toString()},
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+    batch.insert(
+      tableMeta,
+      {'key': metaLanguage, 'value': language},
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+    if (markOnboardingCompleted) {
+      batch.insert(
+        tableMeta,
+        {'key': metaOnboardingCompleted, 'value': 'true'},
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+    }
+    await batch.commit(noResult: true);
+
+    final appLang = AppLanguage.fromString(language);
+    languageNotifier.value = appLang;
+  }
+
+  /// Saves the active [AppLanguage] to the database and updates [languageNotifier].
+  Future<void> saveLanguage(AppLanguage language, {Database? db}) async {
+    await setMeta(metaLanguage, language.name, db: db);
+    languageNotifier.value = language;
+  }
+
+  /// Retrieves the saved [AppLanguage], falling back to [AppLanguage.english].
+  Future<AppLanguage> getSavedLanguage({Database? db}) async {
+    final langStr = await getMeta(metaLanguage, db: db);
+    final lang = langStr != null
+        ? AppLanguage.fromString(langStr)
+        : AppLanguage.english;
+    languageNotifier.value = lang;
+    return lang;
+  }
+
+  /// Retrieves the saved [City] record if one was previously selected.
+  Future<City?> getSavedCity({Database? db}) async {
+    final idStr = await getMeta(metaCityId, db: db);
+    final id = idStr != null ? int.tryParse(idStr) : null;
+    if (id != null) {
+      final city = await getCityById(id, db: db);
+      if (city != null) return city;
+    }
+
+    final name = await getMeta(metaCityName, db: db);
+    final state = await getMeta(metaCityState, db: db);
+    if (name != null && state != null) {
+      final city = await getCityByName(name, state: state, db: db);
+      if (city != null) return city;
+    }
+
+    // Reconstruct directly from stored metadata if table row is absent
+    if (id != null && name != null && state != null) {
+      final latStr = await getMeta(metaCityLat, db: db);
+      final lngStr = await getMeta(metaCityLng, db: db);
+      final lat = latStr != null ? double.tryParse(latStr) ?? 0.0 : 0.0;
+      final lng = lngStr != null ? double.tryParse(lngStr) ?? 0.0 : 0.0;
+      return City(
+        id: id,
+        name: name,
+        state: state,
+        latitude: lat,
+        longitude: lng,
+      );
+    }
+
+    return null;
+  }
+
+  /// Closes the database connection.
+  Future<void> close() async {
+    final db = _database;
+    if (db != null && db.isOpen) {
+      await db.close();
+      _database = null;
+    }
+  }
+
+  /// Deletes the database file (useful for full resets or testing).
+  Future<void> deleteDb() async {
+    await close();
+    final dbPath = await getDatabasesPath();
+    final path = p.join(dbPath, dbName);
+    await deleteDatabase(path);
+  }
+}

@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:tithinow/database/app_database.dart';
 import 'package:tithinow/theme/design_system.dart';
-import 'package:tithinow/widgets/button_alarm.dart';
-import 'package:tithinow/widgets/button_edit.dart';
-import 'package:tithinow/widgets/list_alarms.dart';
-import 'package:tithinow/widgets/list_item_alarms.dart';
+import 'package:tithinow/widgets/widgets.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -204,6 +202,95 @@ void main() {
       expect(find.byType(ListItemAlarms), findsOneWidget);
       expect(find.text('Custom Tithi'), findsOneWidget);
       expect(find.byType(ButtonEdit), findsOneWidget);
+    });
+
+    testWidgets('Renders demo items in Hindi when language is AppLanguage.hindi', (tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: ListAlarms(
+              language: AppLanguage.hindi,
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byType(ListItemAlarms), findsNWidgets(4));
+      expect(find.text('अमृत'), findsOneWidget);
+      expect(find.text('चौघड़िया'), findsOneWidget);
+      expect(find.text('अभिजीत मुहूर्त'), findsOneWidget);
+      expect(find.text('ब्रह्म मुहूर्त'), findsOneWidget);
+      expect(find.text('मुहूर्त'), findsNWidgets(2));
+      expect(find.text('दशमी'), findsOneWidget);
+      expect(find.text('तिथि'), findsOneWidget);
+    });
+
+    testWidgets('Renders demo items in Gujarati when language is AppLanguage.gujarati', (tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: ListAlarms(
+              language: AppLanguage.gujarati,
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byType(ListItemAlarms), findsNWidgets(4));
+      expect(find.text('અમૃત'), findsOneWidget);
+      expect(find.text('ચોઘડિયા'), findsOneWidget);
+      expect(find.text('અભિજિત મુહૂર્ત'), findsOneWidget);
+      expect(find.text('બ્રહ્મ મુહૂર્ત'), findsOneWidget);
+      expect(find.text('મુહૂર્ત'), findsNWidgets(2));
+      expect(find.text('દશમ'), findsOneWidget);
+      expect(find.text('તિથિ'), findsOneWidget);
+    });
+
+    testWidgets('Reacts dynamically when AppDatabase.languageNotifier changes', (tester) async {
+      AppDatabase.instance.languageNotifier.value = AppLanguage.english;
+
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: ListAlarms(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Amrit'), findsOneWidget);
+      expect(find.text('Choghadiya'), findsOneWidget);
+
+      // Switch to Hindi
+      AppDatabase.instance.languageNotifier.value = AppLanguage.hindi;
+      await tester.pumpAndSettle();
+
+      expect(find.text('अमृत'), findsOneWidget);
+      expect(find.text('चौघड़िया'), findsOneWidget);
+
+      // Switch to Gujarati
+      AppDatabase.instance.languageNotifier.value = AppLanguage.gujarati;
+      await tester.pumpAndSettle();
+
+      expect(find.text('અમૃત'), findsOneWidget);
+      expect(find.text('ચોઘડિયા'), findsOneWidget);
+
+      // Reset
+      AppDatabase.instance.languageNotifier.value = AppLanguage.english;
+    });
+
+    test('createDemoItems respects language parameter', () {
+      final hindiItems = ListAlarms.createDemoItems(language: AppLanguage.hindi);
+      expect(hindiItems.length, 4);
+      expect(hindiItems[0].title, 'अमृत');
+      expect(hindiItems[0].tag, 'चौघड़िया');
+
+      final gujaratiItems = ListAlarms.createDemoItems(language: AppLanguage.gujarati);
+      expect(gujaratiItems.length, 4);
+      expect(gujaratiItems[0].title, 'અમૃત');
+      expect(gujaratiItems[0].tag, 'ચોઘડિયા');
     });
   });
 }

@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:tithinow/constants/panchang_terms.dart';
 import 'package:tithinow/theme/design_system.dart';
-import 'package:tithinow/widgets/button_today.dart';
-import 'package:tithinow/widgets/calendar_month_pagination.dart';
+import 'package:tithinow/widgets/widgets.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

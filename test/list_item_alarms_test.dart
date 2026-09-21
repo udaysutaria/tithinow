@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:tithinow/widgets/button_alarm.dart';
-import 'package:tithinow/widgets/button_edit.dart';
-import 'package:tithinow/widgets/list_item_alarms.dart';
+import 'package:tithinow/widgets/widgets.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -109,6 +107,23 @@ void main() {
       // Tap alarm button
       await tester.tap(find.byType(ButtonAlarm));
       expect(alarmTapped, isTrue);
+
+      // Verify button sizes are 48x48 matching other views
+      expect(tester.getSize(find.byType(ButtonAlarm)), const Size(48.0, 48.0));
+      expect(tester.getSize(find.byType(ButtonEdit)), const Size(48.0, 48.0));
+
+      // Verify typography scale
+      final titleWidget = tester.widget<Text>(find.text('Dashmi'));
+      expect(titleWidget.style?.fontSize, 18.0);
+
+      final tagWidget = tester.widget<Text>(find.text('Tithi'));
+      expect(tagWidget.style?.fontSize, 12.0);
+
+      final dateWidget = tester.widget<Text>(find.text('Sun, 06 Sep 2026'));
+      expect(dateWidget.style?.fontSize, 14.0);
+
+      final timeWidget = tester.widget<Text>(find.text('02:18 am'));
+      expect(timeWidget.style?.fontSize, 15.0);
     });
   });
 }

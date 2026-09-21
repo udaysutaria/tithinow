@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tithinow/constants/panchang_terms.dart';
+import 'package:tithinow/database/app_database.dart';
 import 'package:tithinow/theme/design_system.dart';
-import 'package:tithinow/widgets/button_alarm.dart';
-import 'package:tithinow/widgets/list_item_tab_content.dart';
-import 'package:tithinow/widgets/list_tab_content_muhurta.dart';
+import 'package:tithinow/widgets/widgets.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -323,6 +322,42 @@ void main() {
 
       // Tag 'Muhurta' rendered across all 17 items
       expect(find.text('Muhurta'), findsNWidgets(17));
+    });
+
+    testWidgets('Reacts dynamically when AppDatabase.languageNotifier changes', (tester) async {
+      AppDatabase.instance.languageNotifier.value = AppLanguage.english;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: ListTabContentMuhurta(
+              date: DateTime(2026, 9, 6),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Abhijit Muhurta'), findsOneWidget);
+      expect(find.text('Brahma Muhurta'), findsOneWidget);
+
+      // Switch to Hindi
+      AppDatabase.instance.languageNotifier.value = AppLanguage.hindi;
+      await tester.pumpAndSettle();
+
+      expect(find.text('अभिजीत मुहूर्त'), findsOneWidget);
+      expect(find.text('ब्रह्म मुहूर्त'), findsOneWidget);
+
+      // Switch to Gujarati
+      AppDatabase.instance.languageNotifier.value = AppLanguage.gujarati;
+      await tester.pumpAndSettle();
+
+      expect(find.text('અભિજિત મુહૂર્ત'), findsOneWidget);
+      expect(find.text('બ્રહ્મ મુહૂર્ત'), findsOneWidget);
+
+      // Reset
+      AppDatabase.instance.languageNotifier.value = AppLanguage.english;
+      await tester.pumpAndSettle();
     });
   });
 }
