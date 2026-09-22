@@ -14,6 +14,15 @@ class City {
     required this.longitude,
   });
 
+  /// Default city (Mumbai, Maharashtra)
+  static const City mumbai = City(
+    id: 1,
+    name: 'Mumbai',
+    state: 'Maharashtra',
+    latitude: 19.0760,
+    longitude: 72.8777,
+  );
+
   /// Formatted display string, e.g. "Mumbai, Maharashtra"
   String get displayName => '$name, $state';
 

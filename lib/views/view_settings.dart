@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../constants/panchang_terms.dart';
 import '../database/app_database.dart';
 import '../models/city.dart';
+import '../services/sweph_service.dart';
 import '../theme/design_system.dart';
 import '../widgets/widgets.dart';
 import 'app_navigator.dart';
@@ -163,6 +164,7 @@ class _SettingsState extends State<Settings> {
       city: _selectedCity,
       language: _selectedLanguage,
     );
+    SwephService.instance.clearCache();
 
     if (!mounted) return;
 

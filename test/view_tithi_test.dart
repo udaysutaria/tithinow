@@ -126,6 +126,33 @@ void main() {
       expect(currentItemFinder, findsOneWidget);
     });
 
+    testWidgets('Today button styling inverts: dark surface when Today is in viewport, white when not visible', (tester) async {
+      await tester.pumpWidget(
+        buildTestableWidget(const TithiView()),
+      );
+      await tester.pumpAndSettle();
+
+      // Initially, Today is visible in viewport -> ButtonToday should have inverted styling (isSelected == false)
+      ButtonToday todayButton = tester.widget<ButtonToday>(find.byType(ButtonToday));
+      expect(todayButton.isSelected, isFalse);
+
+      // Scroll far forward so Today is out of viewport
+      await tester.drag(find.byType(ListTithis), const Offset(0, -1500));
+      await tester.pumpAndSettle();
+
+      // Today is NOT in viewport -> ButtonToday should have white background (isSelected == true)
+      todayButton = tester.widget<ButtonToday>(find.byType(ButtonToday));
+      expect(todayButton.isSelected, isTrue);
+
+      // Tap Today button -> scrolls back to Today
+      await tester.tap(find.byType(ButtonToday));
+      await tester.pumpAndSettle();
+
+      // Today is visible in viewport again -> ButtonToday returns to inverted styling (isSelected == false)
+      todayButton = tester.widget<ButtonToday>(find.byType(ButtonToday));
+      expect(todayButton.isSelected, isFalse);
+    });
+
     testWidgets('Tapping a Tithi card navigates to TithiDetailView', (tester) async {
       await tester.pumpWidget(
         buildTestableWidget(const TithiView()),
@@ -201,6 +228,50 @@ void main() {
 
       // Reset to English
       AppDatabase.instance.languageNotifier.value = AppLanguage.english;
+    });
+
+    testWidgets('In TithiView on first launch, all items have alarm inactive by default', (tester) async {
+      await tester.pumpWidget(
+        buildTestableWidget(const TithiView()),
+      );
+      await tester.pumpAndSettle();
+
+      final listTithis = tester.widget<ListTithis>(find.byType(ListTithis));
+      expect(listTithis.data, isNotNull);
+      final data = listTithis.data!;
+
+      for (int i = 0; i < data.length; i++) {
+        final item = data[i];
+        expect(
+          item.isAlarmActive,
+          isFalse,
+          reason: 'Item at index $i (day ${i + 1}, date ${item.date}) should have isAlarmActive == false by default',
+        );
+      }
+    });
+
+    testWidgets('Tapping alarm toggle in ListTithis updates alarm state in TithiView', (tester) async {
+      await tester.pumpWidget(
+        buildTestableWidget(const TithiView()),
+      );
+      await tester.pumpAndSettle();
+
+      // Scroll forward to reveal future items with ButtonAlarm
+      await tester.drag(find.byType(ListTithis), const Offset(0, -300));
+      await tester.pumpAndSettle();
+
+      final hitTestableAlarms = find.byType(ButtonAlarm).hitTestable();
+      expect(hitTestableAlarms, findsWidgets);
+
+      final alarmToTap = hitTestableAlarms.first;
+      final initialAlarmWidget = tester.widget<ButtonAlarm>(alarmToTap);
+      final initialActive = initialAlarmWidget.isActive;
+
+      await tester.tap(alarmToTap);
+      await tester.pumpAndSettle();
+
+      final updatedAlarmWidget = tester.widget<ButtonAlarm>(alarmToTap);
+      expect(updatedAlarmWidget.isActive, !initialActive);
     });
   });
 }

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../database/app_database.dart';
+import '../models/city.dart';
+import '../services/sweph_service.dart';
 import '../theme/design_system.dart';
 import '../widgets/widgets.dart';
 import 'app_navigator.dart';
@@ -53,6 +55,7 @@ typedef ViewTithiDetail = TithiDetailView;
 class _TithiDetailViewState extends State<TithiDetailView> {
   late bool _isAlarmActive;
   late AppLanguage _language;
+  PanchangCalculationResult? _calculationResult;
 
   @override
   void initState() {
@@ -62,6 +65,24 @@ class _TithiDetailViewState extends State<TithiDetailView> {
         false;
     _language = widget.initialLanguage ?? AppDatabase.instance.languageNotifier.value;
     AppDatabase.instance.languageNotifier.addListener(_onLanguageChanged);
+    _loadPanchangCalculation();
+  }
+
+  Future<void> _loadPanchangCalculation() async {
+    try {
+      final city = await AppDatabase.instance.getSavedCity() ?? City.mumbai;
+      final rules = await AppDatabase.instance.getAllFestivalRules();
+      final result = await SwephService.instance.calculatePanchang(
+        date: _effectiveDateTime,
+        city: city,
+        festivalRules: rules,
+      );
+      if (mounted) {
+        setState(() {
+          _calculationResult = result;
+        });
+      }
+    } catch (_) {}
   }
 
   @override
@@ -146,38 +167,60 @@ class _TithiDetailViewState extends State<TithiDetailView> {
   }
 
   List<Widget> _buildContentWidgets() {
+    final result = _calculationResult;
     return [
       // 1st Widget: CardTithi with active alarm button toggle
-      CardTithi.detail(
-        date: _effectiveDateString,
-        dateTime: _effectiveDateTime,
-        tithi: _effectiveTithi,
-        tithiEnum: widget.tithiEnum,
-        paksha: _effectivePaksha,
-        pakshaEnum: widget.pakshaEnum,
-        moonPhaseAsset: _effectiveMoonAsset,
-        lunarDay: _effectiveLunarDay,
-        isAlarmActive: _isAlarmActive,
-        onAlarmTap: _toggleAlarm,
-        language: _language,
-      ),
+      if (result != null)
+        CardTithi.fromCalculationResult(
+          result,
+          isDetail: true,
+          isAlarmActive: _isAlarmActive,
+          onAlarmTap: _toggleAlarm,
+          language: _language,
+        )
+      else
+        CardTithi.detail(
+          date: _effectiveDateString,
+          dateTime: _effectiveDateTime,
+          tithi: _effectiveTithi,
+          tithiEnum: widget.tithiEnum,
+          paksha: _effectivePaksha,
+          pakshaEnum: widget.pakshaEnum,
+          moonPhaseAsset: _effectiveMoonAsset,
+          lunarDay: _effectiveLunarDay,
+          isAlarmActive: _isAlarmActive,
+          onAlarmTap: _toggleAlarm,
+          language: _language,
+        ),
       const SizedBox(height: AppSpacing.spacing16),
 
       // 2nd Widget: ListItemPanchang
-      ListItemPanchang(
-        language: _language,
-        vrat: _effectiveVrat,
-        festival: _effectiveFestival,
-      ),
+      if (result != null)
+        ListItemPanchang.fromCalculationResult(
+          result,
+          language: _language,
+        )
+      else
+        ListItemPanchang(
+          language: _language,
+          vrat: _effectiveVrat,
+          festival: _effectiveFestival,
+        ),
       const SizedBox(height: AppSpacing.spacing16),
 
       // 3rd Widget: CardTimings with conditional tabs and temporal items
-      CardTimings(
-        date: _effectiveDateTime,
-        language: _language,
-        sunrise: widget.sunrise,
-        sunset: widget.sunset,
-      ),
+      if (result != null)
+        CardTimings.fromCalculationResult(
+          result,
+          language: _language,
+        )
+      else
+        CardTimings(
+          date: _effectiveDateTime,
+          language: _language,
+          sunrise: widget.sunrise,
+          sunset: widget.sunset,
+        ),
     ];
   }
 

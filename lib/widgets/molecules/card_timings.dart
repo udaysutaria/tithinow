@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../constants/panchang_terms.dart';
+import '../../services/sweph_service.dart' show PanchangCalculationResult;
 import '../../theme/design_system.dart';
 import '../organisms/list_tab_content_choghadiya.dart';
 import '../organisms/list_tab_content_muhurta.dart';
@@ -49,6 +50,9 @@ class CardTimings extends StatefulWidget {
   /// Callback when an alarm is toggled on a future Muhurta interval.
   final void Function(int index, Muhurta muhurta, bool isActive)? onMuhurtaAlarmTap;
 
+  /// Optional simulated reference time used to evaluate intervals.
+  final DateTime? currentTime;
+
   const CardTimings({
     super.key,
     this.initialTabIndex = 0,
@@ -61,7 +65,37 @@ class CardTimings extends StatefulWidget {
     this.showNowTab,
     this.onAlarmTap,
     this.onMuhurtaAlarmTap,
+    this.currentTime,
   });
+
+  /// Factory constructor to render directly from a [PanchangCalculationResult].
+  factory CardTimings.fromCalculationResult(
+    PanchangCalculationResult result, {
+    Key? key,
+    int initialTabIndex = 0,
+    ValueChanged<int>? onTabChanged,
+    AppLanguage? language,
+    bool useBottomIndicatorOnly = true,
+    bool? showNowTab,
+    void Function(int slotIndex, bool isActive)? onAlarmTap,
+    void Function(int index, Muhurta muhurta, bool isActive)? onMuhurtaAlarmTap,
+    DateTime? currentTime,
+  }) {
+    return CardTimings(
+      key: key,
+      date: result.date,
+      sunrise: TimeOfDay(hour: result.sunrise.hour, minute: result.sunrise.minute),
+      sunset: TimeOfDay(hour: result.sunset.hour, minute: result.sunset.minute),
+      initialTabIndex: initialTabIndex,
+      onTabChanged: onTabChanged,
+      language: language,
+      useBottomIndicatorOnly: useBottomIndicatorOnly,
+      showNowTab: showNowTab,
+      onAlarmTap: onAlarmTap,
+      onMuhurtaAlarmTap: onMuhurtaAlarmTap,
+      currentTime: currentTime,
+    );
+  }
 
   @override
   State<CardTimings> createState() => _CardTimingsState();
@@ -163,6 +197,7 @@ class _CardTimingsState extends State<CardTimings> {
   }
 
   DateTime? get _muhurtaCurrentTime {
+    if (widget.currentTime != null) return widget.currentTime;
     if (widget.date == null || _isToday) return null;
     if (_isPast) {
       return DateTime(widget.date!.year, widget.date!.month, widget.date!.day, 23, 59, 59);
@@ -186,6 +221,10 @@ class _CardTimingsState extends State<CardTimings> {
       switch (_selectedTabIndex) {
         case 0:
           return ListTabContentNow(
+            date: widget.date,
+            sunrise: widget.sunrise,
+            sunset: widget.sunset,
+            currentTime: widget.currentTime,
             language: lang,
             padding: EdgeInsets.zero,
           );

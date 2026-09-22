@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../constants/panchang_terms.dart';
+import '../../services/sweph_service.dart' show PanchangCalculationResult;
 import '../../theme/design_system.dart';
 import '../atoms/button_alarm.dart';
 import 'list_item_tithi.dart';
@@ -100,6 +101,50 @@ class CardTithi extends StatefulWidget {
   })  : showAlarmButton = true,
         moonSize = 72.0;
 
+  /// Named factory constructor to render directly from a [PanchangCalculationResult].
+  factory CardTithi.fromCalculationResult(
+    PanchangCalculationResult result, {
+    Key? key,
+    bool isDetail = false,
+    bool isAlarmActive = false,
+    VoidCallback? onAlarmTap,
+    VoidCallback? onTap,
+    AppLanguage? language,
+  }) {
+    final int lunarDay = result.paksha == Paksha.shukla
+        ? result.tithiNumber
+        : (15 + result.tithiNumber);
+
+    return CardTithi(
+      key: key,
+      date: _formatDateEn(result.date),
+      dateTime: result.date,
+      tithiEnum: result.tithi,
+      pakshaEnum: result.paksha,
+      lunarDay: lunarDay,
+      showAlarmButton: isDetail,
+      moonSize: isDetail ? 72.0 : 96.0,
+      isAlarmActive: isAlarmActive,
+      onAlarmTap: onAlarmTap,
+      onTap: onTap,
+      language: language,
+    );
+  }
+
+  static String _shortWeekdayEn(DateTime d) {
+    const w = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    return w[d.weekday - 1];
+  }
+
+  static String _shortMonthEn(DateTime d) {
+    const m = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return m[d.month - 1];
+  }
+
+  static String _formatDateEn(DateTime d) {
+    return '${_shortWeekdayEn(d)}, ${d.day} ${_shortMonthEn(d)} ${d.year}';
+  }
+
   @override
   State<CardTithi> createState() => _CardTithiState();
 }
@@ -140,19 +185,7 @@ class _CardTithiState extends State<CardTithi> {
     return 'assets/moon_phases/13dvadashi.webp';
   }
 
-  static String _shortWeekdayEn(DateTime d) {
-    const w = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    return w[d.weekday - 1];
-  }
-
-  static String _shortMonthEn(DateTime d) {
-    const m = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    return m[d.month - 1];
-  }
-
-  static String _formatDateEn(DateTime d) {
-    return '${_shortWeekdayEn(d)}, ${d.day} ${_shortMonthEn(d)} ${d.year}';
-  }
+  static String _formatDateEn(DateTime d) => CardTithi._formatDateEn(d);
 
   static ({int day, EnglishMonth month, int year})? _parseDateString(String input) {
     final regex = RegExp(r'(\d{1,2})\s+([A-Za-z\u0900-\u097F\u0A80-\u0AFF]+)\s+(\d{4})');
@@ -172,13 +205,9 @@ class _CardTithiState extends State<CardTithi> {
   }
 
   String _resolveLocalizedDate(AppLanguage lang) {
-    if (lang == AppLanguage.english && widget.date.isNotEmpty && widget.dateTime == null) {
-      return widget.date;
-    }
-
     if (widget.dateTime != null) {
       if (lang == AppLanguage.english) {
-        return widget.date.isNotEmpty ? widget.date : _formatDateEn(widget.dateTime!);
+        return _formatDateEn(widget.dateTime!);
       }
       final weekdayName = Weekday.fromDateTime(widget.dateTime!).name(lang);
       final monthName = EnglishMonth.fromDateTime(widget.dateTime!).name(lang);
@@ -186,6 +215,10 @@ class _CardTithiState extends State<CardTithi> {
     }
 
     if (widget.date.isEmpty) return widget.date;
+
+    if (lang == AppLanguage.english) {
+      return widget.date;
+    }
 
     final weekday = Weekday.fromName(widget.date);
     final parsedDateInfo = _parseDateString(widget.date);

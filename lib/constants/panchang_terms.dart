@@ -871,6 +871,12 @@ enum Tithi {
         AppLanguage.gujarati => gu,
       };
 
+  /// Resolves a 1-based Tithi number (1 to 15) to its corresponding [Tithi].
+  static Tithi fromNumber(int number) {
+    final normalized = ((number - 1) % 15) + 1;
+    return Tithi.values[normalized - 1];
+  }
+
   /// Resolves a 1-based lunar day (1 to 30) to its corresponding [Tithi].
   ///
   /// - Days 1..14 (Shukla) -> [pratipada] .. [chaturdashi]
@@ -1072,6 +1078,13 @@ enum Nakshatra {
 
   /// 1-based index (1 to 27) matching standard Vedic enumeration.
   int get number => index + 1;
+
+  /// Resolves a [Nakshatra] from a celestial longitude in degrees (0.0 to 360.0).
+  static Nakshatra fromLongitude(double longitudeDegrees) {
+    final normalized = (longitudeDegrees % 360.0 + 360.0) % 360.0;
+    final index = (normalized / (360.0 / 27.0)).floor() % 27;
+    return Nakshatra.values[index];
+  }
 
   /// Resolves a [Nakshatra] from its English, Hindi, or Gujarati name.
   static Nakshatra? fromName(String name) {

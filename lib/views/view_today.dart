@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../constants/panchang_terms.dart';
 import '../database/app_database.dart';
+import '../models/city.dart';
+import '../services/sweph_service.dart';
 import '../theme/design_system.dart';
 import '../widgets/widgets.dart';
 import 'app_navigator.dart';
@@ -15,10 +17,12 @@ import 'app_navigator.dart';
 ///   containing `Appbar` and `ViewContent` with `CardTithi.today`, `CardPanchang`, and `CardTimings`.
 class TodayView extends StatefulWidget {
   final AppLanguage? initialLanguage;
+  final PanchangCalculationResult? initialPanchangResult;
 
   const TodayView({
     super.key,
     this.initialLanguage,
+    this.initialPanchangResult,
   });
 
   @override
@@ -32,13 +36,19 @@ typedef WidgetPreviewView = TodayView;
 class _TodayViewState extends State<TodayView> {
   final GlobalKey<ScaffoldState> _mobileScaffoldKey = GlobalKey<ScaffoldState>();
   late AppLanguage _language;
+  PanchangCalculationResult? _panchangResult;
+  City _selectedCity = City.mumbai;
 
   @override
   void initState() {
     super.initState();
     _language = widget.initialLanguage ?? AppDatabase.instance.languageNotifier.value;
     AppDatabase.instance.languageNotifier.addListener(_onLanguageChanged);
+    AppDatabase.instance.cityNotifier.addListener(_onCityChanged);
+    AppDatabase.instance.lunarSystemNotifier.addListener(_onLunarSystemChanged);
+    _panchangResult = widget.initialPanchangResult ?? SwephService.instance.cachedTodayResult;
     _loadSavedLanguage();
+    _loadPanchangData();
   }
 
   @override
@@ -58,6 +68,18 @@ class _TodayViewState extends State<TodayView> {
     }
   }
 
+  void _onCityChanged() {
+    final newCity = AppDatabase.instance.cityNotifier.value;
+    if (newCity != null && newCity != _selectedCity) {
+      _selectedCity = newCity;
+      _loadPanchangData();
+    }
+  }
+
+  void _onLunarSystemChanged() {
+    _loadPanchangData();
+  }
+
   Future<void> _loadSavedLanguage() async {
     if (widget.initialLanguage != null) return;
     try {
@@ -70,9 +92,33 @@ class _TodayViewState extends State<TodayView> {
     } catch (_) {}
   }
 
+  Future<void> _loadPanchangData() async {
+    try {
+      final savedCity = await AppDatabase.instance.getSavedCity();
+      if (savedCity != null) {
+        _selectedCity = savedCity;
+      }
+      final savedLunarSystem = await AppDatabase.instance.getSavedLunarSystem();
+      final festivalRules = await AppDatabase.instance.getAllFestivalRules();
+      final result = await SwephService.instance.calculatePanchang(
+        date: DateTime.now(),
+        city: _selectedCity,
+        lunarSystem: savedLunarSystem,
+        festivalRules: festivalRules,
+      );
+      if (mounted) {
+        setState(() {
+          _panchangResult = result;
+        });
+      }
+    } catch (_) {}
+  }
+
   @override
   void dispose() {
     AppDatabase.instance.languageNotifier.removeListener(_onLanguageChanged);
+    AppDatabase.instance.cityNotifier.removeListener(_onCityChanged);
+    AppDatabase.instance.lunarSystemNotifier.removeListener(_onLunarSystemChanged);
     super.dispose();
   }
 
@@ -97,6 +143,43 @@ class _TodayViewState extends State<TodayView> {
       return _buildDesktopLayout(context);
     }
     return _buildMobileLayout(context);
+  }
+
+  List<Widget> _buildCards() {
+    final result = _panchangResult;
+    if (result != null) {
+      return [
+        CardTithi.fromCalculationResult(
+          result,
+          language: _language,
+        ),
+        const SizedBox(height: AppSpacing.spacing16),
+        CardPanchang.fromCalculationResult(
+          result,
+          language: _language,
+        ),
+        const SizedBox(height: AppSpacing.spacing16),
+        CardTimings.fromCalculationResult(
+          result,
+          language: _language,
+        ),
+      ];
+    }
+
+    final now = DateTime.now();
+    return [
+      CardTithi.today(
+        dateTime: now,
+        language: _language,
+      ),
+      const SizedBox(height: AppSpacing.spacing16),
+      CardPanchang(language: _language),
+      const SizedBox(height: AppSpacing.spacing16),
+      CardTimings(
+        date: now,
+        language: _language,
+      ),
+    ];
   }
 
   // Desktop 2-Column Layout
@@ -130,13 +213,7 @@ class _TodayViewState extends State<TodayView> {
                         constraints: const BoxConstraints(maxWidth: 720),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            CardTithi.today(language: _language),
-                            const SizedBox(height: AppSpacing.spacing16),
-                            CardPanchang(language: _language),
-                            const SizedBox(height: AppSpacing.spacing16),
-                            CardTimings(language: _language),
-                          ],
+                          children: _buildCards(),
                         ),
                       ),
                     ),
@@ -177,13 +254,7 @@ class _TodayViewState extends State<TodayView> {
                 padding: const EdgeInsets.all(AppSpacing.spacing16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    CardTithi.today(language: _language),
-                    const SizedBox(height: AppSpacing.spacing16),
-                    CardPanchang(language: _language),
-                    const SizedBox(height: AppSpacing.spacing16),
-                    CardTimings(language: _language),
-                  ],
+                  children: _buildCards(),
                 ),
               ),
             ),

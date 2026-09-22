@@ -87,6 +87,15 @@ void main() {
       final savedCity = await appDb.getSavedCity(db: db);
       expect(savedCity, isNotNull);
       expect(savedCity!.name, equals('Ahmedabad'));
+
+      final savedLunarSystem = await appDb.getSavedLunarSystem(db: db);
+      expect(savedLunarSystem, equals('amanta'));
+      expect(appDb.lunarSystemNotifier.value, equals('amanta'));
+
+      // Test changing lunar system directly
+      await appDb.saveLunarSystem('purnimanta', db: db);
+      expect(appDb.lunarSystemNotifier.value, equals('purnimanta'));
+      expect(await appDb.getSavedLunarSystem(db: db), equals('purnimanta'));
     });
 
     test('Imports sample CSV data and verifies records', () async {

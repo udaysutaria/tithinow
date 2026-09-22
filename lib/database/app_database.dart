@@ -7,6 +7,7 @@ import 'package:sqflite/sqflite.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import '../constants/panchang_terms.dart';
 import '../models/city.dart';
+import '../models/festival_rule.dart';
 
 /// SQLite Database manager for TithiNow.
 ///
@@ -14,6 +15,7 @@ import '../models/city.dart';
 /// - Manages SQLite database lifecycle across mobile, desktop, and tests.
 /// - Imports 7,100+ cities and coordinates from `assets/data/cities.csv` on app first launch.
 /// - Provides fast indexed queries for city search and location coordinate lookups.
+/// - Caches Vedic festival and vrat rules synced from WordPress REST API.
 class AppDatabase {
   static final AppDatabase instance = AppDatabase._init();
   static Database? _database;
@@ -23,15 +25,29 @@ class AppDatabase {
   /// Reactive notifier for the active application language.
   ValueNotifier<AppLanguage> get languageNotifier => appLanguageNotifier;
 
+  /// Reactive notifier for the active selected city.
+  final ValueNotifier<City?> cityNotifier = ValueNotifier<City?>(null);
+
+  /// Constant identifiers for the supported Vedic lunar calendar systems.
+  static const String lunarPurnimanta = 'purnimanta';
+  static const String lunarAmanta = 'amanta';
+
+  /// Reactive notifier for the active lunar calendar system ('purnimanta' or 'amanta').
+  final ValueNotifier<String> lunarSystemNotifier =
+      ValueNotifier<String>(lunarPurnimanta);
+
   /// Default database file name.
   static const String dbName = 'tithinow.db';
 
   /// Table names.
   static const String tableCities = 'cities';
   static const String tableMeta = 'app_meta';
+  static const String tableFestivals = 'festivals';
 
   /// Meta keys.
   static const String metaCitiesImported = 'cities_imported';
+  static const String metaFestivalsImported = 'festivals_imported';
+  static const String metaFestivalsLastSync = 'festivals_last_sync';
   static const String metaOnboardingCompleted = 'onboarding_completed';
   static const String metaLunarSystem = 'lunar_system';
   static const String metaCityId = 'city_id';
@@ -79,8 +95,11 @@ class AppDatabase {
       version: 1,
       onCreate: _createDB,
       onOpen: (db) async {
-        // Check if cities need to be imported on first launch
+        // Ensure festivals table exists even if DB was created previously
+        await _ensureFestivalsTable(db);
+        // Check if cities and festivals need to be imported on first launch
         await _checkAndImportCities(db);
+        await _checkAndImportFestivals(db);
       },
     );
   }
@@ -128,6 +147,50 @@ class AppDatabase {
         value TEXT NOT NULL
       )
     ''');
+
+    // 3. Festivals & Vrats Rules Table
+    await _createFestivalsTable(db);
+  }
+
+  /// Creates the festivals table and its performance indexes.
+  Future<void> _createFestivalsTable(Database db) async {
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS $tableFestivals (
+        id INTEGER PRIMARY KEY,
+        festival_id TEXT UNIQUE NOT NULL,
+        category TEXT NOT NULL,
+        importance_level TEXT NOT NULL,
+        is_fasting INTEGER NOT NULL,
+        name_en TEXT NOT NULL,
+        name_hi TEXT NOT NULL,
+        name_gu TEXT NOT NULL,
+        desc_en TEXT NOT NULL,
+        desc_hi TEXT NOT NULL,
+        desc_gu TEXT NOT NULL,
+        event_type TEXT NOT NULL,
+        day_selection_rule TEXT NOT NULL,
+        lunar_month TEXT,
+        paksha TEXT,
+        tithi_number INTEGER,
+        solar_month TEXT,
+        nakshatra_constraint TEXT,
+        region_variant TEXT NOT NULL,
+        rule_version INTEGER NOT NULL,
+        modified TEXT
+      )
+    ''');
+
+    await db.execute(
+      'CREATE INDEX IF NOT EXISTS idx_festivals_fid ON $tableFestivals (festival_id)',
+    );
+    await db.execute(
+      'CREATE INDEX IF NOT EXISTS idx_festivals_rule ON $tableFestivals (event_type, lunar_month, paksha, tithi_number)',
+    );
+  }
+
+  /// Ensures festivals table exists (for existing app databases without version bump).
+  Future<void> _ensureFestivalsTable(Database db) async {
+    await _createFestivalsTable(db);
   }
 
   /// Checks if cities CSV was already imported. If not, imports it.
@@ -135,6 +198,14 @@ class AppDatabase {
     final count = await getCitiesCount(db: db);
     if (count == 0) {
       await importCitiesFromCsv(db: db);
+    }
+  }
+
+  /// Checks if festivals seed data was imported. If empty, imports bundled seed.
+  Future<void> _checkAndImportFestivals(Database db) async {
+    final count = await getFestivalsCount(db: db);
+    if (count == 0) {
+      await importFestivalsFromSeed(db: db);
     }
   }
 
@@ -478,6 +549,22 @@ class AppDatabase {
 
     final appLang = AppLanguage.fromString(language);
     languageNotifier.value = appLang;
+    cityNotifier.value = city;
+    lunarSystemNotifier.value = lunarSystem;
+  }
+
+  /// Saves the active lunar system to the database and updates [lunarSystemNotifier].
+  Future<void> saveLunarSystem(String lunarSystem, {Database? db}) async {
+    await setMeta(metaLunarSystem, lunarSystem, db: db);
+    lunarSystemNotifier.value = lunarSystem;
+  }
+
+  /// Retrieves the saved lunar calendar system, falling back to [lunarPurnimanta].
+  Future<String> getSavedLunarSystem({Database? db}) async {
+    final system = await getMeta(metaLunarSystem, db: db);
+    final effective = (system != null && system.isNotEmpty) ? system : lunarPurnimanta;
+    lunarSystemNotifier.value = effective;
+    return effective;
   }
 
   /// Saves the active [AppLanguage] to the database and updates [languageNotifier].
@@ -502,14 +589,20 @@ class AppDatabase {
     final id = idStr != null ? int.tryParse(idStr) : null;
     if (id != null) {
       final city = await getCityById(id, db: db);
-      if (city != null) return city;
+      if (city != null) {
+        cityNotifier.value = city;
+        return city;
+      }
     }
 
     final name = await getMeta(metaCityName, db: db);
     final state = await getMeta(metaCityState, db: db);
     if (name != null && state != null) {
       final city = await getCityByName(name, state: state, db: db);
-      if (city != null) return city;
+      if (city != null) {
+        cityNotifier.value = city;
+        return city;
+      }
     }
 
     // Reconstruct directly from stored metadata if table row is absent
@@ -518,16 +611,149 @@ class AppDatabase {
       final lngStr = await getMeta(metaCityLng, db: db);
       final lat = latStr != null ? double.tryParse(latStr) ?? 0.0 : 0.0;
       final lng = lngStr != null ? double.tryParse(lngStr) ?? 0.0 : 0.0;
-      return City(
+      final city = City(
         id: id,
         name: name,
         state: state,
         latitude: lat,
         longitude: lng,
       );
+      cityNotifier.value = city;
+      return city;
     }
 
     return null;
+  }
+
+  // ===========================================================================
+  // Festivals & Vrats Storage & Queries
+  // ===========================================================================
+
+  /// Imports festival seed data from `assets/data/seed_festivals.json` or provided JSON string.
+  Future<int> importFestivalsFromSeed({
+    Database? db,
+    String? jsonContent,
+    String seedAssetPath = 'assets/data/seed_festivals.json',
+  }) async {
+    final targetDb = db ?? await database;
+    final String content;
+    if (jsonContent != null) {
+      content = jsonContent;
+    } else {
+      try {
+        content = await rootBundle.loadString(seedAssetPath);
+      } catch (_) {
+        return 0;
+      }
+    }
+
+    if (content.trim().isEmpty) return 0;
+    try {
+      final list = jsonDecode(content) as List<dynamic>;
+      final rules = list
+          .whereType<Map<String, dynamic>>()
+          .map(FestivalRule.fromWordPressJson)
+          .toList();
+      final count = await upsertFestivals(rules, db: targetDb);
+      await setMeta(metaFestivalsImported, DateTime.now().toIso8601String(), db: targetDb);
+      return count;
+    } catch (_) {
+      return 0;
+    }
+  }
+
+  /// Upserts a batch of [FestivalRule] records into the SQLite database.
+  Future<int> upsertFestivals(List<FestivalRule> rules, {Database? db}) async {
+    if (rules.isEmpty) return 0;
+    final targetDb = db ?? await database;
+    final batch = targetDb.batch();
+
+    for (final rule in rules) {
+      batch.insert(
+        tableFestivals,
+        rule.toMap(),
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+    }
+
+    await batch.commit(noResult: true);
+    return rules.length;
+  }
+
+  /// Returns total count of festival rules in SQLite.
+  Future<int> getFestivalsCount({Database? db}) async {
+    final targetDb = db ?? await database;
+    final result = await targetDb.rawQuery('SELECT COUNT(*) as count FROM $tableFestivals');
+    return Sqflite.firstIntValue(result) ?? 0;
+  }
+
+  /// Retrieves all cached [FestivalRule] records.
+  Future<List<FestivalRule>> getAllFestivalRules({Database? db}) async {
+    final targetDb = db ?? await database;
+    final maps = await targetDb.query(
+      tableFestivals,
+      orderBy: 'importance_level ASC, name_en ASC',
+    );
+    return maps.map(FestivalRule.fromMap).toList();
+  }
+
+  /// Retrieves a specific [FestivalRule] by its unique [festivalId] slug.
+  Future<FestivalRule?> getFestivalRuleById(String festivalId, {Database? db}) async {
+    final targetDb = db ?? await database;
+    final maps = await targetDb.query(
+      tableFestivals,
+      where: 'festival_id = ?',
+      whereArgs: [festivalId],
+      limit: 1,
+    );
+    if (maps.isNotEmpty) {
+      return FestivalRule.fromMap(maps.first);
+    }
+    return null;
+  }
+
+  /// Queries festival rules matching a lunar tithi combination.
+  ///
+  /// Matches exact month (or 'any' month) AND paksha (or 'both') AND tithi number.
+  Future<List<FestivalRule>> getFestivalRulesForTithi({
+    required String lunarMonth,
+    required String paksha,
+    required int tithiNumber,
+    Database? db,
+  }) async {
+    final targetDb = db ?? await database;
+    final normalizedMonth = lunarMonth.toLowerCase().trim();
+    final normalizedPaksha = paksha.toLowerCase().trim();
+
+    final maps = await targetDb.query(
+      tableFestivals,
+      where: 'event_type = ? AND (lunar_month = ? OR lunar_month = ? OR lunar_month IS NULL) AND (paksha = ? OR paksha = ? OR paksha IS NULL) AND tithi_number = ?',
+      whereArgs: [
+        'lunar_tithi',
+        normalizedMonth,
+        'any',
+        normalizedPaksha,
+        'both',
+        tithiNumber,
+      ],
+    );
+    return maps.map(FestivalRule.fromMap).toList();
+  }
+
+  /// Queries festival rules matching a solar sankranti (ingress into [solarMonth]).
+  Future<List<FestivalRule>> getFestivalRulesForSankranti({
+    required String solarMonth,
+    Database? db,
+  }) async {
+    final targetDb = db ?? await database;
+    final normalizedSolar = solarMonth.toLowerCase().trim();
+
+    final maps = await targetDb.query(
+      tableFestivals,
+      where: 'event_type = ? AND solar_month = ?',
+      whereArgs: ['solar_sankranti', normalizedSolar],
+    );
+    return maps.map(FestivalRule.fromMap).toList();
   }
 
   /// Closes the database connection.

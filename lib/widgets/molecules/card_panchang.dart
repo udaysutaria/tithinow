@@ -1,36 +1,37 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../constants/panchang_terms.dart';
+import '../../services/sweph_service.dart' show PanchangCalculationResult;
 import '../../theme/design_system.dart';
 
-export '../../constants/panchang_terms.dart' show AppLanguage, HinduMonth, Nakshatra;
+export '../../constants/panchang_terms.dart'
+    show AppLanguage, HinduMonth, Nakshatra, Yoga, Karana, Rashi;
 
 /// Layout behavior modes for [CardPanchang] and [ListItemPanchang].
 enum PanchangLayoutMode {
   /// Automatically decides layout:
-  /// - Mobile (!context.isDesktop): 2-slide slider (2x2 grid each + dot indicators).
-  /// - Desktop (context.isDesktop): Responsive grid (2x4 if width < 1024px, 4x2 if width >= 1024px).
+  /// - Mobile (!context.isDesktop): 3-slide slider (2x2 grid each + dot indicators).
+  /// - Desktop (context.isDesktop): Responsive grid.
   auto,
 
-  /// Mobile slider with 2 slides:
+  /// Mobile slider with 3 slides:
   /// - Slide 1: Nakshatras, Month, Vrat, Festival (2x2)
   /// - Slide 2: Sunrise, Sunset, Moonrise, Moonset (2x2)
+  /// - Slide 3: Yoga, Karana, Rashi, Sun Sign (2x2)
   /// Includes dot pagination indicator.
   mobileSlider,
 
-  /// Desktop responsive grid:
-  /// - 2 columns x 4 rows if screen width < 1024px
-  /// - 4 columns x 2 rows if screen width >= 1024px
+  /// Desktop responsive grid.
   desktopResponsive,
 
-  /// Fixed 2 columns x 4 rows grid.
+  /// Fixed 2 columns x 4 rows grid (legacy 8-item) or multi-row grid.
   desktopGrid2x4,
 
-  /// Fixed 4 columns x 2 rows grid.
+  /// Fixed 4 columns x 2 rows grid (legacy 8-item) or multi-row grid.
   desktopGrid4x2,
 }
 
-/// Data model encapsulating the 8 Panchang items.
+/// Data model encapsulating the Panchang items (Nakshatra, Month, Vrat, Festival, Sun/Moon timings, Yoga, Karana, Rashis).
 class PanchangData {
   final String nakshatra;
   final Nakshatra? nakshatraEnum;
@@ -43,6 +44,16 @@ class PanchangData {
   final String moonrise;
   final String moonset;
 
+  // New Solilunar & Planetary items
+  final String yoga;
+  final Yoga? yogaEnum;
+  final String karana;
+  final Karana? karanaEnum;
+  final String rashi; // Moon sign
+  final Rashi? rashiEnum;
+  final String suryaRashi; // Sun sign
+  final Rashi? suryaRashiEnum;
+
   // Localized/customizable labels
   final String? labelNakshatra;
   final String? labelMonth;
@@ -52,6 +63,10 @@ class PanchangData {
   final String? labelSunset;
   final String? labelMoonrise;
   final String? labelMoonset;
+  final String? labelYoga;
+  final String? labelKarana;
+  final String? labelRashi;
+  final String? labelSuryaRashi;
 
   const PanchangData({
     this.nakshatra = 'Dhanishtha',
@@ -64,6 +79,14 @@ class PanchangData {
     this.sunset = '06:33 PM',
     this.moonrise = '05:08 PM',
     this.moonset = '04:56 AM',
+    this.yoga = 'Vishkambha',
+    this.yogaEnum,
+    this.karana = 'Bava',
+    this.karanaEnum,
+    this.rashi = 'Kumbha',
+    this.rashiEnum,
+    this.suryaRashi = 'Kanya',
+    this.suryaRashiEnum,
     this.labelNakshatra,
     this.labelMonth,
     this.labelVrat,
@@ -72,6 +95,10 @@ class PanchangData {
     this.labelSunset,
     this.labelMoonrise,
     this.labelMoonset,
+    this.labelYoga,
+    this.labelKarana,
+    this.labelRashi,
+    this.labelSuryaRashi,
   });
 
   /// Check if a conditional field (Vrat or Festival) has an empty or "No ..." value.
@@ -171,6 +198,61 @@ class PanchangData {
     return PanchangLabels.moonset(lang);
   }
 
+  /// Resolves the localized Yoga value.
+  String resolveYoga(AppLanguage lang) {
+    if (yogaEnum != null) return yogaEnum!.name(lang);
+    if (lang == AppLanguage.english) return yoga;
+    final found = Yoga.values.where((y) => y.en.toLowerCase() == yoga.trim().toLowerCase());
+    if (found.isNotEmpty) return found.first.name(lang);
+    return yoga;
+  }
+
+  /// Resolves the localized Karana value.
+  String resolveKarana(AppLanguage lang) {
+    if (karanaEnum != null) return karanaEnum!.name(lang);
+    if (lang == AppLanguage.english) return karana;
+    final found = Karana.values.where((k) => k.en.toLowerCase() == karana.trim().toLowerCase());
+    if (found.isNotEmpty) return found.first.name(lang);
+    return karana;
+  }
+
+  /// Resolves the localized Rashi (Moon sign) value.
+  String resolveRashi(AppLanguage lang) {
+    if (rashiEnum != null) return rashiEnum!.name(lang);
+    if (lang == AppLanguage.english) return rashi;
+    final found = Rashi.values.where((r) => r.en.toLowerCase().contains(rashi.trim().toLowerCase()));
+    if (found.isNotEmpty) return found.first.name(lang);
+    return rashi;
+  }
+
+  /// Resolves the localized Surya Rashi (Sun sign) value.
+  String resolveSuryaRashi(AppLanguage lang) {
+    if (suryaRashiEnum != null) return suryaRashiEnum!.name(lang);
+    if (lang == AppLanguage.english) return suryaRashi;
+    final found = Rashi.values.where((r) => r.en.toLowerCase().contains(suryaRashi.trim().toLowerCase()));
+    if (found.isNotEmpty) return found.first.name(lang);
+    return suryaRashi;
+  }
+
+  /// Resolves label for Yoga.
+  String resolveLabelYoga(AppLanguage lang) => labelYoga ?? PanchangLabels.yoga(lang);
+
+  /// Resolves label for Karana.
+  String resolveLabelKarana(AppLanguage lang) => labelKarana ?? PanchangLabels.karana(lang);
+
+  /// Resolves label for Rashi (Moon Sign).
+  String resolveLabelRashi(AppLanguage lang) => labelRashi ?? PanchangLabels.rashi(lang);
+
+  /// Resolves label for Surya Rashi (Sun Sign).
+  String resolveLabelSuryaRashi(AppLanguage lang) {
+    if (labelSuryaRashi != null) return labelSuryaRashi!;
+    return switch (lang) {
+      AppLanguage.english => 'Sun Sign',
+      AppLanguage.hindi => 'सूर्य राशि',
+      AppLanguage.gujarati => 'સૂર્ય રાશિ',
+    };
+  }
+
   /// Slide 1 items for a given [AppLanguage].
   List<PanchangSubItemData> getSlide1Items([AppLanguage lang = AppLanguage.english]) {
     final effectiveVrat = resolveVrat(lang);
@@ -235,15 +317,48 @@ class PanchangData {
     ];
   }
 
-  /// All 8 items in sequence for a given [AppLanguage].
+  /// Slide 3 items for a given [AppLanguage] (Yoga, Karana, Moon Sign, Sun Sign).
+  List<PanchangSubItemData> getSlide3Items([AppLanguage lang = AppLanguage.english]) {
+    return [
+      PanchangSubItemData(
+        iconAsset: 'assets/icons/IconNakshatra.svg',
+        label: resolveLabelYoga(lang),
+        value: resolveYoga(lang),
+        isConditional: false,
+      ),
+      PanchangSubItemData(
+        iconAsset: 'assets/icons/IconNakshatra.svg',
+        label: resolveLabelKarana(lang),
+        value: resolveKarana(lang),
+        isConditional: false,
+      ),
+      PanchangSubItemData(
+        iconAsset: 'assets/icons/IconNakshatra.svg',
+        label: resolveLabelRashi(lang),
+        value: resolveRashi(lang),
+        isConditional: false,
+      ),
+      PanchangSubItemData(
+        iconAsset: 'assets/icons/IconSun.svg',
+        label: resolveLabelSuryaRashi(lang),
+        value: resolveSuryaRashi(lang),
+        isConditional: false,
+      ),
+    ];
+  }
+
+  /// All 12 items in sequence for a given [AppLanguage].
   List<PanchangSubItemData> getAllItems([AppLanguage lang = AppLanguage.english]) =>
-      [...getSlide1Items(lang), ...getSlide2Items(lang)];
+      [...getSlide1Items(lang), ...getSlide2Items(lang), ...getSlide3Items(lang)];
 
   /// English slide 1 items getter (backward compatibility).
   List<PanchangSubItemData> get slide1Items => getSlide1Items(AppLanguage.english);
 
   /// English slide 2 items getter (backward compatibility).
   List<PanchangSubItemData> get slide2Items => getSlide2Items(AppLanguage.english);
+
+  /// English slide 3 items getter.
+  List<PanchangSubItemData> get slide3Items => getSlide3Items(AppLanguage.english);
 
   /// English all items getter (backward compatibility).
   List<PanchangSubItemData> get allItems => getAllItems(AppLanguage.english);
@@ -308,6 +423,14 @@ class CardPanchang extends StatefulWidget {
   final String? sunset;
   final String? moonrise;
   final String? moonset;
+  final String? yoga;
+  final Yoga? yogaEnum;
+  final String? karana;
+  final Karana? karanaEnum;
+  final String? rashi;
+  final Rashi? rashiEnum;
+  final String? suryaRashi;
+  final Rashi? suryaRashiEnum;
 
   const CardPanchang({
     super.key,
@@ -327,7 +450,49 @@ class CardPanchang extends StatefulWidget {
     this.sunset,
     this.moonrise,
     this.moonset,
+    this.yoga,
+    this.yogaEnum,
+    this.karana,
+    this.karanaEnum,
+    this.rashi,
+    this.rashiEnum,
+    this.suryaRashi,
+    this.suryaRashiEnum,
   });
+
+  /// Factory constructor to render directly from a [PanchangCalculationResult].
+  factory CardPanchang.fromCalculationResult(
+    PanchangCalculationResult result, {
+    Key? key,
+    PanchangLayoutMode mode = PanchangLayoutMode.auto,
+    double spacing = AppSpacing.spacing8,
+    double sliderHeight = 180.0,
+    ValueChanged<int>? onPageChanged,
+    AppLanguage? language,
+  }) {
+    return CardPanchang(
+      key: key,
+      data: PanchangData(
+        nakshatraEnum: result.nakshatra,
+        monthEnum: result.hinduMonth,
+        vrat: result.primaryVrat?.nameEn ?? 'No Vrat',
+        festival: result.primaryFestival?.nameEn ?? 'No Festival',
+        sunrise: result.sunriseFormatted,
+        sunset: result.sunsetFormatted,
+        moonrise: result.moonriseFormatted,
+        moonset: result.moonsetFormatted,
+        yogaEnum: result.yoga,
+        karanaEnum: result.karana,
+        rashiEnum: result.rashi,
+        suryaRashiEnum: result.suryaRashi,
+      ),
+      mode: mode,
+      spacing: spacing,
+      sliderHeight: sliderHeight,
+      onPageChanged: onPageChanged,
+      language: language,
+    );
+  }
 
   /// Shorthand factory constructor with individual parameter overrides.
   factory CardPanchang.values({
@@ -342,6 +507,14 @@ class CardPanchang extends StatefulWidget {
     String sunset = '06:33 PM',
     String moonrise = '05:08 PM',
     String moonset = '04:56 AM',
+    String? yoga,
+    Yoga? yogaEnum,
+    String? karana,
+    Karana? karanaEnum,
+    String? rashi,
+    Rashi? rashiEnum,
+    String? suryaRashi,
+    Rashi? suryaRashiEnum,
     PanchangLayoutMode mode = PanchangLayoutMode.auto,
     double spacing = AppSpacing.spacing8,
     double sliderHeight = 180.0,
@@ -361,6 +534,14 @@ class CardPanchang extends StatefulWidget {
         sunset: sunset,
         moonrise: moonrise,
         moonset: moonset,
+        yoga: yoga ?? 'Vishkambha',
+        yogaEnum: yogaEnum,
+        karana: karana ?? 'Bava',
+        karanaEnum: karanaEnum,
+        rashi: rashi ?? 'Kumbha',
+        rashiEnum: rashiEnum,
+        suryaRashi: suryaRashi ?? 'Kanya',
+        suryaRashiEnum: suryaRashiEnum,
       ),
       mode: mode,
       spacing: spacing,
@@ -424,6 +605,14 @@ class _CardPanchangState extends State<CardPanchang> {
       sunset: widget.sunset ?? base.sunset,
       moonrise: widget.moonrise ?? base.moonrise,
       moonset: widget.moonset ?? base.moonset,
+      yoga: widget.yoga ?? base.yoga,
+      yogaEnum: widget.yogaEnum ?? base.yogaEnum,
+      karana: widget.karana ?? base.karana,
+      karanaEnum: widget.karanaEnum ?? base.karanaEnum,
+      rashi: widget.rashi ?? base.rashi,
+      rashiEnum: widget.rashiEnum ?? base.rashiEnum,
+      suryaRashi: widget.suryaRashi ?? base.suryaRashi,
+      suryaRashiEnum: widget.suryaRashiEnum ?? base.suryaRashiEnum,
       labelNakshatra: base.labelNakshatra,
       labelMonth: base.labelMonth,
       labelVrat: base.labelVrat,
@@ -432,6 +621,10 @@ class _CardPanchangState extends State<CardPanchang> {
       labelSunset: base.labelSunset,
       labelMoonrise: base.labelMoonrise,
       labelMoonset: base.labelMoonset,
+      labelYoga: base.labelYoga,
+      labelKarana: base.labelKarana,
+      labelRashi: base.labelRashi,
+      labelSuryaRashi: base.labelSuryaRashi,
     );
   }
 
@@ -466,12 +659,13 @@ class _CardPanchangState extends State<CardPanchang> {
   }
 
   // ===========================================================================
-  // Mobile Slider Layout (2 slides, 2x2 grid each, dot indicator)
+  // Mobile Slider Layout (3 slides, 2x2 grid each, dot indicator)
   // ===========================================================================
   Widget _buildMobileSlider(BuildContext context, AppLanguage lang) {
     final data = _effectiveData;
     final slide1 = data.getSlide1Items(lang);
     final slide2 = data.getSlide2Items(lang);
+    final slide3 = data.getSlide3Items(lang);
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -490,11 +684,12 @@ class _CardPanchangState extends State<CardPanchang> {
             children: [
               _build2x2Grid(slide1),
               _build2x2Grid(slide2),
+              _build2x2Grid(slide3),
             ],
           ),
         ),
         const SizedBox(height: AppSpacing.spacing12),
-        _buildDotIndicator(),
+        _buildDotIndicator(3),
       ],
     );
   }
@@ -526,11 +721,11 @@ class _CardPanchangState extends State<CardPanchang> {
     );
   }
 
-  Widget _buildDotIndicator() {
+  Widget _buildDotIndicator(int totalPages) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       mainAxisSize: MainAxisSize.min,
-      children: List.generate(2, (index) {
+      children: List.generate(totalPages, (index) {
         final bool isActive = _currentPage == index;
         return GestureDetector(
           onTap: () {
@@ -559,32 +754,29 @@ class _CardPanchangState extends State<CardPanchang> {
   // Desktop Grid Layouts (Static, No Slider)
   // ===========================================================================
 
-  /// 4 columns across x 2 rows down (Desktop >= 1024px in View 1).
+  /// 4 columns across grid (Desktop >= 1024px in View 1).
   Widget _buildGrid4x2(BuildContext context, AppLanguage lang) {
     final all = _effectiveData.getAllItems(lang);
-    final row1 = all.sublist(0, 4);
-    final row2 = all.sublist(4, 8);
-
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        _buildRow(row1),
-        SizedBox(height: widget.spacing),
-        _buildRow(row2),
+        for (int i = 0; i < all.length; i += 4) ...[
+          if (i > 0) SizedBox(height: widget.spacing),
+          _buildRow(all.sublist(i, (i + 4 <= all.length) ? i + 4 : all.length)),
+        ],
       ],
     );
   }
 
-  /// 2 columns across x 4 rows down (Desktop < 1024px in View 1, & Desktop View 2).
+  /// 2 columns across grid (Desktop < 1024px in View 1, & Desktop View 2).
   Widget _buildGrid2x4(BuildContext context, AppLanguage lang) {
     final all = _effectiveData.getAllItems(lang);
-
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         for (int i = 0; i < all.length; i += 2) ...[
           if (i > 0) SizedBox(height: widget.spacing),
-          _buildRow([all[i], all[i + 1]]),
+          _buildRow([all[i], if (i + 1 < all.length) all[i + 1]]),
         ],
       ],
     );

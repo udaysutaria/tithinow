@@ -1,0 +1,324 @@
+[
+  {
+    "key": "group_tithinow_festivals",
+    "title": "Festival / Vrat Details",
+    "fields": [
+      {
+        "key": "field_fest_tab_basic",
+        "label": "Basic Information",
+        "name": "",
+        "type": "tab",
+        "placement": "top",
+        "endpoint": 0
+      },
+      {
+        "key": "field_fest_id",
+        "label": "Festival ID (Unique Slug)",
+        "name": "festival_id",
+        "type": "text",
+        "instructions": "Unique snake_case identifier used by the app (e.g. maha_shivaratri, holi, nirjala_ekadashi, makar_sankranti)",
+        "required": 1,
+        "placeholder": "e.g. maha_shivaratri"
+      },
+      {
+        "key": "field_fest_category",
+        "label": "Category",
+        "name": "category",
+        "type": "select",
+        "instructions": "Category of this observance",
+        "required": 1,
+        "choices": {
+          "festival": "Festival (ઉત્સવ / त्यौहार)",
+          "vrat": "Vrat / Fasting (વ્રત / उपवास)",
+          "jayanti": "Jayanti (જયંતી)",
+          "eclipse": "Eclipse / Grahan (ગ્રહણ)"
+        },
+        "default_value": "festival",
+        "return_format": "value"
+      },
+      {
+        "key": "field_fest_importance",
+        "label": "Importance Level",
+        "name": "importance_level",
+        "type": "select",
+        "instructions": "Major festivals show indicator dots on monthly calendar views",
+        "required": 1,
+        "choices": {
+          "major": "Major (Featured on Calendar)",
+          "regular": "Regular Observance"
+        },
+        "default_value": "major",
+        "return_format": "value"
+      },
+      {
+        "key": "field_fest_fasting",
+        "label": "Is Fasting Day (Upvaas)?",
+        "name": "is_fasting",
+        "type": "true_false",
+        "instructions": "Displays fasting badge and triggers Parana calculation in app",
+        "message": "Fasting recommended on this day",
+        "default_value": 0,
+        "ui": 1
+      },
+      {
+        "key": "field_fest_tab_multilingual",
+        "label": "Multilingual Content",
+        "name": "",
+        "type": "tab",
+        "placement": "top",
+        "endpoint": 0
+      },
+      {
+        "key": "field_fest_name_en",
+        "label": "Festival Name (English)",
+        "name": "festival_name_en",
+        "type": "text",
+        "required": 1,
+        "placeholder": "e.g. Maha Shivaratri"
+      },
+      {
+        "key": "field_fest_name_hi",
+        "label": "Festival Name (Hindi)",
+        "name": "festival_name_hi",
+        "type": "text",
+        "placeholder": "उदा. महाशिवरात्रि"
+      },
+      {
+        "key": "field_fest_name_gu",
+        "label": "Festival Name (Gujarati)",
+        "name": "festival_name_gu",
+        "type": "text",
+        "placeholder": "દા.ત. મહાશિવરાત્રી"
+      },
+      {
+        "key": "field_fest_desc_en",
+        "label": "Description (English)",
+        "name": "description_en",
+        "type": "textarea",
+        "rows": 3,
+        "placeholder": "Significance, rituals, and mythology..."
+      },
+      {
+        "key": "field_fest_desc_hi",
+        "label": "Description (Hindi)",
+        "name": "description_hi",
+        "type": "textarea",
+        "rows": 3,
+        "placeholder": "महत्व, अनुष्ठान और कथा..."
+      },
+      {
+        "key": "field_fest_desc_gu",
+        "label": "Description (Gujarati)",
+        "name": "description_gu",
+        "type": "textarea",
+        "rows": 3,
+        "placeholder": "મહત્વ, વિધિ અને કથા..."
+      },
+      {
+        "key": "field_fest_tab_astronomy",
+        "label": "Astronomical Rules",
+        "name": "",
+        "type": "tab",
+        "placement": "top",
+        "endpoint": 0
+      },
+      {
+        "key": "field_fest_event_type",
+        "label": "Event Type",
+        "name": "event_type",
+        "type": "select",
+        "required": 1,
+        "choices": {
+          "lunar_tithi": "Lunar Tithi (Tithi + Paksha + Lunar Month)",
+          "solar_sankranti": "Solar Sankranti (Sun Ingress into Rashi)",
+          "eclipse": "Eclipse (Grahan)"
+        },
+        "default_value": "lunar_tithi",
+        "return_format": "value"
+      },
+      {
+        "key": "field_fest_rule",
+        "label": "Day Selection Rule",
+        "name": "day_selection_rule",
+        "type": "select",
+        "instructions": "Vedic time window when the tithi must be prevailing for day selection",
+        "required": 1,
+        "choices": {
+          "udaya": "Udaya Vyapini (At Sunrise)",
+          "pradosha": "Pradosha Vyapini (Sunset window ~2h 24m)",
+          "nishita": "Nishita Kaal (Local Midnight ~23:40 - 00:30)",
+          "madhyahna": "Madhyahna Kaal (Midday window ~11:30 - 13:30)",
+          "aparahnna": "Aparahnna Kaal (Afternoon window ~13:30 - 16:00)",
+          "punyakaal": "Punyakaal (Sankranti window)"
+        },
+        "default_value": "udaya",
+        "return_format": "value"
+      },
+      {
+        "key": "field_fest_lunar_month",
+        "label": "Lunar Month (Amanta Scheme)",
+        "name": "lunar_month",
+        "type": "select",
+        "instructions": "Canonical Amanta month (New Moon to New Moon)",
+        "choices": {
+          "chaitra": "Chaitra (1)",
+          "vaishakha": "Vaishakha (2)",
+          "jyeshtha": "Jyeshtha (3)",
+          "ashadha": "Ashadha (4)",
+          "shravana": "Shravana (5)",
+          "bhadrapada": "Bhadrapada (6)",
+          "ashvina": "Ashvina (7)",
+          "kartika": "Kartika (8)",
+          "margashirsha": "Margashirsha (9)",
+          "pausha": "Pausha (10)",
+          "magha": "Magha (11)",
+          "phalguna": "Phalguna (12)",
+          "any": "Any Month (Recurring Monthly)"
+        },
+        "default_value": "chaitra",
+        "return_format": "value",
+        "conditional_logic": [
+          [
+            {
+              "field": "field_fest_event_type",
+              "operator": "==",
+              "value": "lunar_tithi"
+            }
+          ]
+        ]
+      },
+      {
+        "key": "field_fest_paksha",
+        "label": "Paksha",
+        "name": "paksha",
+        "type": "select",
+        "choices": {
+          "shukla": "Shukla Paksha (Waxing / Sud)",
+          "krishna": "Krishna Paksha (Waning / Vad)",
+          "both": "Both Pakshas (e.g. Ekadashi, Pradosha)"
+        },
+        "default_value": "shukla",
+        "return_format": "value",
+        "conditional_logic": [
+          [
+            {
+              "field": "field_fest_event_type",
+              "operator": "==",
+              "value": "lunar_tithi"
+            }
+          ]
+        ]
+      },
+      {
+        "key": "field_fest_tithi_num",
+        "label": "Tithi Number (1–15)",
+        "name": "tithi_number",
+        "type": "number",
+        "instructions": "1=Pratipada, 4=Chaturthi, 8=Ashtami, 11=Ekadashi, 14=Chaturdashi, 15=Purnima/Amavasya",
+        "default_value": 1,
+        "min": 1,
+        "max": 15,
+        "step": 1,
+        "conditional_logic": [
+          [
+            {
+              "field": "field_fest_event_type",
+              "operator": "==",
+              "value": "lunar_tithi"
+            }
+          ]
+        ]
+      },
+      {
+        "key": "field_fest_solar_month",
+        "label": "Solar Month / Rashi Ingress",
+        "name": "solar_month",
+        "type": "select",
+        "instructions": "For Sankranti festivals when Sun enters a Sidereal sign",
+        "choices": {
+          "mesha": "Mesha (Aries - Baisakhi / Puthandu / Vishu)",
+          "vrishabha": "Vrishabha (Taurus)",
+          "mithuna": "Mithuna (Gemini)",
+          "karka": "Karka (Cancer - Karka Sankranti / Dakshinayana)",
+          "simha": "Simha (Leo)",
+          "kanya": "Kanya (Virgo)",
+          "tula": "Tula (Libra)",
+          "vrishchika": "Vrishchika (Scorpio)",
+          "dhanu": "Dhanu (Sagittarius)",
+          "makara": "Makara (Capricorn - Makar Sankranti)",
+          "kumbha": "Kumbha (Aquarius)",
+          "meena": "Meena (Pisces)"
+        },
+        "default_value": "makara",
+        "return_format": "value",
+        "conditional_logic": [
+          [
+            {
+              "field": "field_fest_event_type",
+              "operator": "==",
+              "value": "solar_sankranti"
+            }
+          ]
+        ]
+      },
+      {
+        "key": "field_fest_nakshatra",
+        "label": "Nakshatra Constraint",
+        "name": "nakshatra_constraint",
+        "type": "select",
+        "instructions": "Optional constraint required for date selection (e.g. Rohini for Janmashtami)",
+        "choices": {
+          "none": "None (No Nakshatra condition)",
+          "rohini": "Rohini (Janmashtami)",
+          "ardra": "Ardra",
+          "shravana": "Shravana",
+          "anuradha": "Anuradha"
+        },
+        "default_value": "none",
+        "return_format": "value"
+      },
+      {
+        "key": "field_fest_region",
+        "label": "Region / Calendar Tradition",
+        "name": "region_variant",
+        "type": "select",
+        "instructions": "Whether this rule applies pan-India or only in specific calendar traditions",
+        "choices": {
+          "national": "National / Pan-India (Default)",
+          "amanta_only": "Gujarat / Maharashtra / South (Amanta)",
+          "purnimanta_only": "North India (Purnimanta)"
+        },
+        "default_value": "national",
+        "return_format": "value"
+      },
+      {
+        "key": "field_fest_rule_ver",
+        "label": "Rule Version",
+        "name": "rule_version",
+        "type": "number",
+        "instructions": "Increment this number if you modify a rule to trigger cache invalidation in app",
+        "default_value": 1,
+        "min": 1,
+        "step": 1
+      }
+    ],
+    "location": [
+      [
+        {
+          "param": "post_type",
+          "operator": "==",
+          "value": "festival"
+        }
+      ]
+    ],
+    "menu_order": 0,
+    "position": "normal",
+    "style": "default",
+    "label_placement": "top",
+    "instruction_placement": "label",
+    "hide_on_screen": "",
+    "active": true,
+    "description": "Astronomical rules and metadata for TithiNow",
+    "show_in_rest": 1
+  }
+]

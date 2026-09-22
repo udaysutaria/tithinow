@@ -1,0 +1,50 @@
+{
+  "festival": {
+    "name": "festival",
+    "label": "Festivals & Vrats",
+    "singular_label": "Festival / Vrat",
+    "description": "Astronomical rules and multilingual metadata for Hindu festivals and vrats in TithiNow",
+    "public": "true",
+    "publicly_queryable": "true",
+    "show_ui": "true",
+    "show_in_nav_menus": "true",
+    "delete_with_user": "false",
+    "show_in_rest": "true",
+    "rest_base": "festivals",
+    "rest_controller_class": "",
+    "rest_namespace": "wp/v2",
+    "has_archive": "false",
+    "has_archive_string": "",
+    "exclude_from_search": "false",
+    "capability_type": "post",
+    "hierarchical": "false",
+    "can_export": "true",
+    "rewrite": "true",
+    "rewrite_slug": "",
+    "rewrite_with_front": "true",
+    "query_var": "true",
+    "query_var_slug": "",
+    "menu_position": "5",
+    "show_in_menu": "true",
+    "show_in_menu_string": "",
+    "menu_icon": "dashicons-calendar-alt",
+    "supports": [
+      "title",
+      "custom-fields"
+    ],
+    "taxonomies": [],
+    "labels": {
+      "menu_name": "Festivals & Vrats",
+      "all_items": "All Festivals & Vrats",
+      "add_new": "Add New",
+      "add_new_item": "Add New Festival / Vrat",
+      "edit_item": "Edit Festival / Vrat",
+      "new_item": "New Festival / Vrat",
+      "view_item": "View Festival / Vrat",
+      "search_items": "Search Festivals & Vrats",
+      "not_found": "No Festivals or Vrats found",
+      "not_found_in_trash": "No Festivals or Vrats found in Trash"
+    },
+    "custom_supports": ""
+  }
+}

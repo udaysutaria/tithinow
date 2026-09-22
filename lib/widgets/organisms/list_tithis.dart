@@ -61,7 +61,7 @@ class ListTithis extends StatefulWidget {
   /// Optional list of [TithiData] to generate [ListItemTithi] items from.
   final List<TithiData>? data;
 
-  /// Initial set of active alarm indices (defaults to demo item defaults, e.g. item index 4).
+  /// Initial set of active alarm indices (defaults to empty set, no alarms active).
   final Set<int>? initialActiveAlarms;
 
   /// Callback when an alarm toggle button is tapped on a future item.
@@ -161,7 +161,7 @@ class ListTithis extends StatefulWidget {
       festival: 'Anant Chaturdashi',
       lunarDay: 14,
       state: ItemTemporalState.future,
-      isAlarmActive: true,
+      isAlarmActive: false,
     ),
     TithiData(
       date: 'Fri, 25 Sep 2026',
@@ -194,7 +194,7 @@ class ListTithis extends StatefulWidget {
     double? maxWidth,
     AppLanguage language = AppLanguage.english,
   }) {
-    final active = activeAlarms ?? {4};
+    final active = activeAlarms ?? {};
     return [
       // 1. PastItem (Dashami)
       PastItem.past(
@@ -315,6 +315,11 @@ class _ListTithisState extends State<ListTithis> {
     if (widget.initialActiveAlarms != oldWidget.initialActiveAlarms &&
         widget.initialActiveAlarms != null) {
       _activeAlarms = Set<int>.from(widget.initialActiveAlarms!);
+    } else if (widget.data != oldWidget.data && widget.data != null) {
+      _activeAlarms = {
+        for (int i = 0; i < widget.data!.length; i++)
+          if (widget.data![i].isAlarmActive) i,
+      };
     }
   }
 

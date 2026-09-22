@@ -89,9 +89,12 @@ void main() {
 
     testWidgets('Renders tabs and contents in Hindi when language is set to Hindi', (tester) async {
       await tester.pumpWidget(
-        const MaterialApp(
+        MaterialApp(
           home: Scaffold(
-            body: CardTimings(language: AppLanguage.hindi),
+            body: CardTimings(
+              language: AppLanguage.hindi,
+              currentTime: DateTime(2026, 9, 22, 12, 35),
+            ),
           ),
         ),
       );
@@ -109,9 +112,12 @@ void main() {
 
     testWidgets('Renders tabs and contents in Gujarati when language is set to Gujarati', (tester) async {
       await tester.pumpWidget(
-        const MaterialApp(
+        MaterialApp(
           home: Scaffold(
-            body: CardTimings(language: AppLanguage.gujarati),
+            body: CardTimings(
+              language: AppLanguage.gujarati,
+              currentTime: DateTime(2026, 9, 22, 12, 35),
+            ),
           ),
         ),
       );

@@ -1,0 +1,417 @@
+[
+    {
+        "id": 37,
+        "date": "2026-09-21T16:53:08",
+        "date_gmt": "2026-09-21T16:53:08",
+        "guid": {
+            "rendered": "http://localhost:8888/udaysutaria/tithinow.data/?post_type=festival&#038;p=37"
+        },
+        "modified": "2026-09-21T16:53:08",
+        "modified_gmt": "2026-09-21T16:53:08",
+        "slug": "krishna-janmashtami",
+        "status": "publish",
+        "type": "festival",
+        "link": "http://localhost:8888/udaysutaria/tithinow.data/festival/krishna-janmashtami/",
+        "title": {
+            "rendered": "Krishna Janmashtami"
+        },
+        "template": "",
+        "meta": {
+            "_acf_changed": false
+        },
+        "class_list": [
+            "post-37",
+            "festival",
+            "type-festival",
+            "status-publish",
+            "hentry"
+        ],
+        "acf": {
+            "festival_id": "krishna_janmashtami",
+            "category": "festival",
+            "importance_level": "major",
+            "is_fasting": true,
+            "festival_name_en": "Krishna Janmashtami",
+            "festival_name_hi": "\u0936\u094d\u0930\u0940\u0915\u0943\u0937\u094d\u0923 \u091c\u0928\u094d\u092e\u093e\u0937\u094d\u091f\u092e\u0940 ",
+            "festival_name_gu": "\u0ab6\u0acd\u0ab0\u0ac0\u0a95\u0ac3\u0ab7\u0acd\u0aa3 \u0a9c\u0aa8\u0acd\u0aae\u0abe\u0ab7\u0acd\u0a9f\u0aae\u0ac0",
+            "description_en": "",
+            "description_hi": "",
+            "description_gu": "",
+            "event_type": "lunar_tithi",
+            "day_selection_rule": "nishita",
+            "lunar_month": "bhadrapada",
+            "paksha": "krishna",
+            "tithi_number": 8,
+            "solar_month": "makara",
+            "nakshatra_constraint": "rohini",
+            "region_variant": "national",
+            "rule_version": 1
+        },
+        "_links": {
+            "self": [
+                {
+                    "href": "http://localhost:8888/udaysutaria/tithinow.data/wp-json/wp/v2/festivals/37",
+                    "targetHints": {
+                        "allow": [
+                            "GET"
+                        ]
+                    }
+                }
+            ],
+            "collection": [
+                {
+                    "href": "http://localhost:8888/udaysutaria/tithinow.data/wp-json/wp/v2/festivals"
+                }
+            ],
+            "about": [
+                {
+                    "href": "http://localhost:8888/udaysutaria/tithinow.data/wp-json/wp/v2/types/festival"
+                }
+            ],
+            "wp:attachment": [
+                {
+                    "href": "http://localhost:8888/udaysutaria/tithinow.data/wp-json/wp/v2/media?parent=37"
+                }
+            ],
+            "curies": [
+                {
+                    "name": "wp",
+                    "href": "https://api.w.org/{rel}",
+                    "templated": true
+                }
+            ]
+        }
+    },
+    {
+        "id": 36,
+        "date": "2026-09-21T16:51:30",
+        "date_gmt": "2026-09-21T16:51:30",
+        "guid": {
+            "rendered": "http://localhost:8888/udaysutaria/tithinow.data/?post_type=festival&#038;p=36"
+        },
+        "modified": "2026-09-21T16:51:30",
+        "modified_gmt": "2026-09-21T16:51:30",
+        "slug": "makar-sankranti",
+        "status": "publish",
+        "type": "festival",
+        "link": "http://localhost:8888/udaysutaria/tithinow.data/festival/makar-sankranti/",
+        "title": {
+            "rendered": "Makar Sankranti"
+        },
+        "template": "",
+        "meta": {
+            "_acf_changed": false
+        },
+        "class_list": [
+            "post-36",
+            "festival",
+            "type-festival",
+            "status-publish",
+            "hentry"
+        ],
+        "acf": {
+            "festival_id": "makar_sankranti",
+            "category": "festival",
+            "importance_level": "major",
+            "is_fasting": false,
+            "festival_name_en": "Makar Sankranti",
+            "festival_name_hi": "\u092e\u0915\u0930 \u0938\u0902\u0915\u094d\u0930\u093e\u0902\u0924\u093f",
+            "festival_name_gu": "\u0aae\u0a95\u0ab0 \u0ab8\u0a82\u0a95\u0acd\u0ab0\u0abe\u0a82\u0aa4\u0abf",
+            "description_en": "",
+            "description_hi": "",
+            "description_gu": "",
+            "event_type": "solar_sankranti",
+            "day_selection_rule": "punyakaal",
+            "lunar_month": "chaitra",
+            "paksha": "shukla",
+            "tithi_number": 1,
+            "solar_month": "makara",
+            "nakshatra_constraint": "none",
+            "region_variant": "national",
+            "rule_version": 1
+        },
+        "_links": {
+            "self": [
+                {
+                    "href": "http://localhost:8888/udaysutaria/tithinow.data/wp-json/wp/v2/festivals/36",
+                    "targetHints": {
+                        "allow": [
+                            "GET"
+                        ]
+                    }
+                }
+            ],
+            "collection": [
+                {
+                    "href": "http://localhost:8888/udaysutaria/tithinow.data/wp-json/wp/v2/festivals"
+                }
+            ],
+            "about": [
+                {
+                    "href": "http://localhost:8888/udaysutaria/tithinow.data/wp-json/wp/v2/types/festival"
+                }
+            ],
+            "wp:attachment": [
+                {
+                    "href": "http://localhost:8888/udaysutaria/tithinow.data/wp-json/wp/v2/media?parent=36"
+                }
+            ],
+            "curies": [
+                {
+                    "name": "wp",
+                    "href": "https://api.w.org/{rel}",
+                    "templated": true
+                }
+            ]
+        }
+    },
+    {
+        "id": 35,
+        "date": "2026-09-21T16:50:07",
+        "date_gmt": "2026-09-21T16:50:07",
+        "guid": {
+            "rendered": "http://localhost:8888/udaysutaria/tithinow.data/?post_type=festival&#038;p=35"
+        },
+        "modified": "2026-09-21T16:50:07",
+        "modified_gmt": "2026-09-21T16:50:07",
+        "slug": "nirjala-ekadashi",
+        "status": "publish",
+        "type": "festival",
+        "link": "http://localhost:8888/udaysutaria/tithinow.data/festival/nirjala-ekadashi/",
+        "title": {
+            "rendered": "Nirjala Ekadashi"
+        },
+        "template": "",
+        "meta": {
+            "_acf_changed": false
+        },
+        "class_list": [
+            "post-35",
+            "festival",
+            "type-festival",
+            "status-publish",
+            "hentry"
+        ],
+        "acf": {
+            "festival_id": "nirjala_ekadashi",
+            "category": "vrat",
+            "importance_level": "major",
+            "is_fasting": true,
+            "festival_name_en": "Nirjala Ekadashi",
+            "festival_name_hi": "\u0928\u093f\u0930\u094d\u091c\u0932\u093e \u090f\u0915\u093e\u0926\u0936\u0940",
+            "festival_name_gu": "\u0aa8\u0abf\u0ab0\u0acd\u0a9c\u0ab3\u0abe \u0a8f\u0a95\u0abe\u0aa6\u0ab6\u0ac0",
+            "description_en": "",
+            "description_hi": "",
+            "description_gu": "",
+            "event_type": "lunar_tithi",
+            "day_selection_rule": "udaya",
+            "lunar_month": "jyeshtha",
+            "paksha": "shukla",
+            "tithi_number": 11,
+            "solar_month": "makara",
+            "nakshatra_constraint": "none",
+            "region_variant": "national",
+            "rule_version": 1
+        },
+        "_links": {
+            "self": [
+                {
+                    "href": "http://localhost:8888/udaysutaria/tithinow.data/wp-json/wp/v2/festivals/35",
+                    "targetHints": {
+                        "allow": [
+                            "GET"
+                        ]
+                    }
+                }
+            ],
+            "collection": [
+                {
+                    "href": "http://localhost:8888/udaysutaria/tithinow.data/wp-json/wp/v2/festivals"
+                }
+            ],
+            "about": [
+                {
+                    "href": "http://localhost:8888/udaysutaria/tithinow.data/wp-json/wp/v2/types/festival"
+                }
+            ],
+            "wp:attachment": [
+                {
+                    "href": "http://localhost:8888/udaysutaria/tithinow.data/wp-json/wp/v2/media?parent=35"
+                }
+            ],
+            "curies": [
+                {
+                    "name": "wp",
+                    "href": "https://api.w.org/{rel}",
+                    "templated": true
+                }
+            ]
+        }
+    },
+    {
+        "id": 34,
+        "date": "2026-09-21T16:48:42",
+        "date_gmt": "2026-09-21T16:48:42",
+        "guid": {
+            "rendered": "http://localhost:8888/udaysutaria/tithinow.data/?post_type=festival&#038;p=34"
+        },
+        "modified": "2026-09-21T16:48:42",
+        "modified_gmt": "2026-09-21T16:48:42",
+        "slug": "holi",
+        "status": "publish",
+        "type": "festival",
+        "link": "http://localhost:8888/udaysutaria/tithinow.data/festival/holi/",
+        "title": {
+            "rendered": "Holi"
+        },
+        "template": "",
+        "meta": {
+            "_acf_changed": false
+        },
+        "class_list": [
+            "post-34",
+            "festival",
+            "type-festival",
+            "status-publish",
+            "hentry"
+        ],
+        "acf": {
+            "festival_id": "holi",
+            "category": "festival",
+            "importance_level": "major",
+            "is_fasting": false,
+            "festival_name_en": "Holika Dahan",
+            "festival_name_hi": "\u0939\u094b\u0932\u093f\u0915\u093e \u0926\u0939\u0928",
+            "festival_name_gu": "\u0ab9\u0acb\u0ab2\u0abf\u0a95\u0abe \u0aa6\u0ab9\u0aa8",
+            "description_en": "",
+            "description_hi": "",
+            "description_gu": "",
+            "event_type": "lunar_tithi",
+            "day_selection_rule": "pradosha",
+            "lunar_month": "phalguna",
+            "paksha": "shukla",
+            "tithi_number": 15,
+            "solar_month": "makara",
+            "nakshatra_constraint": "none",
+            "region_variant": "national",
+            "rule_version": 1
+        },
+        "_links": {
+            "self": [
+                {
+                    "href": "http://localhost:8888/udaysutaria/tithinow.data/wp-json/wp/v2/festivals/34",
+                    "targetHints": {
+                        "allow": [
+                            "GET"
+                        ]
+                    }
+                }
+            ],
+            "collection": [
+                {
+                    "href": "http://localhost:8888/udaysutaria/tithinow.data/wp-json/wp/v2/festivals"
+                }
+            ],
+            "about": [
+                {
+                    "href": "http://localhost:8888/udaysutaria/tithinow.data/wp-json/wp/v2/types/festival"
+                }
+            ],
+            "wp:attachment": [
+                {
+                    "href": "http://localhost:8888/udaysutaria/tithinow.data/wp-json/wp/v2/media?parent=34"
+                }
+            ],
+            "curies": [
+                {
+                    "name": "wp",
+                    "href": "https://api.w.org/{rel}",
+                    "templated": true
+                }
+            ]
+        }
+    },
+    {
+        "id": 33,
+        "date": "2026-09-21T16:46:14",
+        "date_gmt": "2026-09-21T16:46:14",
+        "guid": {
+            "rendered": "http://localhost:8888/udaysutaria/tithinow.data/?post_type=festival&#038;p=33"
+        },
+        "modified": "2026-09-22T08:32:17",
+        "modified_gmt": "2026-09-22T08:32:17",
+        "slug": "maha-shivaratri",
+        "status": "publish",
+        "type": "festival",
+        "link": "http://localhost:8888/udaysutaria/tithinow.data/festival/maha-shivaratri/",
+        "title": {
+            "rendered": "Maha Shivaratri"
+        },
+        "template": "",
+        "meta": {
+            "_acf_changed": false
+        },
+        "class_list": [
+            "post-33",
+            "festival",
+            "type-festival",
+            "status-publish",
+            "hentry"
+        ],
+        "acf": {
+            "festival_id": "maha_shivaratri",
+            "category": "both",
+            "importance_level": "major",
+            "is_fasting": true,
+            "festival_name_en": "Maha Shivaratri",
+            "festival_name_hi": "\u092e\u0939\u093e\u0936\u093f\u0935\u0930\u093e\u0924\u094d\u0930\u093f",
+            "festival_name_gu": "\u0aae\u0ab9\u0abe\u0ab6\u0abf\u0ab5\u0ab0\u0abe\u0aa4\u0acd\u0ab0\u0ac0",
+            "description_en": "",
+            "description_hi": "",
+            "description_gu": "",
+            "event_type": "lunar_tithi",
+            "day_selection_rule": "nishita",
+            "lunar_month": "magha",
+            "paksha": "krishna",
+            "tithi_number": 14,
+            "solar_month": "makara",
+            "nakshatra_constraint": "none",
+            "region_variant": "national",
+            "rule_version": 1
+        },
+        "_links": {
+            "self": [
+                {
+                    "href": "http://localhost:8888/udaysutaria/tithinow.data/wp-json/wp/v2/festivals/33",
+                    "targetHints": {
+                        "allow": [
+                            "GET"
+                        ]
+                    }
+                }
+            ],
+            "collection": [
+                {
+                    "href": "http://localhost:8888/udaysutaria/tithinow.data/wp-json/wp/v2/festivals"
+                }
+            ],
+            "about": [
+                {
+                    "href": "http://localhost:8888/udaysutaria/tithinow.data/wp-json/wp/v2/types/festival"
+                }
+            ],
+            "wp:attachment": [
+                {
+                    "href": "http://localhost:8888/udaysutaria/tithinow.data/wp-json/wp/v2/media?parent=33"
+                }
+            ],
+            "curies": [
+                {
+                    "name": "wp",
+                    "href": "https://api.w.org/{rel}",
+                    "templated": true
+                }
+            ]
+        }
+    }
+]

@@ -254,5 +254,66 @@ void main() {
       expect(find.text('प्रदोष व्रत'), findsOneWidget);
       expect(find.text('गणेश विसर्जन'), findsOneWidget);
     });
+
+    testWidgets('Swiping to Slide 3 renders Yoga, Karana, Rashi and Sun Sign', (tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: Center(
+              child: SizedBox(
+                width: 380,
+                child: CardPanchang(
+                  mode: PanchangLayoutMode.mobileSlider,
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Swipe to Slide 2
+      await tester.fling(find.byType(PageView), const Offset(-300, 0), 1000);
+      await tester.pumpAndSettle();
+
+      // Swipe to Slide 3
+      await tester.fling(find.byType(PageView), const Offset(-300, 0), 1000);
+      await tester.pumpAndSettle();
+
+      // Verify Slide 3 items
+      expect(find.text('Yoga'), findsOneWidget);
+      expect(find.text('Vishkambha'), findsOneWidget);
+      expect(find.text('Karana'), findsOneWidget);
+      expect(find.text('Bava'), findsOneWidget);
+      expect(find.text('Rashi'), findsOneWidget);
+      expect(find.text('Sun Sign'), findsOneWidget);
+    });
+
+    testWidgets('Renders Slide 3 items in Hindi and Gujarati', (tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: CardPanchang(
+              mode: PanchangLayoutMode.desktopGrid4x2,
+              language: AppLanguage.hindi,
+              yogaEnum: Yoga.ayushman,
+              karanaEnum: Karana.vishti,
+              rashiEnum: Rashi.makara,
+              suryaRashiEnum: Rashi.kanya,
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('योग'), findsOneWidget);
+      expect(find.text('आयुष्मान्'), findsOneWidget);
+      expect(find.text('करण'), findsOneWidget);
+      expect(find.text('विष्टि (भद्रा)'), findsOneWidget);
+      expect(find.text('राशि'), findsOneWidget);
+      expect(find.text('मकर'), findsOneWidget);
+      expect(find.text('सूर्य राशि'), findsOneWidget);
+      expect(find.text('कन्या'), findsOneWidget);
+    });
   });
 }

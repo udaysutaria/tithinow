@@ -165,19 +165,19 @@ void main() {
       await tester.ensureVisible(alarmButtons.at(0));
       await tester.pumpAndSettle();
 
-      // Default active alarms has index 4 active (first ButtonAlarm)
+      // Default active alarms has all alarms inactive
       final ButtonAlarm firstAlarm = tester.widget(alarmButtons.at(0));
-      expect(firstAlarm.isActive, isTrue);
+      expect(firstAlarm.isActive, isFalse);
 
-      // Toggle index 4 from active to inactive
+      // Toggle index 4 from inactive to active
       await tester.tap(alarmButtons.at(0));
       await tester.pumpAndSettle();
 
       expect(tappedIndex, 4);
-      expect(tappedIsActive, isFalse);
+      expect(tappedIsActive, isTrue);
 
       final ButtonAlarm firstAlarmAfter = tester.widget(alarmButtons.at(0));
-      expect(firstAlarmAfter.isActive, isFalse);
+      expect(firstAlarmAfter.isActive, isTrue);
 
       // Scroll to make sure item 5 is visible
       await tester.ensureVisible(alarmButtons.at(1));

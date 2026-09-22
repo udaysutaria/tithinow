@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tithinow/database/app_database.dart';
+import 'package:tithinow/models/city.dart';
+import 'package:tithinow/services/sweph_service.dart';
 import 'package:tithinow/theme/design_system.dart';
 import 'package:tithinow/widgets/widgets.dart';
 
@@ -246,6 +248,78 @@ void main() {
       expect(find.text('Thu, 24 Sep 2026'), findsOneWidget);
       expect(find.text('Trayodashi'), findsOneWidget);
       expect(find.text('Shukla Paksha'), findsOneWidget);
+    });
+
+    testWidgets('formats English date from dateTime (does not stay on hardcoded default)', (tester) async {
+      await tester.pumpWidget(
+        buildTestableWidget(
+          CardTithi(
+            dateTime: DateTime(2026, 9, 22),
+            tithiEnum: Tithi.navami,
+            pakshaEnum: Paksha.shukla,
+            language: AppLanguage.english,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Tue, 22 Sep 2026'), findsOneWidget);
+      expect(find.text('Navami'), findsOneWidget);
+      expect(find.text('Shukla Paksha'), findsOneWidget);
+    });
+
+    testWidgets('CardTithi.fromCalculationResult localizes date properly across English, Hindi, Gujarati', (tester) async {
+      final result = PanchangCalculationResult(
+        date: DateTime(2026, 9, 22),
+        city: City.mumbai,
+        sunrise: DateTime(2026, 9, 22, 6, 27),
+        sunset: DateTime(2026, 9, 22, 18, 33),
+        tithi: Tithi.navami,
+        paksha: Paksha.shukla,
+        tithiNumber: 9,
+        hinduMonth: HinduMonth.ashwin,
+        nakshatra: Nakshatra.purvaAshadha,
+        yoga: Yoga.shobhana,
+        karana: Karana.kaulava,
+        rashi: Rashi.dhanu,
+        suryaRashi: Rashi.kanya,
+      );
+
+      // English
+      await tester.pumpWidget(
+        buildTestableWidget(
+          CardTithi.fromCalculationResult(
+            result,
+            language: AppLanguage.english,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Tue, 22 Sep 2026'), findsOneWidget);
+
+      // Hindi
+      await tester.pumpWidget(
+        buildTestableWidget(
+          CardTithi.fromCalculationResult(
+            result,
+            language: AppLanguage.hindi,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('मंगलवार, 22 सितंबर 2026'), findsOneWidget);
+
+      // Gujarati
+      await tester.pumpWidget(
+        buildTestableWidget(
+          CardTithi.fromCalculationResult(
+            result,
+            language: AppLanguage.gujarati,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('મંગળવાર, 22 સપ્ટેમ્બર 2026'), findsOneWidget);
     });
   });
 }

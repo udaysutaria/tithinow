@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../constants/panchang_terms.dart';
 import '../database/app_database.dart';
+import '../models/city.dart';
+import '../services/sweph_service.dart';
 import '../theme/design_system.dart';
 import '../widgets/widgets.dart';
 import 'app_navigator.dart';
@@ -9,10 +11,14 @@ import 'view_tithi_detail.dart';
 /// Tithi View displaying calendar month pagination and multi-year Tithi list.
 class TithiView extends StatefulWidget {
   final AppLanguage? initialLanguage;
+  final DateTime? startDate;
+  final DateTime? endDate;
 
   const TithiView({
     super.key,
     this.initialLanguage,
+    this.startDate,
+    this.endDate,
   });
 
   @override
@@ -28,9 +34,6 @@ class _TithiViewState extends State<TithiView> {
   static const double _itemHeight = 154.0;
   static const double _itemSpacing = AppSpacing.spacing12; // 12.0
   static const double _itemTotalHeight = _itemHeight + _itemSpacing; // 166.0
-
-  static final DateTime _startDate = DateTime(2026, 1, 1);
-  static final DateTime _endDate = DateTime(2028, 12, 31);
 
   static const List<String> _weekdays = [
     'Mon',
@@ -57,31 +60,40 @@ class _TithiViewState extends State<TithiView> {
     'Dec',
   ];
 
-  static List<DateTime>? _cachedDates;
-  static List<TithiData>? _cachedTithiDataList;
-  static DateTime? _cachedToday;
-  static int? _cachedTodayIndex;
-
   late final List<DateTime> _dates;
-  late final List<TithiData> _tithiDataList;
+  late List<TithiData> _tithiDataList;
   late final int _todayIndex;
   late final DateTime _today;
 
   late ScrollController _scrollController;
   late DateTime _visibleMonth;
   late AppLanguage _language;
+  bool _isTodayInViewport = true;
 
   @override
   void initState() {
     super.initState();
     _language = widget.initialLanguage ?? AppDatabase.instance.languageNotifier.value;
     AppDatabase.instance.languageNotifier.addListener(_onLanguageChanged);
+    AppDatabase.instance.cityNotifier.addListener(_onCityChanged);
+    AppDatabase.instance.lunarSystemNotifier.addListener(_onLunarSystemChanged);
     _loadLanguage();
     _initDatesAndTithis();
     _scrollController = ScrollController(
       initialScrollOffset: _todayIndex * _itemTotalHeight,
     );
     _scrollController.addListener(_onScroll);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && _scrollController.hasClients) {
+        final inViewport = _checkIsTodayInViewport();
+        if (inViewport != _isTodayInViewport) {
+          setState(() {
+            _isTodayInViewport = inViewport;
+          });
+        }
+      }
+    });
+    _loadRealPanchangData();
   }
 
   void _onLanguageChanged() {
@@ -90,6 +102,14 @@ class _TithiViewState extends State<TithiView> {
         _language = AppDatabase.instance.languageNotifier.value;
       });
     }
+  }
+
+  void _onCityChanged() {
+    _loadRealPanchangData();
+  }
+
+  void _onLunarSystemChanged() {
+    _loadRealPanchangData();
   }
 
   Future<void> _loadLanguage() async {
@@ -107,34 +127,37 @@ class _TithiViewState extends State<TithiView> {
   @override
   void dispose() {
     AppDatabase.instance.languageNotifier.removeListener(_onLanguageChanged);
+    AppDatabase.instance.cityNotifier.removeListener(_onCityChanged);
+    AppDatabase.instance.lunarSystemNotifier.removeListener(_onLunarSystemChanged);
     _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
     super.dispose();
   }
+
+  DateTime get _effectiveStartDate =>
+      widget.startDate ??
+      DateTime(DateTime.now().year > 2026 ? DateTime.now().year - 1 : 2026, 1, 1);
+
+  DateTime get _effectiveEndDate =>
+      widget.endDate ??
+      DateTime(DateTime.now().year > 2026 ? DateTime.now().year + 2 : 2028, 12, 31);
 
   void _initDatesAndTithis() {
     final now = DateTime.now();
     _today = DateTime(now.year, now.month, now.day);
     _visibleMonth = DateTime(_today.year, _today.month);
 
-    if (_cachedToday == _today &&
-        _cachedDates != null &&
-        _cachedTithiDataList != null &&
-        _cachedTodayIndex != null) {
-      _dates = _cachedDates!;
-      _tithiDataList = _cachedTithiDataList!;
-      _todayIndex = _cachedTodayIndex!;
-      return;
-    }
+    final startDate = _effectiveStartDate;
+    final endDate = _effectiveEndDate;
 
-    final totalDays = _endDate.difference(_startDate).inDays + 1; // 1096 days
-    final rawTodayIndex = _today.difference(_startDate).inDays;
+    final totalDays = endDate.difference(startDate).inDays + 1;
+    final rawTodayIndex = _today.difference(startDate).inDays;
     _todayIndex = rawTodayIndex.clamp(0, totalDays - 1);
 
     final demoItems = ListTithis.defaultDemoData;
     _dates = List<DateTime>.generate(
       totalDays,
-      (i) => DateTime(2026, 1, 1 + i),
+      (i) => DateTime(startDate.year, startDate.month, startDate.day + i),
     );
 
     _tithiDataList = List<TithiData>.generate(totalDays, (i) {
@@ -164,14 +187,64 @@ class _TithiViewState extends State<TithiView> {
         lunarDay: demo.lunarDay,
         moonPhaseAsset: demo.moonPhaseAsset,
         state: state,
-        isAlarmActive: state == ItemTemporalState.future ? demo.isAlarmActive : false,
+        isAlarmActive: false,
       );
     });
+  }
 
-    _cachedDates = _dates;
-    _cachedTithiDataList = _tithiDataList;
-    _cachedToday = _today;
-    _cachedTodayIndex = _todayIndex;
+  Future<void> _loadRealPanchangData() async {
+    try {
+      final city = await AppDatabase.instance.getSavedCity() ?? City.mumbai;
+      final lunarSystem = await AppDatabase.instance.getSavedLunarSystem();
+      final festivalRules = await AppDatabase.instance.getAllFestivalRules();
+      final realData = await SwephService.instance.calculateCalendarRange(
+        dates: _dates,
+        city: city,
+        today: _today,
+        lunarSystem: lunarSystem,
+        festivalRules: festivalRules,
+      );
+      if (mounted) {
+        final userAlarmStates = <DateTime, bool>{
+          for (final item in _tithiDataList)
+            if (item.dateTime != null) item.dateTime!: item.isAlarmActive,
+        };
+        setState(() {
+          _tithiDataList = realData.map((d) {
+            if (d.dateTime != null && userAlarmStates.containsKey(d.dateTime!)) {
+              return TithiData(
+                date: d.date,
+                dateTime: d.dateTime,
+                tithi: d.tithi,
+                paksha: d.paksha,
+                vrat: d.vrat,
+                festival: d.festival,
+                lunarDay: d.lunarDay,
+                moonPhaseAsset: d.moonPhaseAsset,
+                state: d.state,
+                isAlarmActive: userAlarmStates[d.dateTime!] ?? d.isAlarmActive,
+              );
+            }
+            return d;
+          }).toList();
+        });
+      }
+    } catch (_) {}
+  }
+
+  bool _checkIsTodayInViewport() {
+    if (!_scrollController.hasClients) return true;
+    final position = _scrollController.position;
+    if (!position.hasViewportDimension) return true;
+
+    final viewportTop = _scrollController.offset;
+    final viewportBottom = viewportTop + position.viewportDimension;
+
+    const topPadding = AppSpacing.spacing8;
+    final todayCardTop = topPadding + _todayIndex * _itemTotalHeight;
+    final todayCardBottom = todayCardTop + _itemHeight;
+
+    return todayCardBottom > viewportTop && todayCardTop < viewportBottom;
   }
 
   void _onScroll() {
@@ -179,9 +252,15 @@ class _TithiViewState extends State<TithiView> {
     final offset = _scrollController.offset;
     final index = (offset / _itemTotalHeight).floor().clamp(0, _dates.length - 1);
     final visibleDate = _dates[index];
-    if (_visibleMonth.year != visibleDate.year || _visibleMonth.month != visibleDate.month) {
+    final newMonth = DateTime(visibleDate.year, visibleDate.month);
+    final inViewport = _checkIsTodayInViewport();
+
+    if (_visibleMonth.year != newMonth.year ||
+        _visibleMonth.month != newMonth.month ||
+        _isTodayInViewport != inViewport) {
       setState(() {
-        _visibleMonth = DateTime(visibleDate.year, visibleDate.month);
+        _visibleMonth = newMonth;
+        _isTodayInViewport = inViewport;
       });
     }
   }
@@ -204,6 +283,26 @@ class _TithiViewState extends State<TithiView> {
     navigateToDestination(context, index, currentIndex: 1);
   }
 
+  void _handleAlarmTap(int index, bool isActive) {
+    if (index >= 0 && index < _tithiDataList.length) {
+      final old = _tithiDataList[index];
+      setState(() {
+        _tithiDataList[index] = TithiData(
+          date: old.date,
+          dateTime: old.dateTime,
+          tithi: old.tithi,
+          paksha: old.paksha,
+          vrat: old.vrat,
+          festival: old.festival,
+          lunarDay: old.lunarDay,
+          moonPhaseAsset: old.moonPhaseAsset,
+          state: old.state,
+          isAlarmActive: isActive,
+        );
+      });
+    }
+  }
+
   void _handleItemTap(int index) {
     final item = (index >= 0 && index < _tithiDataList.length)
         ? _tithiDataList[index]
@@ -215,20 +314,7 @@ class _TithiViewState extends State<TithiView> {
           initialLanguage: _language,
           onAlarmChanged: (isActive) {
             if (item != null) {
-              setState(() {
-                _tithiDataList[index] = TithiData(
-                  date: item.date,
-                  dateTime: item.dateTime,
-                  tithi: item.tithi,
-                  paksha: item.paksha,
-                  vrat: item.vrat,
-                  festival: item.festival,
-                  lunarDay: item.lunarDay,
-                  moonPhaseAsset: item.moonPhaseAsset,
-                  state: item.state,
-                  isAlarmActive: isActive,
-                );
-              });
+              _handleAlarmTap(index, isActive);
             }
           },
         ),
@@ -275,7 +361,7 @@ class _TithiViewState extends State<TithiView> {
                             date: _visibleMonth,
                             language: _language,
                             showNavigationButtons: false,
-                            isTodaySelected: _isCurrentMonth,
+                            isTodaySelected: !_isTodayInViewport,
                             onTodayTap: _scrollToToday,
                             padding: const EdgeInsets.symmetric(
                               horizontal: AppSpacing.spacing24,
@@ -295,6 +381,7 @@ class _TithiViewState extends State<TithiView> {
                               ),
                               itemExtent: _itemTotalHeight,
                               onItemTap: _handleItemTap,
+                              onAlarmTap: _handleAlarmTap,
                             ),
                           ),
                         ],
@@ -333,7 +420,7 @@ class _TithiViewState extends State<TithiView> {
               date: _visibleMonth,
               language: _language,
               showNavigationButtons: false,
-              isTodaySelected: _isCurrentMonth,
+              isTodaySelected: !_isTodayInViewport,
               onTodayTap: _scrollToToday,
               padding: const EdgeInsets.symmetric(
                 horizontal: AppSpacing.spacing16,
@@ -353,6 +440,7 @@ class _TithiViewState extends State<TithiView> {
                 ),
                 itemExtent: _itemTotalHeight,
                 onItemTap: _handleItemTap,
+                onAlarmTap: _handleAlarmTap,
               ),
             ),
             NavBottom(
