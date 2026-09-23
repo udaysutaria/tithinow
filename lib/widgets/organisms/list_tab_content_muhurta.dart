@@ -8,8 +8,9 @@ import '../molecules/list_item_tab_content.dart';
 /// Organism widget displaying the "Muhurta" tab content.
 ///
 /// Features:
-/// - Displays a list of all 17 [Muhurta] timing periods and yogas defined in
-///   [panchang_terms.dart] using [ListItemTabContent].
+/// - Displays a list of all [Muhurta] timing periods and yogas defined in
+///   [panchang_terms.dart] using [ListItemTabContent]. On weekdays where Dur Muhurtam
+///   occurs twice (Mon, Tue, Thu, Fri, Sat), 18 intervals are rendered (2 separate items for Dur Muhurtam).
 /// - Auspicious ([PeriodNature.good] -> [AppColors.indicatorGood]) and inauspicious
 ///   ([PeriodNature.bad] -> [AppColors.indicatorBad]) indicator dots.
 /// - Full multilingual support (English, Hindi, Gujarati) for titles and labels.
@@ -201,26 +202,18 @@ class _ListTabContentMuhurtaState extends State<ListTabContentMuhurta> {
         effectiveDate.day == now.day;
 
     if (isToday) {
-      // Check if now falls into any interval
-      final hasMatching = intervals.any(
-        (i) => (now.isAfter(i.startTime) || now.isAtSameMomentAs(i.startTime)) &&
-            now.isBefore(i.endTime),
-      );
-      if (hasMatching) {
-        return now;
-      }
+      return now;
     }
 
-    // Demo fallback reference time: 12:35 PM on effective date (midday)
-    // On dates like Sunday, this yields exactly 2 active CurrentItems
-    // (Abhijit Muhurta & Yamaganda) alongside past and future items.
-    return DateTime(
-      effectiveDate.year,
-      effectiveDate.month,
-      effectiveDate.day,
-      12,
-      35,
-    );
+    final today = DateTime(now.year, now.month, now.day);
+    final target = DateTime(effectiveDate.year, effectiveDate.month, effectiveDate.day);
+    if (target.isBefore(today)) {
+      // Past date: reference time after all intervals (including next morning end) have finished
+      return DateTime(effectiveDate.year, effectiveDate.month, effectiveDate.day + 1, 12, 0, 0);
+    }
+
+    // Future date: reference time before any interval starts
+    return DateTime(effectiveDate.year, effectiveDate.month, effectiveDate.day, 0, 0, 0);
   }
 
   void _handleCountdownEnded(int index, Muhurta muhurta) {

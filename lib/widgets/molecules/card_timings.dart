@@ -200,7 +200,7 @@ class _CardTimingsState extends State<CardTimings> {
     if (widget.currentTime != null) return widget.currentTime;
     if (widget.date == null || _isToday) return null;
     if (_isPast) {
-      return DateTime(widget.date!.year, widget.date!.month, widget.date!.day, 23, 59, 59);
+      return DateTime(widget.date!.year, widget.date!.month, widget.date!.day + 1, 12, 0, 0);
     }
     if (_isFuture) {
       return DateTime(widget.date!.year, widget.date!.month, widget.date!.day, 0, 0, 0);

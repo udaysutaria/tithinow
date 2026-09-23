@@ -24,11 +24,27 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Run tests
-        run: flutter test
-
       - name: Enable Windows desktop
         run: flutter config --enable-windows-desktop
+
+      - name: Prepare native test binaries
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path "native"
+          if (-not (Test-Path "native/sweph.dll")) {
+            $swephPkg = Get-ChildItem -Path "$env:PUB_CACHE/hosted/pub.dev" -Directory -Filter "sweph*" | Select-Object -First 1
+            if ($swephPkg -and (Test-Path "$($swephPkg.FullName)/example.dart/sweph.dll")) {
+              Copy-Item "$($swephPkg.FullName)/example.dart/sweph.dll" -Destination "native/sweph.dll"
+              Write-Host "Copied sweph.dll to native/sweph.dll from pub cache"
+            }
+          }
+          if (Test-Path "native/sweph.dll") {
+            Write-Host "native/sweph.dll is present and ready for tests."
+            echo "SWEPH_DYLIB_PATH=$((Get-Item "native/sweph.dll").FullName)" >> $env:GITHUB_ENV
+          }
+
+      - name: Run tests
+        run: flutter test
 
       - name: Build Windows release
         run: flutter build windows --release

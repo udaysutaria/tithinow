@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:tithinow/constants/muhurta_data.dart';
 import 'package:tithinow/constants/panchang_terms.dart';
 import 'package:tithinow/database/app_database.dart';
 import 'package:tithinow/theme/design_system.dart';
@@ -37,6 +38,7 @@ void main() {
           home: Scaffold(
             body: ListTabContentMuhurta(
               date: DateTime(2026, 9, 6), // Sunday
+              currentTime: DateTime(2026, 9, 6, 12, 35),
             ),
           ),
         ),
@@ -147,6 +149,7 @@ void main() {
           home: Scaffold(
             body: ListTabContentMuhurta(
               date: DateTime(2026, 9, 6),
+              currentTime: DateTime(2026, 9, 6, 12, 35),
               onAlarmTap: (index, muhurta, isActive) {
                 tappedIndex = index;
                 tappedMuhurta = muhurta;
@@ -186,6 +189,7 @@ void main() {
           home: Scaffold(
             body: ListTabContentMuhurta(
               date: DateTime(2026, 9, 6),
+              currentTime: DateTime(2026, 9, 6, 12, 35),
             ),
           ),
         ),
@@ -358,6 +362,129 @@ void main() {
       // Reset
       AppDatabase.instance.languageNotifier.value = AppLanguage.english;
       await tester.pumpAndSettle();
+    });
+
+    testWidgets('At 10:36 PM, daytime items are past and no past items are falsely active', (tester) async {
+      final eveningTime = DateTime(2026, 9, 23, 22, 36);
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: ListTabContentMuhurta(
+              date: DateTime(2026, 9, 23),
+              currentTime: eveningTime,
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final itemFinders = find.byType(ListItemTabContent);
+      int pastCount = 0;
+      int currentCount = 0;
+      int futureCount = 0;
+
+      for (int i = 0; i < itemFinders.evaluate().length; i++) {
+        final ListItemTabContent item = tester.widget(itemFinders.at(i));
+        if (item.state == ItemTemporalState.past) pastCount++;
+        if (item.state == ItemTemporalState.current) currentCount++;
+        if (item.state == ItemTemporalState.future) futureCount++;
+
+        // Verify midday items are strictly past
+        if (item.title == 'Abhijit Muhurta' || item.title == 'Yamaganda') {
+          expect(item.state, ItemTemporalState.past);
+        }
+        // Nishita Muhurta starting at ~23:42 is future
+        if (item.title == 'Nishita Muhurta') {
+          expect(item.state, ItemTemporalState.future);
+        }
+      }
+
+      // At 10:36 PM on Wednesday: 0 active items, 16 past items, 1 future item (Nishita)
+      expect(currentCount, 0);
+      expect(pastCount, 16);
+      expect(futureCount, 1);
+    });
+
+    testWidgets('Renders 18 items with 2 separate Dur Muhurtam list items on Monday', (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: ListTabContentMuhurta(
+              date: DateTime(2026, 9, 7), // Monday
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final itemFinders = find.byType(ListItemTabContent);
+      expect(itemFinders, findsNWidgets(18));
+
+      // Exactly 2 items have title 'Dur Muhurtam'
+      final durMuhurtaWidgets = <ListItemTabContent>[];
+      for (int i = 0; i < 18; i++) {
+        final ListItemTabContent item = tester.widget(itemFinders.at(i));
+        if (item.title == 'Dur Muhurtam') {
+          durMuhurtaWidgets.add(item);
+        }
+      }
+
+      expect(durMuhurtaWidgets.length, 2);
+      expect(durMuhurtaWidgets[0].timeRange, '12:54 pm - 01:42 pm');
+      expect(durMuhurtaWidgets[1].timeRange, '03:19 pm - 04:07 pm');
+      expect(durMuhurtaWidgets[0].indicatorColor, AppColors.indicatorBad);
+      expect(durMuhurtaWidgets[1].indicatorColor, AppColors.indicatorBad);
+    });
+
+    testWidgets('Renders 18 items with 2 separate Dur Muhurtam list items on Tuesday (daytime and night)', (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: ListTabContentMuhurta(
+              date: DateTime(2026, 9, 8), // Tuesday
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final itemFinders = find.byType(ListItemTabContent);
+      expect(itemFinders, findsNWidgets(18));
+
+      final durMuhurtaWidgets = <ListItemTabContent>[];
+      for (int i = 0; i < 18; i++) {
+        final ListItemTabContent item = tester.widget(itemFinders.at(i));
+        if (item.title == 'Dur Muhurtam') {
+          durMuhurtaWidgets.add(item);
+        }
+      }
+
+      expect(durMuhurtaWidgets.length, 2);
+      expect(durMuhurtaWidgets[0].timeRange, '08:52 am - 09:40 am');
+      expect(durMuhurtaWidgets[1].timeRange, '10:31 pm - 11:18 pm');
+    });
+
+    test('MuhurtaData interval counts across all weekdays', () {
+      final sunday = MuhurtaData.generateIntervals(date: DateTime(2026, 9, 6));
+      expect(sunday.length, 17);
+
+      final monday = MuhurtaData.generateIntervals(date: DateTime(2026, 9, 7));
+      expect(monday.length, 18);
+
+      final tuesday = MuhurtaData.generateIntervals(date: DateTime(2026, 9, 8));
+      expect(tuesday.length, 18);
+
+      final wednesday = MuhurtaData.generateIntervals(date: DateTime(2026, 9, 9));
+      expect(wednesday.length, 17);
+
+      final thursday = MuhurtaData.generateIntervals(date: DateTime(2026, 9, 10));
+      expect(thursday.length, 18);
+
+      final friday = MuhurtaData.generateIntervals(date: DateTime(2026, 9, 11));
+      expect(friday.length, 18);
+
+      final saturday = MuhurtaData.generateIntervals(date: DateTime(2026, 9, 12));
+      expect(saturday.length, 18);
     });
   });
 }

@@ -52,10 +52,13 @@ class MuhurtaData {
     return '${formatTime(start)} - ${formatTime(end)}';
   }
 
-  /// Generates the full list of 17 Muhurta intervals for a given [date].
+  /// Generates the full list of Muhurta intervals for a given [date].
   ///
-  /// Each of the 17 [Muhurta] enum values in [panchang_terms.dart] is calculated
+  /// Each of the [Muhurta] enum values in [panchang_terms.dart] is calculated
   /// based on the date's [Weekday], [sunrise], and [sunset].
+  /// On days where Dur Muhurtam occurs twice (Monday, Tuesday, Thursday, Friday, Saturday),
+  /// 18 intervals are generated (with 2 separate list items for Dur Muhurtam).
+  /// On Sunday and Wednesday, 17 intervals are generated.
   ///
   /// If [sortByTime] is true (default), intervals are ordered chronologically by [MuhurtaInterval.startTime].
   static List<MuhurtaInterval> generateIntervals({
@@ -131,15 +134,73 @@ class MuhurtaData {
       Weekday.saturday => 0, // 1st part (~06:00 am - 07:30 am)
     };
 
-    // Dur Muhurtam daytime muhurta index (0-based out of 15) per weekday
-    final durMuhurtaIndex = switch (weekday) {
-      Weekday.sunday => 13, // 14th muhurta (~04:56 pm - 05:45 pm)
-      Weekday.monday => 8, // 9th muhurta (~12:54 pm - 01:42 pm)
-      Weekday.tuesday => 3, // 4th muhurta (~08:52 am - 09:41 am)
-      Weekday.wednesday => 4, // 5th muhurta (~09:41 am - 10:29 am)
-      Weekday.thursday => 5, // 6th muhurta (~10:29 am - 11:17 am)
-      Weekday.friday => 8, // 9th muhurta (~12:54 pm - 01:42 pm)
-      Weekday.saturday => 1, // 2nd muhurta (~07:15 am - 08:04 am)
+    // Dur Muhurtam intervals per weekday:
+    // In Vedic astrology, Dur Muhurtam occurs twice on Monday, Tuesday, Thursday,
+    // Friday, and Saturday; and once on Sunday and Wednesday.
+    // Each occurrence is represented as a separate interval.
+    final List<({DateTime start, DateTime end})> durMuhurtaSlots = switch (weekday) {
+      Weekday.sunday => [
+        (
+          start: sunriseTime.add(dayMuhurta * 13),
+          end: sunriseTime.add(dayMuhurta * 14),
+        ),
+      ],
+      Weekday.monday => [
+        (
+          start: sunriseTime.add(dayMuhurta * 8),
+          end: sunriseTime.add(dayMuhurta * 9),
+        ),
+        (
+          start: sunriseTime.add(dayMuhurta * 11),
+          end: sunriseTime.add(dayMuhurta * 12),
+        ),
+      ],
+      Weekday.tuesday => [
+        (
+          start: sunriseTime.add(dayMuhurta * 3),
+          end: sunriseTime.add(dayMuhurta * 4),
+        ),
+        (
+          start: sunsetTime.add(nightMuhurta * 5),
+          end: sunsetTime.add(nightMuhurta * 6),
+        ),
+      ],
+      Weekday.wednesday => [
+        (
+          start: sunriseTime.add(dayMuhurta * 4),
+          end: sunriseTime.add(dayMuhurta * 5),
+        ),
+      ],
+      Weekday.thursday => [
+        (
+          start: sunriseTime.add(dayMuhurta * 5),
+          end: sunriseTime.add(dayMuhurta * 6),
+        ),
+        (
+          start: sunriseTime.add(dayMuhurta * 10),
+          end: sunriseTime.add(dayMuhurta * 11),
+        ),
+      ],
+      Weekday.friday => [
+        (
+          start: sunriseTime.add(dayMuhurta * 3),
+          end: sunriseTime.add(dayMuhurta * 4),
+        ),
+        (
+          start: sunriseTime.add(dayMuhurta * 8),
+          end: sunriseTime.add(dayMuhurta * 9),
+        ),
+      ],
+      Weekday.saturday => [
+        (
+          start: sunriseTime.add(dayMuhurta * 0),
+          end: sunriseTime.add(dayMuhurta * 1),
+        ),
+        (
+          start: sunriseTime.add(dayMuhurta * 1),
+          end: sunriseTime.add(dayMuhurta * 2),
+        ),
+      ],
     };
 
     // -------------------------------------------------------------------------
@@ -265,12 +326,14 @@ class MuhurtaData {
       sunsetTime,
     );
 
-    // 16. Dur Muhurtam: weekday-dependent inauspicious daytime muhurta
-    addInterval(
-      Muhurta.durMuhurtam,
-      sunriseTime.add(dayMuhurta * durMuhurtaIndex),
-      sunriseTime.add(dayMuhurta * (durMuhurtaIndex + 1)),
-    );
+    // 16. Dur Muhurtam: weekday-dependent inauspicious intervals (1 or 2 per day)
+    for (final slot in durMuhurtaSlots) {
+      addInterval(
+        Muhurta.durMuhurtam,
+        slot.start,
+        slot.end,
+      );
+    }
 
     // 17. Varjyam: inauspicious morning tyajya (1.5h)
     final varjyamStart = sunriseTime.add(dayMuhurta * 2);
