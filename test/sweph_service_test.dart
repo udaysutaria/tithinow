@@ -324,4 +324,199 @@ void main() {
     expect(krishnaPurnimanta.purnimantaMonth, HinduMonth.ashwin);
     expect(krishnaPurnimanta.hinduMonth, HinduMonth.ashwin);
   });
+
+  test('Maha Shivaratri 2027 resolves to 6 March 2027 and not 4 Feb 2027', () async {
+    final service = SwephService.instance;
+    const shivaratriRule = FestivalRule(
+      id: 33,
+      festivalId: 'maha_shivaratri',
+      category: 'both',
+      isFasting: true,
+      nameEn: 'Maha Shivaratri',
+      eventType: 'lunar_tithi',
+      daySelectionRule: 'nishita',
+      lunarMonth: 'magha',
+      paksha: 'krishna',
+      tithiNumber: 14,
+    );
+
+    // Test under both Purnimanta and Amanta systems
+    for (final system in ['purnimanta', 'amanta']) {
+      // 4 Feb 2027 is Masik Shivaratri (Pausha Amanta / Magha Purnimanta), NOT Maha Shivaratri
+      final feb4 = service.calculateCalendarDay(
+        date: DateTime(2027, 2, 4),
+        city: City.mumbai,
+        today: DateTime(2027, 2, 1),
+        lunarSystem: system,
+        festivalRules: [shivaratriRule],
+      );
+      expect(feb4.festival, isNot('Maha Shivaratri'),
+          reason: 'Feb 4, 2027 should NOT match Maha Shivaratri in $system mode');
+
+      // 6 March 2027 is true Maha Shivaratri (Magha Amanta / Phalguna Purnimanta)
+      final mar6 = service.calculateCalendarDay(
+        date: DateTime(2027, 3, 6),
+        city: City.mumbai,
+        today: DateTime(2027, 3, 1),
+        lunarSystem: system,
+        festivalRules: [shivaratriRule],
+      );
+      expect(mar6.festival, 'Maha Shivaratri',
+          reason: 'March 6, 2027 MUST match Maha Shivaratri in $system mode');
+      expect(mar6.vrat, 'Maha Shivaratri');
+    }
+  });
+
+  test('Krishna Janmashtami 2027 resolves to 25 August 2027', () async {
+    final service = SwephService.instance;
+    const janmashtamiRule = FestivalRule(
+      id: 37,
+      festivalId: 'krishna_janmashtami',
+      category: 'festival',
+      isFasting: true,
+      nameEn: 'Krishna Janmashtami',
+      eventType: 'lunar_tithi',
+      daySelectionRule: 'udaya',
+      lunarMonth: 'bhadrapada',
+      paksha: 'krishna',
+      tithiNumber: 8,
+      nakshatraConstraint: 'none',
+    );
+
+    for (final system in ['purnimanta', 'amanta']) {
+      // 24 August 2027 is Saptami at sunrise (Saptami-viddha daytime)
+      final aug24 = service.calculateCalendarDay(
+        date: DateTime(2027, 8, 24),
+        city: City.mumbai,
+        today: DateTime(2027, 8, 1),
+        lunarSystem: system,
+        festivalRules: [janmashtamiRule],
+      );
+      expect(aug24.festival, isNot('Krishna Janmashtami'),
+          reason: 'Aug 24, 2027 should NOT match Krishna Janmashtami in $system mode');
+
+      // 25 August 2027 is Udaya Ashtami (celebrated Krishna Janmashtami)
+      final aug25 = service.calculateCalendarDay(
+        date: DateTime(2027, 8, 25),
+        city: City.mumbai,
+        today: DateTime(2027, 8, 1),
+        lunarSystem: system,
+        festivalRules: [janmashtamiRule],
+      );
+      expect(aug25.festival, 'Krishna Janmashtami',
+          reason: 'Aug 25, 2027 MUST match Krishna Janmashtami in $system mode');
+    }
+  });
+
+  test('10th October 2026 resolves to Amavasya and links with 01amavasya.webp', () async {
+    final service = SwephService.instance;
+    final oct10 = DateTime(2026, 10, 10);
+    final today = DateTime(2026, 9, 23);
+
+    final dayData = service.calculateCalendarDay(
+      date: oct10,
+      city: City.mumbai,
+      today: today,
+    );
+
+    expect(dayData.tithi, 'Amavasya');
+    expect(dayData.paksha, 'Krishna Paksha');
+    expect(dayData.lunarDay, 30);
+    expect(dayData.moonPhaseAsset, 'assets/moon_phases/01amavasya.webp');
+
+    final panchang = await service.calculatePanchang(
+      date: oct10,
+      city: City.mumbai,
+    );
+
+    expect(panchang.tithi, Tithi.amavasya);
+    expect(panchang.paksha, Paksha.krishna);
+    expect(panchang.tithiNumber, 15);
+  });
+
+  test('Vedic moon phases image linking matches user specification', () {
+    // 02*.webp to 15*.webp is for Shukla Paksha (lunar days 1 to 14)
+    final expectedShuklaAssets = [
+      'assets/moon_phases/02pratipada.webp',
+      'assets/moon_phases/03dvitiya.webp',
+      'assets/moon_phases/04trutiya.webp',
+      'assets/moon_phases/05chaturthi.webp',
+      'assets/moon_phases/06panchmi.webp',
+      'assets/moon_phases/07shashthi.webp',
+      'assets/moon_phases/08saptami.webp',
+      'assets/moon_phases/09ashtami.webp',
+      'assets/moon_phases/10navami.webp',
+      'assets/moon_phases/11dashmi.webp',
+      'assets/moon_phases/12ekaadashi.webp',
+      'assets/moon_phases/13dvadashi.webp',
+      'assets/moon_phases/14trayodashi.webp',
+      'assets/moon_phases/15chaturdashi.webp',
+    ];
+
+    for (int i = 0; i < 14; i++) {
+      final lunarDay = i + 1;
+      expect(ListItemTithi.getMoonAsset(lunarDay), expectedShuklaAssets[i],
+          reason: 'Shukla day $lunarDay should link to ${expectedShuklaAssets[i]}');
+      expect(
+        ListItemTithi.getMoonAssetForTithi(
+          tithi: Tithi.values[i],
+          paksha: Paksha.shukla,
+        ),
+        expectedShuklaAssets[i],
+      );
+    }
+
+    // Day 15: Purnima -> 16purnima.webp
+    expect(ListItemTithi.getMoonAsset(15), 'assets/moon_phases/16purnima.webp');
+    expect(
+      ListItemTithi.getMoonAssetForTithi(
+        tithi: Tithi.purnima,
+        paksha: Paksha.shukla,
+      ),
+      'assets/moon_phases/16purnima.webp',
+    );
+
+    // 17*.webp to 30*.webp is for Krishna Paksha (lunar days 16 to 29)
+    final expectedKrishnaAssets = [
+      'assets/moon_phases/17pratipada.webp',
+      'assets/moon_phases/18dvitiya.webp',
+      'assets/moon_phases/19trutiya.webp',
+      'assets/moon_phases/20chaturthi.webp',
+      'assets/moon_phases/21panchmi.webp',
+      'assets/moon_phases/22shashthi.webp',
+      'assets/moon_phases/23saptami.webp',
+      'assets/moon_phases/24ashtami.webp',
+      'assets/moon_phases/25navami.webp',
+      'assets/moon_phases/26dashmi.webp',
+      'assets/moon_phases/27ekaadashi.webp',
+      'assets/moon_phases/28dvadashi.webp',
+      'assets/moon_phases/29trayodashi.webp',
+      'assets/moon_phases/30chaturdashi.webp',
+    ];
+
+    for (int i = 0; i < 14; i++) {
+      final lunarDay = 16 + i;
+      expect(ListItemTithi.getMoonAsset(lunarDay), expectedKrishnaAssets[i],
+          reason: 'Krishna day $lunarDay should link to ${expectedKrishnaAssets[i]}');
+      expect(
+        ListItemTithi.getMoonAssetForTithi(
+          tithi: Tithi.values[i],
+          paksha: Paksha.krishna,
+        ),
+        expectedKrishnaAssets[i],
+      );
+    }
+
+    // Day 30: Amavasya -> 01amavasya.webp
+    expect(ListItemTithi.getMoonAsset(30), 'assets/moon_phases/01amavasya.webp');
+    expect(
+      ListItemTithi.getMoonAssetForTithi(
+        tithi: Tithi.amavasya,
+        paksha: Paksha.krishna,
+      ),
+      'assets/moon_phases/01amavasya.webp',
+    );
+  });
 }
+
+

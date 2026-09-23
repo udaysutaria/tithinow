@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:tithinow/database/app_database.dart';
 import 'package:tithinow/services/sweph_service.dart';
+import 'package:tithinow/services/wordpress_sync_service.dart';
 import 'package:tithinow/theme/design_system.dart';
 import 'package:tithinow/views/app_navigator.dart';
 import 'package:tithinow/views/splash_view.dart';
@@ -17,10 +18,11 @@ void main() {
     FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
   }
 
-  // Pre-warm SQLite database, language, and today's Panchang calculation
+  // Pre-warm SQLite database, language, today's Panchang calculation, and sync festivals
   unawaited(AppDatabase.instance.database);
   unawaited(AppDatabase.instance.getSavedLanguage());
   unawaited(SwephService.instance.preloadTodayPanchang());
+  unawaited(WordPressSyncService.instance.syncFestivals());
 
   runApp(const MyApp());
 }

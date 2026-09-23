@@ -871,9 +871,17 @@ enum Tithi {
         AppLanguage.gujarati => gu,
       };
 
-  /// Resolves a 1-based Tithi number (1 to 15) to its corresponding [Tithi].
-  static Tithi fromNumber(int number) {
+  /// Resolves a 1-based Tithi number (1 to 15 or 1 to 30) to its corresponding [Tithi].
+  ///
+  /// - If [number] is 30, returns [Tithi.amavasya].
+  /// - If [number] is 15 and [paksha] is [Paksha.krishna], returns [Tithi.amavasya].
+  /// - Otherwise, 15 returns [Tithi.purnima].
+  static Tithi fromNumber(int number, [Paksha? paksha]) {
+    if (number == 30) return Tithi.amavasya;
     final normalized = ((number - 1) % 15) + 1;
+    if (normalized == 15 && paksha == Paksha.krishna) {
+      return Tithi.amavasya;
+    }
     return Tithi.values[normalized - 1];
   }
 
@@ -910,6 +918,8 @@ enum Tithi {
       'dashmi' => Tithi.dashami,
       'ekaadashi' => Tithi.ekadashi,
       'dvadashi' => Tithi.dwadashi,
+      'amavsya' || 'amas' || 'amaas' || 'amavas' || 'amawas' => Tithi.amavasya,
+      'poonam' || 'punam' => Tithi.purnima,
       _ => null,
     };
   }

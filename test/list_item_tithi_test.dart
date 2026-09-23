@@ -200,5 +200,62 @@ void main() {
       // Ekadashi in Gujarati: અગિયારસ
       expect(find.text('અગિયારસ'), findsOneWidget);
     });
+
+    testWidgets('Renders Amavasya correctly with 01amavasya.webp image in ListItemTithi', (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Center(
+              child: ListItemTithi.future(
+                date: 'Sat, 10 Oct 2026',
+                tithi: 'Amavasya',
+                paksha: 'Krishna',
+                lunarDay: 30,
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Sat, 10 Oct 2026'), findsOneWidget);
+      expect(find.text('Amavasya'), findsOneWidget);
+      expect(find.text('Krishna'), findsOneWidget);
+
+      final imageFinder = find.byType(Image);
+      expect(imageFinder, findsOneWidget);
+      final image = tester.widget<Image>(imageFinder);
+      final assetImage = image.image as AssetImage;
+      expect(assetImage.assetName, 'assets/moon_phases/01amavasya.webp');
+    });
+
+    testWidgets('Safeguards legacy Purnima on Krishna paksha to render as Amavasya', (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Center(
+              child: ListItemTithi.future(
+                date: 'Sat, 10 Oct 2026',
+                tithi: 'Purnima',
+                paksha: 'Krishna',
+                lunarDay: 30,
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Should safeguard and display Amavasya
+      expect(find.text('Amavasya'), findsOneWidget);
+      expect(find.text('Purnima'), findsNothing);
+
+      final imageFinder = find.byType(Image);
+      expect(imageFinder, findsOneWidget);
+      final image = tester.widget<Image>(imageFinder);
+      final assetImage = image.image as AssetImage;
+      expect(assetImage.assetName, 'assets/moon_phases/01amavasya.webp');
+    });
   });
 }
+

@@ -182,7 +182,14 @@ class _CardTithiState extends State<CardTithi> {
   String _resolveMoonAsset() {
     if (widget.moonPhaseAsset != null) return widget.moonPhaseAsset!;
     if (widget.lunarDay != null) return ListItemTithi.getMoonAsset(widget.lunarDay!);
-    return 'assets/moon_phases/13dvadashi.webp';
+    final tithiEnum = widget.tithiEnum ?? Tithi.fromName(widget.tithi);
+    final pakshaEnum = widget.pakshaEnum ??
+        Paksha.fromName(widget.paksha) ??
+        (widget.lunarDay != null ? Paksha.fromLunarDay(widget.lunarDay!) : null);
+    if (tithiEnum != null && pakshaEnum != null) {
+      return ListItemTithi.getMoonAssetForTithi(tithi: tithiEnum, paksha: pakshaEnum);
+    }
+    return 'assets/moon_phases/02pratipada.webp';
   }
 
   static String _formatDateEn(DateTime d) => CardTithi._formatDateEn(d);
@@ -249,12 +256,18 @@ class _CardTithiState extends State<CardTithi> {
     if (widget.tithiEnum != null) {
       return widget.tithiEnum!.name(lang);
     }
-    final matched = Tithi.fromName(widget.tithi);
-    if (matched != null) {
-      return matched.name(lang);
-    }
+    final pakshaEnum = widget.pakshaEnum ??
+        Paksha.fromName(widget.paksha) ??
+        (widget.lunarDay != null ? Paksha.fromLunarDay(widget.lunarDay!) : null);
     if (widget.lunarDay != null) {
       return Tithi.fromLunarDay(widget.lunarDay!).name(lang);
+    }
+    final matched = Tithi.fromName(widget.tithi);
+    if (matched != null) {
+      if (matched == Tithi.purnima && pakshaEnum == Paksha.krishna) {
+        return Tithi.amavasya.name(lang);
+      }
+      return matched.name(lang);
     }
     return widget.tithi;
   }

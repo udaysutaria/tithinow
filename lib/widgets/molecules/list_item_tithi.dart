@@ -157,43 +157,71 @@ class ListItemTithi extends StatelessWidget {
   }
 
   /// 30 Vedic moon phase asset paths (1 to 30).
+  ///
+  /// - Days 1..14 (Shukla Pratipada to Chaturdashi): 02*.webp to 15*.webp
+  /// - Day 15 (Shukla Purnima): 16purnima.webp
+  /// - Days 16..29 (Krishna Pratipada to Chaturdashi): 17*.webp to 30*.webp
+  /// - Day 30 (Krishna Amavasya): 01amavasya.webp
   static const List<String> _moonPhaseAssets = [
-    'assets/moon_phases/01amavasya.webp',
-    'assets/moon_phases/02pratipada.webp',
-    'assets/moon_phases/03dvitiya.webp',
-    'assets/moon_phases/04trutiya.webp',
-    'assets/moon_phases/05chaturthi.webp',
-    'assets/moon_phases/06panchmi.webp',
-    'assets/moon_phases/07shashthi.webp',
-    'assets/moon_phases/08saptami.webp',
-    'assets/moon_phases/09ashtami.webp',
-    'assets/moon_phases/10navami.webp',
-    'assets/moon_phases/11dashmi.webp',
-    'assets/moon_phases/12ekaadashi.webp',
-    'assets/moon_phases/13dvadashi.webp',
-    'assets/moon_phases/14trayodashi.webp',
-    'assets/moon_phases/15chaturdashi.webp',
-    'assets/moon_phases/16purnima.webp',
-    'assets/moon_phases/17pratipada.webp',
-    'assets/moon_phases/18dvitiya.webp',
-    'assets/moon_phases/19trutiya.webp',
-    'assets/moon_phases/20chaturthi.webp',
-    'assets/moon_phases/21panchmi.webp',
-    'assets/moon_phases/22shashthi.webp',
-    'assets/moon_phases/23saptami.webp',
-    'assets/moon_phases/24ashtami.webp',
-    'assets/moon_phases/25navami.webp',
-    'assets/moon_phases/26dashmi.webp',
-    'assets/moon_phases/27ekaadashi.webp',
-    'assets/moon_phases/28dvadashi.webp',
-    'assets/moon_phases/29trayodashi.webp',
-    'assets/moon_phases/30chaturdashi.webp',
+    // Shukla Paksha: Days 1 to 14 (02*.webp to 15*.webp)
+    'assets/moon_phases/02pratipada.webp',   // 1: Shukla Pratipada
+    'assets/moon_phases/03dvitiya.webp',     // 2: Shukla Dwitiya
+    'assets/moon_phases/04trutiya.webp',     // 3: Shukla Tritiya
+    'assets/moon_phases/05chaturthi.webp',   // 4: Shukla Chaturthi
+    'assets/moon_phases/06panchmi.webp',     // 5: Shukla Panchami
+    'assets/moon_phases/07shashthi.webp',    // 6: Shukla Shashthi
+    'assets/moon_phases/08saptami.webp',     // 7: Shukla Saptami
+    'assets/moon_phases/09ashtami.webp',     // 8: Shukla Ashtami
+    'assets/moon_phases/10navami.webp',      // 9: Shukla Navami
+    'assets/moon_phases/11dashmi.webp',      // 10: Shukla Dashami
+    'assets/moon_phases/12ekaadashi.webp',   // 11: Shukla Ekadashi
+    'assets/moon_phases/13dvadashi.webp',    // 12: Shukla Dwadashi
+    'assets/moon_phases/14trayodashi.webp',  // 13: Shukla Trayodashi
+    'assets/moon_phases/15chaturdashi.webp', // 14: Shukla Chaturdashi
+    // Day 15: Purnima (16purnima.webp)
+    'assets/moon_phases/16purnima.webp',     // 15: Purnima
+    // Krishna Paksha: Days 16 to 29 (17*.webp to 30*.webp)
+    'assets/moon_phases/17pratipada.webp',   // 16: Krishna Pratipada
+    'assets/moon_phases/18dvitiya.webp',     // 17: Krishna Dwitiya
+    'assets/moon_phases/19trutiya.webp',     // 18: Krishna Tritiya
+    'assets/moon_phases/20chaturthi.webp',   // 19: Krishna Chaturthi
+    'assets/moon_phases/21panchmi.webp',     // 20: Krishna Panchami
+    'assets/moon_phases/22shashthi.webp',    // 21: Krishna Shashthi
+    'assets/moon_phases/23saptami.webp',     // 22: Krishna Saptami
+    'assets/moon_phases/24ashtami.webp',     // 23: Krishna Ashtami
+    'assets/moon_phases/25navami.webp',      // 24: Krishna Navami
+    'assets/moon_phases/26dashmi.webp',      // 25: Krishna Dashami
+    'assets/moon_phases/27ekaadashi.webp',   // 26: Krishna Ekadashi
+    'assets/moon_phases/28dvadashi.webp',    // 27: Krishna Dwadashi
+    'assets/moon_phases/29trayodashi.webp',  // 28: Krishna Trayodashi
+    'assets/moon_phases/30chaturdashi.webp', // 29: Krishna Chaturdashi
+    // Day 30: Amavasya (01amavasya.webp)
+    'assets/moon_phases/01amavasya.webp',    // 30: Amavasya
   ];
 
   /// Resolves the moon asset path from lunar day number (1..30).
   static String getMoonAsset(int day) {
     final normalized = ((day - 1) % 30);
     return _moonPhaseAssets[normalized];
+  }
+
+  /// Resolves the moon asset path from [Tithi] and [Paksha].
+  static String getMoonAssetForTithi({
+    required Tithi tithi,
+    required Paksha paksha,
+  }) {
+    if (tithi == Tithi.amavasya || (paksha == Paksha.krishna && tithi == Tithi.purnima)) {
+      return 'assets/moon_phases/01amavasya.webp';
+    }
+    if (tithi == Tithi.purnima) {
+      return 'assets/moon_phases/16purnima.webp';
+    }
+    final index = tithi.index.clamp(0, 13);
+    if (paksha == Paksha.shukla) {
+      return _moonPhaseAssets[index];
+    } else {
+      return _moonPhaseAssets[15 + index];
+    }
   }
 
   /// Known translations for active demo/common Vrats.
@@ -236,34 +264,25 @@ class ListItemTithi extends StatelessWidget {
   String _resolveMoonAsset() {
     if (moonPhaseAsset != null) return moonPhaseAsset!;
     if (lunarDay != null) return getMoonAsset(lunarDay!);
-    return 'assets/moon_phases/13dvadashi.webp';
+    final tithiEnum = _findTithi(tithi);
+    final pakshaEnum = _resolvePakshaEnum();
+    if (tithiEnum != null && pakshaEnum != null) {
+      return getMoonAssetForTithi(tithi: tithiEnum, paksha: pakshaEnum);
+    }
+    return 'assets/moon_phases/02pratipada.webp';
   }
 
   static Tithi? _findTithi(String input) {
-    final clean = input.trim().toLowerCase().replaceAll(' ', '');
-    if (clean.isEmpty) return null;
-    for (final t in Tithi.values) {
-      if (t.en.toLowerCase() == clean ||
-          t.hi == input.trim() ||
-          t.gu == input.trim()) {
-        return t;
-      }
-    }
-    return switch (clean) {
-      'dvitiya' => Tithi.dwitiya,
-      'trutiya' => Tithi.tritiya,
-      'panchmi' => Tithi.panchami,
-      'shasthi' => Tithi.shashthi,
-      'dashmi' => Tithi.dashami,
-      'ekaadashi' => Tithi.ekadashi,
-      'dvadashi' => Tithi.dwadashi,
-      _ => null,
-    };
+    return Tithi.fromName(input);
   }
 
   String _resolveLocalizedTithi() {
+    final pakshaEnum = _resolvePakshaEnum();
     final matched = _findTithi(tithi);
     if (matched != null) {
+      if (matched == Tithi.purnima && (pakshaEnum == Paksha.krishna || lunarDay == 30)) {
+        return Tithi.amavasya.name(language);
+      }
       return matched.name(language);
     }
     if (lunarDay != null) {

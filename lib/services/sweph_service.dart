@@ -113,14 +113,8 @@ class SwephService {
   /// Cache of pre-calculated results: key = "YYYY-MM-DD_cityId"
   final Map<String, PanchangCalculationResult> _cache = {};
 
-  PanchangCalculationResult? _cachedTodayResult;
-
   /// Cached calculation result for today's date for immediate display on app open.
-  PanchangCalculationResult? get cachedTodayResult => _cachedTodayResult;
-
-  set cachedTodayResult(PanchangCalculationResult? result) {
-    _cachedTodayResult = result;
-  }
+  PanchangCalculationResult? cachedTodayResult;
 
   /// Ensures Swiss Ephemeris native library is initialized with Lahiri ayanamsha.
   Future<void> init() async {
@@ -144,7 +138,7 @@ class SwephService {
         lunarSystem: lunarSystem,
         festivalRules: rules,
       );
-      _cachedTodayResult = result;
+      cachedTodayResult = result;
       return result;
     } catch (_) {
       return null;
@@ -154,7 +148,7 @@ class SwephService {
   /// Clears the in-memory calculation cache (useful on city or rule changes).
   void clearCache() {
     _cache.clear();
-    _cachedTodayResult = null;
+    cachedTodayResult = null;
   }
 
   /// Calculates complete Pancha-Anga parameters for [date] at the given [city].
@@ -290,7 +284,7 @@ class SwephService {
 
     final Paksha paksha = tithiTotalIndex <= 15 ? Paksha.shukla : Paksha.krishna;
     final int tithiNumber = tithiTotalIndex <= 15 ? tithiTotalIndex : tithiTotalIndex - 15;
-    final Tithi tithi = Tithi.fromNumber(tithiNumber);
+    final Tithi tithi = Tithi.fromLunarDay(tithiTotalIndex);
 
     // Nakshatra: Moon Longitude / 13°20'
     final Nakshatra nakshatra = Nakshatra.fromLongitude(moonCoords.longitude);
@@ -363,7 +357,7 @@ class SwephService {
     _cache[dateKey] = result;
     final now = DateTime.now();
     if (date.year == now.year && date.month == now.month && date.day == now.day) {
-      _cachedTodayResult = result;
+      cachedTodayResult = result;
     }
     return result;
   }
@@ -395,6 +389,48 @@ class SwephService {
     return HinduMonth.values[monthIndex];
   }
 
+  /// Canonical lunar month pair (Amanta and Purnimanta) for known Krishna Paksha festivals.
+  ///
+  /// In the Hindu calendar, Amanta and Purnimanta systems use different month names
+  /// for the exact same Krishna Paksha fortnight (Purnimanta month = Amanta month + 1).
+  /// Canonical anchoring prevents a festival rule from matching in two consecutive months
+  /// or matching the wrong month depending on active lunar system settings.
+  static const Map<String, ({HinduMonth amanta, HinduMonth purnimanta})>
+      _canonicalKrishnaFestivals = {
+    'maha_shivaratri': (
+      amanta: HinduMonth.magha,
+      purnimanta: HinduMonth.phalguna,
+    ),
+    'krishna_janmashtami': (
+      amanta: HinduMonth.shravana,
+      purnimanta: HinduMonth.bhadrapada,
+    ),
+    'karwa_chauth': (
+      amanta: HinduMonth.ashwin,
+      purnimanta: HinduMonth.kartika,
+    ),
+    'ahoi_ashtami': (
+      amanta: HinduMonth.ashwin,
+      purnimanta: HinduMonth.kartika,
+    ),
+    'dhanteras': (
+      amanta: HinduMonth.ashwin,
+      purnimanta: HinduMonth.kartika,
+    ),
+    'naraka_chaturdashi': (
+      amanta: HinduMonth.ashwin,
+      purnimanta: HinduMonth.kartika,
+    ),
+    'diwali': (
+      amanta: HinduMonth.ashwin,
+      purnimanta: HinduMonth.kartika,
+    ),
+    'lakshmi_puja': (
+      amanta: HinduMonth.ashwin,
+      purnimanta: HinduMonth.kartika,
+    ),
+  };
+
   /// Evaluates which festival rules match the astronomical conditions of this date.
   List<FestivalRule> _evaluateFestivalRules({
     required DateTime date,
@@ -421,14 +457,23 @@ class SwephService {
         // Match lunar month (or 'any')
         final ruleMonth = rule.lunarMonth?.toLowerCase().trim();
         if (ruleMonth != null && ruleMonth != 'any') {
-          final isDirectMatch =
-              ruleMonth == hinduMonth.name(AppLanguage.english).toLowerCase();
-          final isAmantaMatch = amantaMonth != null &&
-              ruleMonth == amantaMonth.name(AppLanguage.english).toLowerCase();
-          final isPurnimantaMatch = purnimantaMonth != null &&
-              ruleMonth == purnimantaMonth.name(AppLanguage.english).toLowerCase();
-          if (!isDirectMatch && !isAmantaMatch && !isPurnimantaMatch) {
-            continue;
+          final canonical = _canonicalKrishnaFestivals[rule.festivalId];
+          if (canonical != null) {
+            // Anchor to the true canonical lunation (same across all traditions)
+            if (amantaMonth != canonical.amanta ||
+                purnimantaMonth != canonical.purnimanta) {
+              continue;
+            }
+          } else {
+            final isDirectMatch =
+                ruleMonth == hinduMonth.name(AppLanguage.english).toLowerCase();
+            final isAmantaMatch = amantaMonth != null &&
+                ruleMonth == amantaMonth.name(AppLanguage.english).toLowerCase();
+            final isPurnimantaMatch = purnimantaMonth != null &&
+                ruleMonth == purnimantaMonth.name(AppLanguage.english).toLowerCase();
+            if (!isDirectMatch && !isAmantaMatch && !isPurnimantaMatch) {
+              continue;
+            }
           }
         }
 
@@ -439,9 +484,16 @@ class SwephService {
           continue;
         }
 
+        // Day selection rule override for Janmashtami:
+        // Janmashtami calendar observance is anchored to Udaya Tithi (Ashtami at sunrise)
+        // to match standard panchang practice and avoid Saptami-viddha daytimes.
+        final effectiveDayRule = (rule.festivalId == 'krishna_janmashtami')
+            ? 'udaya'
+            : rule.daySelectionRule;
+
         // Check prevailing tithi and nakshatra at the rule's specific window
         final windowJd = _resolveWindowJulianDay(
-          rule.daySelectionRule,
+          effectiveDayRule,
           sunrise: sunrise,
           sunset: sunset,
           tzOffset: tzOffset,
@@ -457,11 +509,14 @@ class SwephService {
           continue;
         }
 
-        // Nakshatra constraint (e.g. Rohini for Janmashtami)
-        if (rule.nakshatraConstraint != null) {
+        // Nakshatra constraint (e.g. Rohini for Sri Jayanti).
+        // Rohini is an auspicious attribute but does not block generic Krishna Janmashtami.
+        final nakConstraint = rule.nakshatraConstraint?.toLowerCase().trim();
+        if (nakConstraint != null &&
+            nakConstraint != 'none' &&
+            rule.festivalId != 'krishna_janmashtami') {
           final nakAtWindow = Nakshatra.fromLongitude(moonAtWindow.longitude);
-          if (nakAtWindow.name(AppLanguage.english).toLowerCase() !=
-              rule.nakshatraConstraint!.toLowerCase()) {
+          if (nakAtWindow.name(AppLanguage.english).toLowerCase() != nakConstraint) {
             continue;
           }
         }
@@ -634,7 +689,7 @@ class SwephService {
 
     final Paksha paksha = tithiTotalIndex <= 15 ? Paksha.shukla : Paksha.krishna;
     final int tithiNumber = tithiTotalIndex <= 15 ? tithiTotalIndex : tithiTotalIndex - 15;
-    final Tithi tithi = Tithi.fromNumber(tithiNumber);
+    final Tithi tithi = Tithi.fromLunarDay(tithiTotalIndex);
 
     final itemDate = DateTime(date.year, date.month, date.day);
     final ItemTemporalState state;

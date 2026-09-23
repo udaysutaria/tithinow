@@ -317,6 +317,41 @@ void main() {
       expect(find.text('Krishna'), findsNWidgets(2));
     });
 
+    testWidgets('ListTithis renders Amavasya data with Krishna paksha and 01amavasya.webp', (tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: SingleChildScrollView(
+              child: ListTithis(
+                data: [
+                  TithiData(
+                    date: 'Sat, 10 Oct 2026',
+                    tithi: 'Amavasya',
+                    paksha: 'Krishna',
+                    lunarDay: 30,
+                    moonPhaseAsset: 'assets/moon_phases/01amavasya.webp',
+                    state: ItemTemporalState.future,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byType(ListItemTithi), findsOneWidget);
+      expect(find.text('Sat, 10 Oct 2026'), findsOneWidget);
+      expect(find.text('Amavasya'), findsOneWidget);
+      expect(find.text('Krishna'), findsOneWidget);
+
+      final imageFinder = find.byType(Image);
+      expect(imageFinder, findsOneWidget);
+      final image = tester.widget<Image>(imageFinder);
+      final assetImage = image.image as AssetImage;
+      expect(assetImage.assetName, 'assets/moon_phases/01amavasya.webp');
+    });
+
     test('ListTithis.createDemoItems static helper generates 7 items', () {
       final items = ListTithis.createDemoItems();
       expect(items.length, 7);

@@ -1,8 +1,10 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../constants/panchang_terms.dart';
 import '../database/app_database.dart';
 import '../models/city.dart';
 import '../services/sweph_service.dart';
+import '../services/wordpress_sync_service.dart';
 import '../theme/design_system.dart';
 import '../widgets/widgets.dart';
 import 'app_navigator.dart';
@@ -46,8 +48,14 @@ class _TodayViewState extends State<TodayView> {
     AppDatabase.instance.languageNotifier.addListener(_onLanguageChanged);
     AppDatabase.instance.cityNotifier.addListener(_onCityChanged);
     AppDatabase.instance.lunarSystemNotifier.addListener(_onLunarSystemChanged);
+    AppDatabase.instance.festivalsNotifier.addListener(_onFestivalsChanged);
     _panchangResult = widget.initialPanchangResult ?? SwephService.instance.cachedTodayResult;
     _loadSavedLanguage();
+    _loadPanchangData();
+    unawaited(WordPressSyncService.instance.syncFestivals());
+  }
+
+  void _onFestivalsChanged() {
     _loadPanchangData();
   }
 
@@ -119,6 +127,7 @@ class _TodayViewState extends State<TodayView> {
     AppDatabase.instance.languageNotifier.removeListener(_onLanguageChanged);
     AppDatabase.instance.cityNotifier.removeListener(_onCityChanged);
     AppDatabase.instance.lunarSystemNotifier.removeListener(_onLunarSystemChanged);
+    AppDatabase.instance.festivalsNotifier.removeListener(_onFestivalsChanged);
     super.dispose();
   }
 

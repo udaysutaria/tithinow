@@ -36,6 +36,9 @@ class AppDatabase {
   final ValueNotifier<String> lunarSystemNotifier =
       ValueNotifier<String>(lunarPurnimanta);
 
+  /// Reactive notifier that triggers whenever festival rules are imported, synced, or updated.
+  final ValueNotifier<int> festivalsNotifier = ValueNotifier<int>(0);
+
   /// Default database file name.
   static const String dbName = 'tithinow.db';
 
@@ -47,6 +50,8 @@ class AppDatabase {
   /// Meta keys.
   static const String metaCitiesImported = 'cities_imported';
   static const String metaFestivalsImported = 'festivals_imported';
+  static const String metaFestivalsSeedVersion = 'festivals_seed_version';
+  static const int currentFestivalsSeedVersion = 3;
   static const String metaFestivalsLastSync = 'festivals_last_sync';
   static const String metaOnboardingCompleted = 'onboarding_completed';
   static const String metaLunarSystem = 'lunar_system';
@@ -201,10 +206,13 @@ class AppDatabase {
     }
   }
 
-  /// Checks if festivals seed data was imported. If empty, imports bundled seed.
+  /// Checks if festivals seed data was imported. If empty or outdated, imports bundled seed.
   Future<void> _checkAndImportFestivals(Database db) async {
     final count = await getFestivalsCount(db: db);
-    if (count == 0) {
+    final versionStr = await getMeta(metaFestivalsSeedVersion, db: db);
+    final currentVersion = int.tryParse(versionStr ?? '') ?? (count > 0 ? 1 : 0);
+
+    if (count == 0 || currentVersion < currentFestivalsSeedVersion) {
       await importFestivalsFromSeed(db: db);
     }
   }
@@ -656,6 +664,7 @@ class AppDatabase {
           .toList();
       final count = await upsertFestivals(rules, db: targetDb);
       await setMeta(metaFestivalsImported, DateTime.now().toIso8601String(), db: targetDb);
+      await setMeta(metaFestivalsSeedVersion, currentFestivalsSeedVersion.toString(), db: targetDb);
       return count;
     } catch (_) {
       return 0;
@@ -677,6 +686,7 @@ class AppDatabase {
     }
 
     await batch.commit(noResult: true);
+    festivalsNotifier.value++;
     return rules.length;
   }
 

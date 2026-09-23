@@ -5,7 +5,9 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:tithinow/constants/panchang_terms.dart';
 import 'package:tithinow/database/app_database.dart';
+import 'package:tithinow/models/city.dart';
 import 'package:tithinow/models/festival_rule.dart';
+import 'package:tithinow/services/sweph_service.dart';
 import 'package:tithinow/services/wordpress_sync_service.dart';
 
 void main() {
@@ -273,6 +275,37 @@ void main() {
       expect(result.count, 3);
       expect(result.fromCache, true);
       expect(result.errorMessage, contains('SocketException'));
+    });
+
+    test('Anant Chaturdashi calculates correctly on 25 September 2026', () async {
+      await SwephService.instance.init();
+      const anantRule = FestivalRule(
+        id: 38,
+        festivalId: 'anant_chaturdashi',
+        category: 'festival',
+        importanceLevel: 'major',
+        isFasting: true,
+        nameEn: 'Anant Chaturdashi',
+        nameHi: 'अनंत चतुर्दशी',
+        nameGu: 'અનંત ચતુર્દશી',
+        eventType: 'lunar_tithi',
+        daySelectionRule: 'udaya',
+        lunarMonth: 'bhadrapada',
+        paksha: 'shukla',
+        tithiNumber: 14,
+      );
+
+      final sep25 = SwephService.instance.calculateCalendarDay(
+        date: DateTime(2026, 9, 25),
+        city: City.mumbai,
+        today: DateTime(2026, 9, 22),
+        festivalRules: [anantRule],
+      );
+
+      expect(sep25.festival, 'Anant Chaturdashi');
+      expect(sep25.vrat, 'Anant Chaturdashi');
+      expect(sep25.tithi, 'Chaturdashi');
+      expect(sep25.paksha, 'Shukla Paksha');
     });
   });
 }

@@ -1,8 +1,10 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../constants/panchang_terms.dart';
 import '../database/app_database.dart';
 import '../models/city.dart';
 import '../services/sweph_service.dart';
+import '../services/wordpress_sync_service.dart';
 import '../theme/design_system.dart';
 import '../widgets/widgets.dart';
 import 'app_navigator.dart';
@@ -77,6 +79,7 @@ class _TithiViewState extends State<TithiView> {
     AppDatabase.instance.languageNotifier.addListener(_onLanguageChanged);
     AppDatabase.instance.cityNotifier.addListener(_onCityChanged);
     AppDatabase.instance.lunarSystemNotifier.addListener(_onLunarSystemChanged);
+    AppDatabase.instance.festivalsNotifier.addListener(_onFestivalsChanged);
     _loadLanguage();
     _initDatesAndTithis();
     _scrollController = ScrollController(
@@ -94,6 +97,7 @@ class _TithiViewState extends State<TithiView> {
       }
     });
     _loadRealPanchangData();
+    unawaited(WordPressSyncService.instance.syncFestivals());
   }
 
   void _onLanguageChanged() {
@@ -109,6 +113,10 @@ class _TithiViewState extends State<TithiView> {
   }
 
   void _onLunarSystemChanged() {
+    _loadRealPanchangData();
+  }
+
+  void _onFestivalsChanged() {
     _loadRealPanchangData();
   }
 
@@ -129,6 +137,7 @@ class _TithiViewState extends State<TithiView> {
     AppDatabase.instance.languageNotifier.removeListener(_onLanguageChanged);
     AppDatabase.instance.cityNotifier.removeListener(_onCityChanged);
     AppDatabase.instance.lunarSystemNotifier.removeListener(_onLunarSystemChanged);
+    AppDatabase.instance.festivalsNotifier.removeListener(_onFestivalsChanged);
     _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
     super.dispose();
@@ -274,9 +283,6 @@ class _TithiViewState extends State<TithiView> {
       curve: Curves.easeInOut,
     );
   }
-
-  bool get _isCurrentMonth =>
-      _visibleMonth.year == _today.year && _visibleMonth.month == _today.month;
 
   void _handleDestinationSelected(int index) {
     _mobileScaffoldKey.currentState?.closeDrawer();
