@@ -39,6 +39,9 @@ class ListTabContentNow extends StatefulWidget {
   /// Language used for localizing terms. If not specified, dynamically follows [appLanguageNotifier].
   final AppLanguage? language;
 
+  /// Optional custom Muhurta intervals. If provided, used instead of generating defaults.
+  final List<MuhurtaInterval>? customMuhurtaIntervals;
+
   /// Spacing between list items. Defaults to [AppSpacing.spacing12].
   final double spacing;
 
@@ -59,6 +62,7 @@ class ListTabContentNow extends StatefulWidget {
     this.currentTime,
     this.items,
     this.language,
+    this.customMuhurtaIntervals,
     this.spacing = AppSpacing.spacing12,
     this.padding = EdgeInsets.zero,
     this.physics = const NeverScrollableScrollPhysics(),
@@ -86,7 +90,8 @@ class _ListTabContentNowState extends State<ListTabContentNow> {
     if (oldWidget.currentTime != widget.currentTime ||
         oldWidget.date != widget.date ||
         oldWidget.sunrise != widget.sunrise ||
-        oldWidget.sunset != widget.sunset) {
+        oldWidget.sunset != widget.sunset ||
+        oldWidget.customMuhurtaIntervals != widget.customMuhurtaIntervals) {
       _transitionTimer?.cancel();
     }
   }
@@ -192,11 +197,12 @@ class _ListTabContentNowState extends State<ListTabContentNow> {
   ) {
     final active = <MuhurtaInterval>[];
 
-    final todayIntervals = MuhurtaData.generateIntervals(
-      date: effectiveDate,
-      sunrise: widget.sunrise,
-      sunset: widget.sunset,
-    );
+    final todayIntervals = widget.customMuhurtaIntervals ??
+        MuhurtaData.generateIntervals(
+          date: effectiveDate,
+          sunrise: widget.sunrise,
+          sunset: widget.sunset,
+        );
 
     for (final interval in todayIntervals) {
       if ((now.isAfter(interval.startTime) || now.isAtSameMomentAs(interval.startTime)) &&
@@ -213,7 +219,7 @@ class _ListTabContentNowState extends State<ListTabContentNow> {
       widget.sunrise.minute,
     );
 
-    if (now.isBefore(sunriseTime)) {
+    if (now.isBefore(sunriseTime) && widget.customMuhurtaIntervals == null) {
       final yesterday = effectiveDate.subtract(const Duration(days: 1));
       final yesterdayIntervals = MuhurtaData.generateIntervals(
         date: yesterday,
@@ -249,11 +255,12 @@ class _ListTabContentNowState extends State<ListTabContentNow> {
       if (i.endTime.isAfter(now)) futureEventTimes.add(i.endTime);
     }
 
-    final muhurtaIntervals = MuhurtaData.generateIntervals(
-      date: effectiveDate,
-      sunrise: widget.sunrise,
-      sunset: widget.sunset,
-    );
+    final muhurtaIntervals = widget.customMuhurtaIntervals ??
+        MuhurtaData.generateIntervals(
+          date: effectiveDate,
+          sunrise: widget.sunrise,
+          sunset: widget.sunset,
+        );
     for (final m in muhurtaIntervals) {
       if (m.startTime.isAfter(now)) futureEventTimes.add(m.startTime);
       if (m.endTime.isAfter(now)) futureEventTimes.add(m.endTime);
@@ -276,7 +283,10 @@ class _ListTabContentNowState extends State<ListTabContentNow> {
 
   @override
   Widget build(BuildContext context) {
-    final effectiveDate = widget.date ?? DateTime.now();
+    final effectiveDate = widget.date ??
+        (widget.currentTime != null
+            ? DateTime(widget.currentTime!.year, widget.currentTime!.month, widget.currentTime!.day)
+            : DateTime.now());
     final now = _resolveNow(effectiveDate);
     final lang = _effectiveLanguage;
 

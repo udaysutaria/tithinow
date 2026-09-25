@@ -3,6 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import '../../constants/panchang_terms.dart';
 import '../../theme/design_system.dart';
 import '../atoms/button_alarm.dart';
+import '../atoms/skeleton_loader.dart';
 import 'list_item_tab_content.dart' show ItemTemporalState;
 
 /// Compatibility alias for [ItemTemporalState] in the context of Tithi items.
@@ -458,6 +459,18 @@ class ListItemTithi extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (tithi.isEmpty) {
+      final skeleton = ListItemTithiSkeleton(maxWidth: maxWidth);
+      if (onTap != null) {
+        return GestureDetector(
+          onTap: onTap,
+          behavior: HitTestBehavior.opaque,
+          child: skeleton,
+        );
+      }
+      return skeleton;
+    }
+
     final bool isPast = state == ItemTemporalState.past;
     final bool isCurrent = state == ItemTemporalState.current;
     final bool isFuture = state == ItemTemporalState.future;

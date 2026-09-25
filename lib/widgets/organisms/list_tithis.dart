@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../constants/panchang_terms.dart';
 import '../../theme/design_system.dart';
+import '../atoms/skeleton_loader.dart';
 import '../molecules/list_item_tab_content.dart' show ItemTemporalState;
 import '../molecules/list_item_tithi.dart';
 
@@ -49,13 +50,11 @@ class TithiData {
 ///   - **PastItem**: Dimmed with 40% opacity, showing moon phase, date, tithi, paksha, vrat, and festival.
 ///   - **CurrentItem**: Full opacity highlighted with primary brand border ([AppColors.primary]).
 ///   - **FutureItem**: Full opacity with outline border and embedded [ButtonAlarm] toggle.
-/// - Out of the box, provides **7 demo items** spanning consecutive lunar days
-///   (3 PastItems, 1 CurrentItem, and 3 FutureItems) covering active and inactive Vrats/Festivals.
+/// - When no [data] or [items] are provided, displays [ListItemTithiSkeleton] loaders.
 /// - Interactive alarm toggle states with callbacks for future items.
 /// - Flexible support for injecting custom [items] or [data].
 class ListTithis extends StatefulWidget {
   /// Optional list of custom [ListItemTithi] widgets to display directly.
-  /// If null and [data] is null, 7 default demo items are generated.
   final List<ListItemTithi>? items;
 
   /// Optional list of [TithiData] to generate [ListItemTithi] items from.
@@ -115,187 +114,6 @@ class ListTithis extends StatefulWidget {
     this.language = AppLanguage.english,
   });
 
-  /// Default 7 demo Tithi data entries spanning 3 Past, 1 Current, and 3 Future items.
-  static const List<TithiData> defaultDemoData = [
-    TithiData(
-      date: 'Sun, 20 Sep 2026',
-      tithi: 'Dashami',
-      paksha: 'Shukla',
-      vrat: 'No Vrat',
-      festival: 'No Festival',
-      lunarDay: 10,
-      state: ItemTemporalState.past,
-    ),
-    TithiData(
-      date: 'Mon, 21 Sep 2026',
-      tithi: 'Ekadashi',
-      paksha: 'Shukla',
-      vrat: 'Parivartini Ekadashi',
-      festival: 'No Festival',
-      lunarDay: 11,
-      state: ItemTemporalState.past,
-    ),
-    TithiData(
-      date: 'Tue, 22 Sep 2026',
-      tithi: 'Dwadashi',
-      paksha: 'Shukla',
-      vrat: 'Vamana Jayanti',
-      festival: 'No Festival',
-      lunarDay: 12,
-      state: ItemTemporalState.past,
-    ),
-    TithiData(
-      date: 'Wed, 23 Sep 2026',
-      tithi: 'Trayodashi',
-      paksha: 'Shukla',
-      vrat: 'Pradosh Vrat',
-      festival: 'No Festival',
-      lunarDay: 13,
-      state: ItemTemporalState.current,
-    ),
-    TithiData(
-      date: 'Thu, 24 Sep 2026',
-      tithi: 'Chaturdashi',
-      paksha: 'Shukla',
-      vrat: 'No Vrat',
-      festival: 'Anant Chaturdashi',
-      lunarDay: 14,
-      state: ItemTemporalState.future,
-      isAlarmActive: false,
-    ),
-    TithiData(
-      date: 'Fri, 25 Sep 2026',
-      tithi: 'Purnima',
-      paksha: 'Shukla',
-      vrat: 'Satyanarayan Vrat',
-      festival: 'Bhadrapada Purnima',
-      lunarDay: 15,
-      state: ItemTemporalState.future,
-      isAlarmActive: false,
-    ),
-    TithiData(
-      date: 'Sat, 26 Sep 2026',
-      tithi: 'Pratipada',
-      paksha: 'Krishna',
-      vrat: 'No Vrat',
-      festival: 'Pitrupaksha Begins',
-      lunarDay: 16,
-      state: ItemTemporalState.future,
-      isAlarmActive: false,
-    ),
-  ];
-
-  /// Factory helper that instantiates the 7 demo items using [PastItem],
-  /// [CurrentItem], and [FutureItem].
-  static List<ListItemTithi> createDemoItems({
-    Set<int>? activeAlarms,
-    void Function(int index, bool isActive)? onAlarmTap,
-    void Function(int index)? onItemTap,
-    double? maxWidth,
-    AppLanguage language = AppLanguage.english,
-  }) {
-    final active = activeAlarms ?? {};
-    return [
-      // 1. PastItem (Dashami)
-      PastItem.past(
-        key: const ValueKey('demo_tithi_0'),
-        date: 'Sun, 20 Sep 2026',
-        tithi: 'Dashami',
-        paksha: 'Shukla',
-        vrat: 'No Vrat',
-        festival: 'No Festival',
-        lunarDay: 10,
-        maxWidth: maxWidth,
-        language: language,
-        onTap: onItemTap != null ? () => onItemTap(0) : null,
-      ),
-      // 2. PastItem (Ekadashi)
-      PastItem.past(
-        key: const ValueKey('demo_tithi_1'),
-        date: 'Mon, 21 Sep 2026',
-        tithi: 'Ekadashi',
-        paksha: 'Shukla',
-        vrat: 'Parivartini Ekadashi',
-        festival: 'No Festival',
-        lunarDay: 11,
-        maxWidth: maxWidth,
-        language: language,
-        onTap: onItemTap != null ? () => onItemTap(1) : null,
-      ),
-      // 3. PastItem (Dwadashi)
-      PastItem.past(
-        key: const ValueKey('demo_tithi_2'),
-        date: 'Tue, 22 Sep 2026',
-        tithi: 'Dwadashi',
-        paksha: 'Shukla',
-        vrat: 'Vamana Jayanti',
-        festival: 'No Festival',
-        lunarDay: 12,
-        maxWidth: maxWidth,
-        language: language,
-        onTap: onItemTap != null ? () => onItemTap(2) : null,
-      ),
-      // 4. CurrentItem (Trayodashi)
-      CurrentItem.current(
-        key: const ValueKey('demo_tithi_3'),
-        date: 'Wed, 23 Sep 2026',
-        tithi: 'Trayodashi',
-        paksha: 'Shukla',
-        vrat: 'Pradosh Vrat',
-        festival: 'No Festival',
-        lunarDay: 13,
-        maxWidth: maxWidth,
-        language: language,
-        onTap: onItemTap != null ? () => onItemTap(3) : null,
-      ),
-      // 5. FutureItem (Chaturdashi)
-      FutureItem.future(
-        key: const ValueKey('demo_tithi_4'),
-        date: 'Thu, 24 Sep 2026',
-        tithi: 'Chaturdashi',
-        paksha: 'Shukla',
-        vrat: 'No Vrat',
-        festival: 'Anant Chaturdashi',
-        lunarDay: 14,
-        isAlarmActive: active.contains(4),
-        onAlarmTap: onAlarmTap != null ? () => onAlarmTap(4, !active.contains(4)) : null,
-        maxWidth: maxWidth,
-        language: language,
-        onTap: onItemTap != null ? () => onItemTap(4) : null,
-      ),
-      // 6. FutureItem (Purnima)
-      FutureItem.future(
-        key: const ValueKey('demo_tithi_5'),
-        date: 'Fri, 25 Sep 2026',
-        tithi: 'Purnima',
-        paksha: 'Shukla',
-        vrat: 'Satyanarayan Vrat',
-        festival: 'Bhadrapada Purnima',
-        lunarDay: 15,
-        isAlarmActive: active.contains(5),
-        onAlarmTap: onAlarmTap != null ? () => onAlarmTap(5, !active.contains(5)) : null,
-        maxWidth: maxWidth,
-        language: language,
-        onTap: onItemTap != null ? () => onItemTap(5) : null,
-      ),
-      // 7. FutureItem (Pratipada - Krishna)
-      FutureItem.future(
-        key: const ValueKey('demo_tithi_6'),
-        date: 'Sat, 26 Sep 2026',
-        tithi: 'Pratipada',
-        paksha: 'Krishna',
-        vrat: 'No Vrat',
-        festival: 'Pitrupaksha Begins',
-        lunarDay: 16,
-        isAlarmActive: active.contains(6),
-        onAlarmTap: onAlarmTap != null ? () => onAlarmTap(6, !active.contains(6)) : null,
-        maxWidth: maxWidth,
-        language: language,
-        onTap: onItemTap != null ? () => onItemTap(6) : null,
-      ),
-    ];
-  }
-
   @override
   State<ListTithis> createState() => _ListTithisState();
 }
@@ -329,7 +147,7 @@ class _ListTithisState extends State<ListTithis> {
       return;
     }
 
-    final dataList = widget.data ?? ListTithis.defaultDemoData;
+    final dataList = widget.data ?? const <TithiData>[];
     _activeAlarms = {
       for (int i = 0; i < dataList.length; i++)
         if (dataList[i].isAlarmActive) i,
@@ -452,7 +270,13 @@ class _ListTithisState extends State<ListTithis> {
       );
     }
 
-    final items = widget.items ?? _buildItemsFromData(widget.data ?? ListTithis.defaultDemoData);
+    final List<Widget> items = widget.items ??
+        (widget.data != null
+            ? _buildItemsFromData(widget.data!)
+            : List<Widget>.generate(
+                7,
+                (i) => ListItemTithiSkeleton(maxWidth: widget.maxWidth),
+              ));
 
     Widget content = Column(
       mainAxisSize: MainAxisSize.min,

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../constants/panchang_terms.dart';
 import '../../theme/design_system.dart';
+import '../atoms/skeleton_loader.dart';
 import '../molecules/list_item_alarms.dart';
 
 export '../../constants/panchang_terms.dart' show AppLanguage;
@@ -33,16 +34,14 @@ class AlarmData {
 ///   - **Choghadiya**: displays period name, tag pill, date, time range, and alarm button.
 ///   - **Muhurta**: displays muhurta name, tag pill, date, time range, and alarm button.
 ///   - **Tithi**: displays tithi name, tag pill, date, time, edit button, and alarm button.
-/// - Out of the box, provides **4 demo alarm items** covering all three types.
+/// - Displays [EmptyAlarmsState] when no alarms are scheduled.
 /// - Interactive alarm toggle states with callbacks.
 /// - Flexible support for injecting custom [items] or [data].
 /// - **Language Switching**:
 ///   - If [language] is passed explicitly, that language is used.
 ///   - If [language] is null, dynamically follows [AppDatabase.instance.languageNotifier].
-///   - Automatically provides localized titles, tags, and dates for demo data.
 class ListAlarms extends StatefulWidget {
   /// Optional list of custom [ListItemAlarms] widgets to display directly.
-  /// If null and [data] is null, default demo items are generated.
   final List<ListItemAlarms>? items;
 
   /// Optional list of [AlarmData] to generate [ListItemAlarms] items from.
@@ -99,170 +98,6 @@ class ListAlarms extends StatefulWidget {
     this.language,
   });
 
-  /// Default 4 demo alarm data definitions for English.
-  static const List<AlarmData> defaultDemoData = [
-    AlarmData(
-      title: 'Amrit',
-      date: 'Sun, 06 Sep 2026',
-      time: '02:00 pm - 03:31 pm',
-      type: AlarmType.choghadiya,
-      tag: 'Choghadiya',
-      isAlarmActive: true,
-    ),
-    AlarmData(
-      title: 'Abhijit Muhurt',
-      date: 'Sun, 06 Sep 2026',
-      time: '11:50 am - 12:42 pm',
-      type: AlarmType.muhurta,
-      tag: 'Muhurta',
-      isAlarmActive: true,
-    ),
-    AlarmData(
-      title: 'Brahma Muhurta',
-      date: 'Mon, 07 Sep 2026',
-      time: '04:51 am - 05:39 am',
-      type: AlarmType.muhurta,
-      tag: 'Muhurta',
-      isAlarmActive: true,
-    ),
-    AlarmData(
-      title: 'Dashmi',
-      date: 'Sun, 06 Sep 2026',
-      time: '02:18 am',
-      type: AlarmType.tithi,
-      tag: 'Tithi',
-      isAlarmActive: true,
-    ),
-  ];
-
-  /// Returns localized demo alarm data for the specified [AppLanguage].
-  static List<AlarmData> getDemoData([AppLanguage lang = AppLanguage.english]) {
-    return switch (lang) {
-      AppLanguage.english => defaultDemoData,
-      AppLanguage.hindi => const [
-        AlarmData(
-          title: 'अमृत',
-          date: 'रवि, 06 सितंबर 2026',
-          time: '02:00 pm - 03:31 pm',
-          type: AlarmType.choghadiya,
-          tag: 'चौघड़िया',
-          isAlarmActive: true,
-        ),
-        AlarmData(
-          title: 'अभिजीत मुहूर्त',
-          date: 'रवि, 06 सितंबर 2026',
-          time: '11:50 am - 12:42 pm',
-          type: AlarmType.muhurta,
-          tag: 'मुहूर्त',
-          isAlarmActive: true,
-        ),
-        AlarmData(
-          title: 'ब्रह्म मुहूर्त',
-          date: 'सोम, 07 सितंबर 2026',
-          time: '04:51 am - 05:39 am',
-          type: AlarmType.muhurta,
-          tag: 'मुहूर्त',
-          isAlarmActive: true,
-        ),
-        AlarmData(
-          title: 'दशमी',
-          date: 'रवि, 06 सितंबर 2026',
-          time: '02:18 am',
-          type: AlarmType.tithi,
-          tag: 'तिथि',
-          isAlarmActive: true,
-        ),
-      ],
-      AppLanguage.gujarati => const [
-        AlarmData(
-          title: 'અમૃત',
-          date: 'રવિ, 06 સપ્ટેમ્બર 2026',
-          time: '02:00 pm - 03:31 pm',
-          type: AlarmType.choghadiya,
-          tag: 'ચોઘડિયા',
-          isAlarmActive: true,
-        ),
-        AlarmData(
-          title: 'અભિજિત મુહૂર્ત',
-          date: 'રવિ, 06 સપ્ટેમ્બર 2026',
-          time: '11:50 am - 12:42 pm',
-          type: AlarmType.muhurta,
-          tag: 'મુહૂર્ત',
-          isAlarmActive: true,
-        ),
-        AlarmData(
-          title: 'બ્રહ્મ મુહૂર્ત',
-          date: 'સોમ, 07 સપ્ટેમ્બર 2026',
-          time: '04:51 am - 05:39 am',
-          type: AlarmType.muhurta,
-          tag: 'મુહૂર્ત',
-          isAlarmActive: true,
-        ),
-        AlarmData(
-          title: 'દશમ',
-          date: 'રવિ, 06 સપ્ટેમ્બર 2026',
-          time: '02:18 am',
-          type: AlarmType.tithi,
-          tag: 'તિથિ',
-          isAlarmActive: true,
-        ),
-      ],
-    };
-  }
-
-  /// Convenience factory to generate localized [ListItemAlarms] demo items directly.
-  static List<ListItemAlarms> createDemoItems({
-    AppLanguage language = AppLanguage.english,
-    Set<int>? activeAlarms,
-    void Function(int index, bool isActive)? onAlarmTap,
-    void Function(int index)? onEditTap,
-    void Function(int index)? onItemTap,
-    double? maxWidth = 480.0,
-  }) {
-    final dataList = getDemoData(language);
-    final active = activeAlarms ?? {for (int i = 0; i < dataList.length; i++) i};
-
-    return [
-      for (int i = 0; i < dataList.length; i++)
-        switch (dataList[i].type) {
-          AlarmType.choghadiya => ListItemAlarms.choghadiya(
-              key: ValueKey('demo_alarm_item_$i'),
-              title: dataList[i].title,
-              date: dataList[i].date,
-              timeRange: dataList[i].time,
-              tag: dataList[i].tag,
-              isAlarmActive: active.contains(i),
-              onAlarmTap: onAlarmTap != null ? () => onAlarmTap(i, !active.contains(i)) : null,
-              onTap: onItemTap != null ? () => onItemTap(i) : null,
-              maxWidth: maxWidth,
-            ),
-          AlarmType.muhurta => ListItemAlarms.muhurta(
-              key: ValueKey('demo_alarm_item_$i'),
-              title: dataList[i].title,
-              date: dataList[i].date,
-              timeRange: dataList[i].time,
-              tag: dataList[i].tag,
-              isAlarmActive: active.contains(i),
-              onAlarmTap: onAlarmTap != null ? () => onAlarmTap(i, !active.contains(i)) : null,
-              onTap: onItemTap != null ? () => onItemTap(i) : null,
-              maxWidth: maxWidth,
-            ),
-          AlarmType.tithi => ListItemAlarms.tithi(
-              key: ValueKey('demo_alarm_item_$i'),
-              title: dataList[i].title,
-              date: dataList[i].date,
-              time: dataList[i].time,
-              tag: dataList[i].tag,
-              isAlarmActive: active.contains(i),
-              onAlarmTap: onAlarmTap != null ? () => onAlarmTap(i, !active.contains(i)) : null,
-              onEditTap: onEditTap != null ? () => onEditTap(i) : null,
-              onTap: onItemTap != null ? () => onItemTap(i) : null,
-              maxWidth: maxWidth,
-            ),
-        },
-    ];
-  }
-
   @override
   State<ListAlarms> createState() => _ListAlarmsState();
 }
@@ -312,7 +147,7 @@ class _ListAlarmsState extends State<ListAlarms> {
       return;
     }
 
-    final dataList = widget.data ?? ListAlarms.getDemoData(_effectiveLanguage);
+    final dataList = widget.data ?? const <AlarmData>[];
     _activeAlarms = {
       for (int i = 0; i < dataList.length; i++)
         if (dataList[i].isAlarmActive) i,
@@ -376,8 +211,18 @@ class _ListAlarmsState extends State<ListAlarms> {
   @override
   Widget build(BuildContext context) {
     final lang = _effectiveLanguage;
+
+    if (widget.items == null && (widget.data == null || widget.data!.isEmpty)) {
+      return EmptyAlarmsState(
+        language: lang,
+        maxWidth: widget.maxWidth,
+      );
+    }
+
     final List<Widget> displayItems = widget.items ??
-        _buildItemsFromData(widget.data ?? ListAlarms.getDemoData(lang), lang);
+        (widget.data != null
+            ? _buildItemsFromData(widget.data!, lang)
+            : const <Widget>[]);
 
     Widget content = Column(
       mainAxisSize: MainAxisSize.min,

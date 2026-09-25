@@ -18,6 +18,41 @@ void main() {
     );
   }
 
+  const sampleAlarms = [
+    AlarmData(
+      title: 'Amrit',
+      date: 'Sun, 06 Sep 2026',
+      time: '02:00 pm - 03:31 pm',
+      type: AlarmType.choghadiya,
+      tag: 'Choghadiya',
+      isAlarmActive: true,
+    ),
+    AlarmData(
+      title: 'Abhijit Muhurt',
+      date: 'Sun, 06 Sep 2026',
+      time: '11:50 am - 12:42 pm',
+      type: AlarmType.muhurta,
+      tag: 'Muhurta',
+      isAlarmActive: true,
+    ),
+    AlarmData(
+      title: 'Brahma Muhurta',
+      date: 'Mon, 07 Sep 2026',
+      time: '04:51 am - 05:39 am',
+      type: AlarmType.muhurta,
+      tag: 'Muhurta',
+      isAlarmActive: true,
+    ),
+    AlarmData(
+      title: 'Dashmi',
+      date: 'Sun, 06 Sep 2026',
+      time: '02:18 am',
+      type: AlarmType.tithi,
+      tag: 'Tithi',
+      isAlarmActive: true,
+    ),
+  ];
+
   group('AlarmsView Structure Tests', () {
     setUp(() {
       AppDatabase.instance.languageNotifier.value = AppLanguage.english;
@@ -27,7 +62,7 @@ void main() {
       AppDatabase.instance.languageNotifier.value = AppLanguage.english;
     });
 
-    testWidgets('Mobile renders Appbar with title, ListAlarms without duplicate label, and NavBottom', (tester) async {
+    testWidgets('Mobile renders EmptyAlarmsState when no alarms scheduled', (tester) async {
       await tester.pumpWidget(
         buildTestableWidget(
           const AlarmsView(),
@@ -37,19 +72,15 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(Appbar), findsOneWidget);
-      expect(find.byType(ListAlarms), findsOneWidget);
-      expect(find.byType(ListItemAlarms), findsNWidgets(4));
+      expect(find.byType(EmptyAlarmsState), findsOneWidget);
+      expect(find.byType(ListAlarms), findsNothing);
       expect(find.byType(NavBottom), findsOneWidget);
 
       // Verify no language dropdown in AppBar
       expect(find.byKey(const ValueKey('button_language_switch')), findsNothing);
 
-      // Verify English demo content
-      expect(find.text('Amrit'), findsOneWidget);
-      expect(find.text('Choghadiya'), findsOneWidget);
-      expect(find.text('Abhijit Muhurt'), findsOneWidget);
-      expect(find.text('Brahma Muhurta'), findsOneWidget);
-      expect(find.text('Dashmi'), findsOneWidget);
+      // Verify English empty state message
+      expect(find.text('No Alarms Scheduled'), findsOneWidget);
 
       // Open drawer via menu button
       final menuButtonFinder = find.descendant(
@@ -62,7 +93,7 @@ void main() {
       expect(find.byType(NavDrawer), findsOneWidget);
     });
 
-    testWidgets('Desktop renders 2-column with NavSide, Appbar, and ListAlarms without duplicate label', (tester) async {
+    testWidgets('Desktop renders 2-column with NavSide, Appbar, and EmptyAlarmsState', (tester) async {
       await tester.pumpWidget(
         buildTestableWidget(
           const AlarmsView(),
@@ -73,10 +104,29 @@ void main() {
 
       expect(find.byType(NavSide), findsOneWidget);
       expect(find.byType(Appbar), findsOneWidget);
-      expect(find.byType(ListAlarms), findsOneWidget);
-      expect(find.byType(ListItemAlarms), findsNWidgets(4));
+      expect(find.byType(EmptyAlarmsState), findsOneWidget);
+      expect(find.byType(ListAlarms), findsNothing);
       expect(find.byKey(const ValueKey('button_language_switch')), findsNothing);
       expect(find.byIcon(Icons.settings_outlined), findsNothing);
+    });
+
+    testWidgets('Renders ListAlarms when alarmData is provided', (tester) async {
+      await tester.pumpWidget(
+        buildTestableWidget(
+          const AlarmsView(alarmData: sampleAlarms),
+          size: const Size(390, 844),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byType(EmptyAlarmsState), findsNothing);
+      expect(find.byType(ListAlarms), findsOneWidget);
+      expect(find.byType(ListItemAlarms), findsNWidgets(4));
+
+      expect(find.text('Amrit'), findsOneWidget);
+      expect(find.text('Abhijit Muhurt'), findsOneWidget);
+      expect(find.text('Brahma Muhurta'), findsOneWidget);
+      expect(find.text('Dashmi'), findsOneWidget);
     });
   });
 
@@ -89,7 +139,7 @@ void main() {
       AppDatabase.instance.languageNotifier.value = AppLanguage.english;
     });
 
-    testWidgets('Renders Hindi content when initialLanguage is Hindi', (tester) async {
+    testWidgets('Renders Hindi EmptyAlarmsState when initialLanguage is Hindi', (tester) async {
       await tester.pumpWidget(
         buildTestableWidget(
           const AlarmsView(
@@ -99,17 +149,13 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // Only Appbar title has 'अलार्म' (no duplicate label above list)
+      // Appbar title has 'अलार्म'
       expect(find.text('अलार्म'), findsOneWidget);
-      expect(find.text('अमृत'), findsOneWidget);
-      expect(find.text('चौघड़िया'), findsOneWidget);
-      expect(find.text('अभिजीत मुहूर्त'), findsOneWidget);
-      expect(find.text('ब्रह्म मुहूर्त'), findsOneWidget);
-      expect(find.text('दशमी'), findsOneWidget);
-      expect(find.text('तिथि'), findsOneWidget);
+      expect(find.byType(EmptyAlarmsState), findsOneWidget);
+      expect(find.text('कोई अलार्म सेट नहीं है'), findsOneWidget);
     });
 
-    testWidgets('Renders Gujarati content when initialLanguage is Gujarati', (tester) async {
+    testWidgets('Renders Gujarati EmptyAlarmsState when initialLanguage is Gujarati', (tester) async {
       await tester.pumpWidget(
         buildTestableWidget(
           const AlarmsView(
@@ -119,14 +165,10 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // Only Appbar title has 'એલાર્મ' (no duplicate label above list)
+      // Appbar title has 'એલાર્મ'
       expect(find.text('એલાર્મ'), findsOneWidget);
-      expect(find.text('અમૃત'), findsOneWidget);
-      expect(find.text('ચોઘડિયા'), findsOneWidget);
-      expect(find.text('અભિજિત મુહૂર્ત'), findsOneWidget);
-      expect(find.text('બ્રહ્મ મુહૂર્ત'), findsOneWidget);
-      expect(find.text('દશમ'), findsOneWidget);
-      expect(find.text('તિથિ'), findsOneWidget);
+      expect(find.byType(EmptyAlarmsState), findsOneWidget);
+      expect(find.text('કોઈ એલાર્મ સેટ નથી'), findsOneWidget);
     });
 
     testWidgets('Reacts dynamically when AppDatabase.languageNotifier changes', (tester) async {
@@ -144,7 +186,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Initially English
-      expect(find.text('Amrit'), findsOneWidget);
+      expect(find.text('No Alarms Scheduled'), findsOneWidget);
       expect(find.text('Alarms'), findsNWidgets(2)); // Appbar + NavBottom
 
       // Switch to Hindi dynamically
@@ -152,8 +194,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(notifiedLanguage, AppLanguage.hindi);
-      expect(find.text('अमृत'), findsOneWidget);
-      expect(find.text('चौघड़िया'), findsOneWidget);
+      expect(find.text('कोई अलार्म सेट नहीं है'), findsOneWidget);
       expect(find.text('अलार्म'), findsNWidgets(2)); // Appbar + NavBottom
 
       // Switch to Gujarati dynamically
@@ -161,8 +202,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(notifiedLanguage, AppLanguage.gujarati);
-      expect(find.text('અમૃત'), findsOneWidget);
-      expect(find.text('ચોઘડિયા'), findsOneWidget);
+      expect(find.text('કોઈ એલાર્મ સેટ નથી'), findsOneWidget);
       expect(find.text('એલાર્મ'), findsNWidgets(2)); // Appbar + NavBottom
 
       // Switch back to English
@@ -170,7 +210,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(notifiedLanguage, AppLanguage.english);
-      expect(find.text('Amrit'), findsOneWidget);
+      expect(find.text('No Alarms Scheduled'), findsOneWidget);
       expect(find.text('Alarms'), findsNWidgets(2)); // Appbar + NavBottom
     });
   });
@@ -191,6 +231,7 @@ void main() {
       await tester.pumpWidget(
         buildTestableWidget(
           AlarmsView(
+            alarmData: sampleAlarms,
             onAlarmTap: (index, isActive) {
               tappedIndex = index;
               tappedActive = isActive;
@@ -216,6 +257,7 @@ void main() {
       await tester.pumpWidget(
         buildTestableWidget(
           AlarmsView(
+            alarmData: sampleAlarms,
             onEditTap: (index) {
               editedIndex = index;
             },

@@ -174,20 +174,12 @@ class _TodayViewState extends State<TodayView> {
         ),
       ];
     }
-
-    final now = DateTime.now();
-    return [
-      CardTithi.today(
-        dateTime: now,
-        language: _language,
-      ),
-      const SizedBox(height: AppSpacing.spacing16),
-      CardPanchang(language: _language),
-      const SizedBox(height: AppSpacing.spacing16),
-      CardTimings(
-        date: now,
-        language: _language,
-      ),
+    return const [
+      CardTithiSkeleton(),
+      SizedBox(height: AppSpacing.spacing16),
+      CardPanchangSkeleton(),
+      SizedBox(height: AppSpacing.spacing16),
+      CardTimingsSkeleton(),
     ];
   }
 

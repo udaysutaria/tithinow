@@ -119,13 +119,15 @@ class _ListTabContentChoghadiyaState extends State<ListTabContentChoghadiya> {
         return i;
       }
     }
-    // Default demo fallback: index 3 (Daytime 4th slot, e.g. Amrit on Sunday)
-    return 3;
+    if (intervals.isNotEmpty && now.isBefore(intervals.first.startTime)) {
+      return -1;
+    }
+    return intervals.length;
   }
 
-  void _handleCurrentItemEnded(int maxIndex) {
+  void _handleCurrentItemEnded(int maxIndex, int currentIndex) {
     setState(() {
-      final current = _activeCurrentIndex ?? 3;
+      final current = _activeCurrentIndex ?? currentIndex;
       if (current < maxIndex) {
         _activeCurrentIndex = current + 1;
       }
@@ -162,7 +164,7 @@ class _ListTabContentChoghadiyaState extends State<ListTabContentChoghadiya> {
             language: effectiveLanguage,
             spacing: widget.spacing,
             activeAlarms: _activeAlarms,
-            onCurrentItemEnded: () => _handleCurrentItemEnded(intervals.length - 1),
+            onCurrentItemEnded: () => _handleCurrentItemEnded(intervals.length - 1, currentIndex),
             onAlarmTap: (slotIndex) {
               setState(() {
                 if (_activeAlarms.contains(slotIndex)) {
@@ -186,7 +188,7 @@ class _ListTabContentChoghadiyaState extends State<ListTabContentChoghadiya> {
             language: effectiveLanguage,
             spacing: widget.spacing,
             activeAlarms: _activeAlarms,
-            onCurrentItemEnded: () => _handleCurrentItemEnded(intervals.length - 1),
+            onCurrentItemEnded: () => _handleCurrentItemEnded(intervals.length - 1, currentIndex),
             onAlarmTap: (slotIndex) {
               setState(() {
                 if (_activeAlarms.contains(slotIndex)) {

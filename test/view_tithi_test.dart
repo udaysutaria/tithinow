@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:sweph/sweph.dart';
 import 'package:tithinow/database/app_database.dart';
 import 'package:tithinow/theme/design_system.dart';
 import 'package:tithinow/views/view_tithi.dart';
@@ -8,6 +9,11 @@ import 'package:tithinow/widgets/widgets.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+
+  setUpAll(() async {
+    await Sweph.init();
+    Sweph.swe_set_sid_mode(SiderealMode.SE_SIDM_LAHIRI);
+  });
 
   Widget buildTestableWidget(Widget child, {Size size = const Size(390, 844)}) {
     return MaterialApp(

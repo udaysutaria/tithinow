@@ -150,16 +150,21 @@ class _AlarmsViewState extends State<AlarmsView> {
                     child: Center(
                       child: ConstrainedBox(
                         constraints: const BoxConstraints(maxWidth: 720),
-                        child: ListAlarms(
-                          language: _language,
-                          data: widget.alarmData,
-                          onAlarmTap: widget.onAlarmTap,
-                          onEditTap: widget.onEditTap,
-                          onItemTap: widget.onItemTap,
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          maxWidth: 720,
-                        ),
+                        child: (widget.alarmData != null && widget.alarmData!.isNotEmpty)
+                            ? ListAlarms(
+                                language: _language,
+                                data: widget.alarmData,
+                                onAlarmTap: widget.onAlarmTap,
+                                onEditTap: widget.onEditTap,
+                                onItemTap: widget.onItemTap,
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                maxWidth: 720,
+                              )
+                            : EmptyAlarmsState(
+                                language: _language,
+                                maxWidth: 720,
+                              ),
                       ),
                     ),
                   ),
@@ -197,16 +202,21 @@ class _AlarmsViewState extends State<AlarmsView> {
                 child: Center(
                   child: ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: 480),
-                    child: ListAlarms(
-                      language: _language,
-                      data: widget.alarmData,
-                      onAlarmTap: widget.onAlarmTap,
-                      onEditTap: widget.onEditTap,
-                      onItemTap: widget.onItemTap,
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      maxWidth: 480,
-                    ),
+                    child: (widget.alarmData != null && widget.alarmData!.isNotEmpty)
+                        ? ListAlarms(
+                            language: _language,
+                            data: widget.alarmData,
+                            onAlarmTap: widget.onAlarmTap,
+                            onEditTap: widget.onEditTap,
+                            onItemTap: widget.onItemTap,
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            maxWidth: 480,
+                          )
+                        : EmptyAlarmsState(
+                            language: _language,
+                            maxWidth: 480,
+                          ),
                   ),
                 ),
               ),

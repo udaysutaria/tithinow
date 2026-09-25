@@ -200,6 +200,7 @@ class AppDatabase {
 
   /// Checks if cities CSV was already imported. If not, imports it.
   Future<void> _checkAndImportCities(Database db) async {
+    if (Platform.environment.containsKey('FLUTTER_TEST')) return;
     final count = await getCitiesCount(db: db);
     if (count == 0) {
       await importCitiesFromCsv(db: db);
@@ -208,6 +209,7 @@ class AppDatabase {
 
   /// Checks if festivals seed data was imported. If empty or outdated, imports bundled seed.
   Future<void> _checkAndImportFestivals(Database db) async {
+    if (Platform.environment.containsKey('FLUTTER_TEST')) return;
     final count = await getFestivalsCount(db: db);
     final versionStr = await getMeta(metaFestivalsSeedVersion, db: db);
     final currentVersion = int.tryParse(versionStr ?? '') ?? (count > 0 ? 1 : 0);

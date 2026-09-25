@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../constants/muhurta_data.dart' show MuhurtaInterval;
 import '../../constants/panchang_terms.dart';
 import '../../services/sweph_service.dart' show PanchangCalculationResult;
 import '../../theme/design_system.dart';
@@ -44,6 +45,9 @@ class CardTimings extends StatefulWidget {
   /// Whether to show the "Now" tab. If null, automatically shown only when [date] is today.
   final bool? showNowTab;
 
+  /// Pre-calculated Muhurta intervals (e.g. from [PanchangCalculationResult]).
+  final List<MuhurtaInterval>? muhurtaIntervals;
+
   /// Callback when an alarm is toggled on a future interval (Choghadiya slot or general).
   final void Function(int slotIndex, bool isActive)? onAlarmTap;
 
@@ -63,6 +67,7 @@ class CardTimings extends StatefulWidget {
     this.sunset = const TimeOfDay(hour: 18, minute: 33),
     this.useBottomIndicatorOnly = true,
     this.showNowTab,
+    this.muhurtaIntervals,
     this.onAlarmTap,
     this.onMuhurtaAlarmTap,
     this.currentTime,
@@ -91,6 +96,7 @@ class CardTimings extends StatefulWidget {
       language: language,
       useBottomIndicatorOnly: useBottomIndicatorOnly,
       showNowTab: showNowTab,
+      muhurtaIntervals: result.muhurtaIntervals,
       onAlarmTap: onAlarmTap,
       onMuhurtaAlarmTap: onMuhurtaAlarmTap,
       currentTime: currentTime,
@@ -221,11 +227,15 @@ class _CardTimingsState extends State<CardTimings> {
       switch (_selectedTabIndex) {
         case 0:
           return ListTabContentNow(
-            date: widget.date,
+            date: widget.date ??
+                (widget.currentTime != null
+                    ? DateTime(widget.currentTime!.year, widget.currentTime!.month, widget.currentTime!.day)
+                    : null),
             sunrise: widget.sunrise,
             sunset: widget.sunset,
             currentTime: widget.currentTime,
             language: lang,
+            customMuhurtaIntervals: widget.muhurtaIntervals,
             padding: EdgeInsets.zero,
           );
         case 1:
@@ -246,6 +256,7 @@ class _CardTimingsState extends State<CardTimings> {
             sunrise: widget.sunrise,
             sunset: widget.sunset,
             language: lang,
+            customIntervals: widget.muhurtaIntervals,
             padding: EdgeInsets.zero,
             onAlarmTap: widget.onMuhurtaAlarmTap ??
                 (widget.onAlarmTap != null
@@ -275,6 +286,7 @@ class _CardTimingsState extends State<CardTimings> {
             sunrise: widget.sunrise,
             sunset: widget.sunset,
             language: lang,
+            customIntervals: widget.muhurtaIntervals,
             padding: EdgeInsets.zero,
             onAlarmTap: widget.onMuhurtaAlarmTap ??
                 (widget.onAlarmTap != null

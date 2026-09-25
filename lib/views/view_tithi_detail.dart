@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import '../constants/panchang_terms.dart';
 import '../database/app_database.dart';
 import '../models/city.dart';
+import '../models/festival_rule.dart';
 import '../services/sweph_service.dart';
 import '../theme/design_system.dart';
 import '../widgets/widgets.dart';
@@ -65,13 +67,26 @@ class _TithiDetailViewState extends State<TithiDetailView> {
         false;
     _language = widget.initialLanguage ?? AppDatabase.instance.languageNotifier.value;
     AppDatabase.instance.languageNotifier.addListener(_onLanguageChanged);
+
+    final effectiveDate = _effectiveDateTime;
+    final now = DateTime.now();
+    final isToday = effectiveDate.year == now.year &&
+        effectiveDate.month == now.month &&
+        effectiveDate.day == now.day;
+    if (isToday && SwephService.instance.cachedTodayResult != null) {
+      _calculationResult = SwephService.instance.cachedTodayResult;
+    }
+
     _loadPanchangCalculation();
   }
 
   Future<void> _loadPanchangCalculation() async {
     try {
-      final city = await AppDatabase.instance.getSavedCity() ?? City.mumbai;
-      final rules = await AppDatabase.instance.getAllFestivalRules();
+      final city = AppDatabase.instance.cityNotifier.value ?? City.mumbai;
+      List<FestivalRule> rules = const [];
+      try {
+        rules = await AppDatabase.instance.getAllFestivalRules();
+      } catch (_) {}
       final result = await SwephService.instance.calculatePanchang(
         date: _effectiveDateTime,
         city: city,
@@ -111,52 +126,67 @@ class _TithiDetailViewState extends State<TithiDetailView> {
     super.dispose();
   }
 
+  static const _weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  static const _months = [
+    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+  ];
+
   DateTime get _effectiveDateTime {
     if (widget.dateTime != null) return widget.dateTime!;
     if (widget.tithiData?.dateTime != null) return widget.tithiData!.dateTime!;
-    return DateTime(2026, 9, 24);
+    return DateTime.now();
   }
 
   String get _effectiveDateString {
     if (widget.date != null) return widget.date!;
     if (widget.tithiData != null) return widget.tithiData!.date;
-    return 'Thu, 24 Sep 2026';
+    final d = _effectiveDateTime;
+    return '${_weekdays[d.weekday - 1]}, ${d.day} ${_months[d.month - 1]} ${d.year}';
+  }
+
+  TithiData? get _derivedDayData {
+    if (widget.tithiData != null) return widget.tithiData;
+    try {
+      final city = AppDatabase.instance.cityNotifier.value ?? City.mumbai;
+      return SwephService.instance.calculateCalendarDay(
+        date: _effectiveDateTime,
+        city: city,
+        today: DateTime.now(),
+      );
+    } catch (_) {
+      return null;
+    }
   }
 
   String get _effectiveTithi {
     if (widget.tithi != null) return widget.tithi!;
-    if (widget.tithiData != null) return widget.tithiData!.tithi;
-    return 'Trayodashi';
+    return _derivedDayData?.tithi ?? '';
   }
 
   String get _effectivePaksha {
     if (widget.paksha != null) return widget.paksha!;
-    if (widget.tithiData != null) return widget.tithiData!.paksha;
-    return 'Shukla Paksha';
+    return _derivedDayData?.paksha ?? '';
   }
 
   String? get _effectiveMoonAsset {
     if (widget.moonPhaseAsset != null) return widget.moonPhaseAsset;
-    if (widget.tithiData?.moonPhaseAsset != null) return widget.tithiData!.moonPhaseAsset;
-    return null;
+    return _derivedDayData?.moonPhaseAsset;
   }
 
   int? get _effectiveLunarDay {
     if (widget.lunarDay != null) return widget.lunarDay;
-    if (widget.tithiData?.lunarDay != null) return widget.tithiData!.lunarDay;
-    return 13;
+    return _derivedDayData?.lunarDay;
   }
 
   String? get _effectiveVrat {
     if (widget.vrat != null) return widget.vrat;
-    if (widget.tithiData?.vrat != null) return widget.tithiData!.vrat;
-    return 'No Vrat';
+    return _derivedDayData?.vrat ?? PanchangLabels.noVrat(_language);
   }
 
   String? get _effectiveFestival {
     if (widget.festival != null) return widget.festival;
-    if (widget.tithiData?.festival != null) return widget.tithiData!.festival;
-    return 'No Festival';
+    return _derivedDayData?.festival ?? PanchangLabels.noFestival(_language);
   }
 
   void _toggleAlarm() {
@@ -168,6 +198,8 @@ class _TithiDetailViewState extends State<TithiDetailView> {
 
   List<Widget> _buildContentWidgets() {
     final result = _calculationResult;
+    final hasHeaderData = _effectiveTithi.isNotEmpty && _effectivePaksha.isNotEmpty;
+
     return [
       // 1st Widget: CardTithi with active alarm button toggle
       if (result != null)
@@ -178,7 +210,7 @@ class _TithiDetailViewState extends State<TithiDetailView> {
           onAlarmTap: _toggleAlarm,
           language: _language,
         )
-      else
+      else if (hasHeaderData)
         CardTithi.detail(
           date: _effectiveDateString,
           dateTime: _effectiveDateTime,
@@ -191,7 +223,9 @@ class _TithiDetailViewState extends State<TithiDetailView> {
           isAlarmActive: _isAlarmActive,
           onAlarmTap: _toggleAlarm,
           language: _language,
-        ),
+        )
+      else
+        const CardTithiSkeleton(moonSize: 72.0, isDetail: true),
       const SizedBox(height: AppSpacing.spacing16),
 
       // 2nd Widget: ListItemPanchang

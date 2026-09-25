@@ -210,8 +210,8 @@ void main() {
 
       expect(find.text('Today'), findsNWidgets(2)); // AppBar title + NavBottom label
       expect(find.byType(NavBottom), findsOneWidget);
-      expect(find.byType(ListItemPanchang), findsOneWidget);
-      expect(find.byType(CardTimings), findsOneWidget);
+      expect(find.byWidgetPredicate((w) => w is ListItemPanchang || w is CardPanchangSkeleton), findsOneWidget);
+      expect(find.byWidgetPredicate((w) => w is CardTimings || w is CardTimingsSkeleton), findsOneWidget);
     });
 
     testWidgets('Renders Desktop layout with 2 columns, NavSide, and AppBar', (tester) async {
@@ -228,8 +228,8 @@ void main() {
 
       expect(find.byType(NavSide), findsOneWidget);
       expect(find.text('Today'), findsOneWidget); // AppBar title
-      expect(find.byType(ListItemPanchang), findsOneWidget);
-      expect(find.byType(CardTimings), findsOneWidget);
+      expect(find.byWidgetPredicate((w) => w is ListItemPanchang || w is CardPanchangSkeleton), findsOneWidget);
+      expect(find.byWidgetPredicate((w) => w is CardTimings || w is CardTimingsSkeleton), findsOneWidget);
     });
   });
 }

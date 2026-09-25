@@ -163,7 +163,6 @@ class _TithiViewState extends State<TithiView> {
     final rawTodayIndex = _today.difference(startDate).inDays;
     _todayIndex = rawTodayIndex.clamp(0, totalDays - 1);
 
-    final demoItems = ListTithis.defaultDemoData;
     _dates = List<DateTime>.generate(
       totalDays,
       (i) => DateTime(startDate.year, startDate.month, startDate.day + i),
@@ -182,19 +181,18 @@ class _TithiViewState extends State<TithiView> {
         state = ItemTemporalState.current;
       }
 
-      final demo = demoItems[i % demoItems.length];
       final dateString =
           '${_weekdays[date.weekday - 1]}, ${date.day} ${_months[date.month - 1]} ${date.year}';
 
       return TithiData(
         date: dateString,
         dateTime: itemDate,
-        tithi: demo.tithi,
-        paksha: demo.paksha,
-        vrat: demo.vrat,
-        festival: demo.festival,
-        lunarDay: demo.lunarDay,
-        moonPhaseAsset: demo.moonPhaseAsset,
+        tithi: '',
+        paksha: '',
+        vrat: null,
+        festival: null,
+        lunarDay: null,
+        moonPhaseAsset: null,
         state: state,
         isAlarmActive: false,
       );
@@ -203,15 +201,14 @@ class _TithiViewState extends State<TithiView> {
 
   Future<void> _loadRealPanchangData() async {
     try {
-      final city = await AppDatabase.instance.getSavedCity() ?? City.mumbai;
-      final lunarSystem = await AppDatabase.instance.getSavedLunarSystem();
-      final festivalRules = await AppDatabase.instance.getAllFestivalRules();
+      final city = AppDatabase.instance.cityNotifier.value ?? City.mumbai;
+      final lunarSystem = AppDatabase.instance.lunarSystemNotifier.value;
+
       final realData = await SwephService.instance.calculateCalendarRange(
         dates: _dates,
         city: city,
         today: _today,
         lunarSystem: lunarSystem,
-        festivalRules: festivalRules,
       );
       if (mounted) {
         final userAlarmStates = <DateTime, bool>{
@@ -238,6 +235,25 @@ class _TithiViewState extends State<TithiView> {
           }).toList();
         });
       }
+
+      // If festival rules are available in database, enrich with festivals
+      try {
+        final rules = await AppDatabase.instance.getAllFestivalRules();
+        if (rules.isNotEmpty && mounted) {
+          final withFestivals = await SwephService.instance.calculateCalendarRange(
+            dates: _dates,
+            city: city,
+            today: _today,
+            lunarSystem: lunarSystem,
+            festivalRules: rules,
+          );
+          if (mounted) {
+            setState(() {
+              _tithiDataList = withFestivals;
+            });
+          }
+        }
+      } catch (_) {}
     } catch (_) {}
   }
 

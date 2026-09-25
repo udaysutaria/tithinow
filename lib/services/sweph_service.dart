@@ -1,4 +1,5 @@
 import 'package:sweph/sweph.dart';
+import '../constants/muhurta_data.dart';
 import '../constants/panchang_terms.dart';
 import '../database/app_database.dart';
 import '../models/city.dart';
@@ -26,6 +27,7 @@ class PanchangCalculationResult {
   final Rashi rashi; // Chandra Rashi (Moon sign)
   final Rashi suryaRashi; // Sun sign
   final List<FestivalRule> matchedFestivals;
+  final List<MuhurtaInterval> muhurtaIntervals;
 
   const PanchangCalculationResult({
     required this.date,
@@ -47,6 +49,7 @@ class PanchangCalculationResult {
     required this.rashi,
     required this.suryaRashi,
     this.matchedFestivals = const [],
+    this.muhurtaIntervals = const [],
   })  : amantaMonth = amantaMonth ?? hinduMonth,
         purnimantaMonth = purnimantaMonth ?? hinduMonth;
 
@@ -218,21 +221,53 @@ class SwephService {
       atTemp,
     );
 
+    DateTime toLocalTime(DateTime utc) {
+      final shifted = utc.add(tzOffset);
+      return DateTime(
+        shifted.year,
+        shifted.month,
+        shifted.day,
+        shifted.hour,
+        shifted.minute,
+        shifted.second,
+        shifted.millisecond,
+        shifted.microsecond,
+      );
+    }
+
     final DateTime sunrise;
     final DateTime sunset;
 
     if (riseJd != null) {
       final riseUtc = Sweph.swe_revjul(riseJd, CalendarType.SE_GREG_CAL);
-      sunrise = riseUtc.add(tzOffset);
+      sunrise = toLocalTime(riseUtc);
     } else {
       sunrise = DateTime(date.year, date.month, date.day, 6, 0);
     }
 
     if (setJd != null) {
       final setUtc = Sweph.swe_revjul(setJd, CalendarType.SE_GREG_CAL);
-      sunset = setUtc.add(tzOffset);
+      sunset = toLocalTime(setUtc);
     } else {
       sunset = DateTime(date.year, date.month, date.day, 18, 30);
+    }
+
+    final nextRiseJd = Sweph.swe_rise_trans(
+      jdMidnightUt + 1.0,
+      HeavenlyBody.SE_SUN,
+      SwephFlag.SEFLG_MOSEPH,
+      RiseSetTransitFlag.SE_CALC_RISE,
+      geoPos,
+      atPress,
+      atTemp,
+    );
+
+    final DateTime nextSunrise;
+    if (nextRiseJd != null) {
+      final nextRiseUtc = Sweph.swe_revjul(nextRiseJd, CalendarType.SE_GREG_CAL);
+      nextSunrise = toLocalTime(nextRiseUtc);
+    } else {
+      nextSunrise = sunrise.add(const Duration(days: 1));
     }
 
     // 2. Calculate Moonrise & Moonset
@@ -267,11 +302,11 @@ class SwephService {
 
     if (moonriseJd != null) {
       final mrUtc = Sweph.swe_revjul(moonriseJd, CalendarType.SE_GREG_CAL);
-      moonrise = mrUtc.add(tzOffset);
+      moonrise = toLocalTime(mrUtc);
     }
     if (moonsetJd != null) {
       final msUtc = Sweph.swe_revjul(moonsetJd, CalendarType.SE_GREG_CAL);
-      moonset = msUtc.add(tzOffset);
+      moonset = toLocalTime(msUtc);
     }
 
     // 3. Calculate Pancha-Anga prevailing at Sunrise (Udaya Lagna)
@@ -332,6 +367,15 @@ class SwephService {
       rules: festivalRules ?? const [],
     );
 
+    // 5. Generate Muhurta intervals matching Drik Panchang
+    final muhurtaIntervals = MuhurtaData.generateIntervals(
+      date: date,
+      sunriseDateTime: sunrise,
+      sunsetDateTime: sunset,
+      nextSunriseDateTime: nextSunrise,
+      city: city,
+    );
+
     final result = PanchangCalculationResult(
       date: date,
       city: city,
@@ -352,6 +396,7 @@ class SwephService {
       rashi: rashi,
       suryaRashi: suryaRashi,
       matchedFestivals: matchedRules,
+      muhurtaIntervals: muhurtaIntervals,
     );
 
     _cache[dateKey] = result;

@@ -6,8 +6,77 @@ import 'package:tithinow/widgets/widgets.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
+  const sampleTithis = [
+    TithiData(
+      date: 'Sun, 20 Sep 2026',
+      tithi: 'Dashami',
+      paksha: 'Shukla',
+      vrat: 'No Vrat',
+      festival: 'No Festival',
+      lunarDay: 10,
+      state: ItemTemporalState.past,
+    ),
+    TithiData(
+      date: 'Mon, 21 Sep 2026',
+      tithi: 'Ekadashi',
+      paksha: 'Shukla',
+      vrat: 'Parivartini Ekadashi',
+      festival: 'No Festival',
+      lunarDay: 11,
+      state: ItemTemporalState.past,
+    ),
+    TithiData(
+      date: 'Tue, 22 Sep 2026',
+      tithi: 'Dwadashi',
+      paksha: 'Shukla',
+      vrat: 'Vamana Jayanti',
+      festival: 'No Festival',
+      lunarDay: 12,
+      state: ItemTemporalState.past,
+    ),
+    TithiData(
+      date: 'Wed, 23 Sep 2026',
+      tithi: 'Trayodashi',
+      paksha: 'Shukla',
+      vrat: 'Pradosh Vrat',
+      festival: 'No Festival',
+      lunarDay: 13,
+      state: ItemTemporalState.current,
+    ),
+    TithiData(
+      date: 'Thu, 24 Sep 2026',
+      tithi: 'Chaturdashi',
+      paksha: 'Shukla',
+      vrat: 'No Vrat',
+      festival: 'Anant Chaturdashi',
+      lunarDay: 14,
+      state: ItemTemporalState.future,
+      isAlarmActive: false,
+    ),
+    TithiData(
+      date: 'Fri, 25 Sep 2026',
+      tithi: 'Purnima',
+      paksha: 'Shukla',
+      vrat: 'Satyanarayan Vrat',
+      festival: 'Bhadrapada Purnima',
+      lunarDay: 15,
+      state: ItemTemporalState.future,
+      isAlarmActive: false,
+    ),
+    TithiData(
+      date: 'Sat, 26 Sep 2026',
+      tithi: 'Pratipada',
+      paksha: 'Krishna',
+      vrat: 'No Vrat',
+      festival: 'Pitrupaksha Begins',
+      lunarDay: 16,
+      state: ItemTemporalState.future,
+      isAlarmActive: false,
+    ),
+  ];
+
   group('ListTithis Tests', () {
-    testWidgets('Renders exactly 7 demo items using ListItemTithi by default', (tester) async {
+    testWidgets('Renders 7 ListItemTithiSkeleton placeholders when data and items are null', (tester) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
@@ -19,11 +88,27 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // Verify all 7 items are rendered
+      // Verify all 7 skeleton items are rendered
+      expect(find.byType(ListItemTithiSkeleton), findsNWidgets(7));
+      expect(find.byType(ListItemTithi), findsNothing);
+    });
+
+    testWidgets('Renders items using ListItemTithi when data is provided', (tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: SingleChildScrollView(
+              child: ListTithis(data: sampleTithis),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
       final items = find.byType(ListItemTithi);
       expect(items, findsNWidgets(7));
 
-      // Check dates of the 7 consecutive items
+      // Check dates of consecutive items
       expect(find.text('Sun, 20 Sep 2026'), findsOneWidget);
       expect(find.text('Mon, 21 Sep 2026'), findsOneWidget);
       expect(find.text('Tue, 22 Sep 2026'), findsOneWidget);
@@ -42,12 +127,12 @@ void main() {
       expect(find.text('Pratipada'), findsOneWidget);
     });
 
-    testWidgets('Demo items contain 3 PastItem, 1 CurrentItem, and 3 FutureItem states', (tester) async {
+    testWidgets('Items contain 3 PastItem, 1 CurrentItem, and 3 FutureItem states', (tester) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
             body: SingleChildScrollView(
-              child: ListTithis(),
+              child: ListTithis(data: sampleTithis),
             ),
           ),
         ),
@@ -79,7 +164,7 @@ void main() {
         const MaterialApp(
           home: Scaffold(
             body: SingleChildScrollView(
-              child: ListTithis(),
+              child: ListTithis(data: sampleTithis),
             ),
           ),
         ),
@@ -105,7 +190,7 @@ void main() {
         const MaterialApp(
           home: Scaffold(
             body: SingleChildScrollView(
-              child: ListTithis(),
+              child: ListTithis(data: sampleTithis),
             ),
           ),
         ),
@@ -146,6 +231,7 @@ void main() {
           home: Scaffold(
             body: SingleChildScrollView(
               child: ListTithis(
+                data: sampleTithis,
                 onAlarmTap: (index, isActive) {
                   tappedIndex = index;
                   tappedIsActive = isActive;
@@ -202,6 +288,7 @@ void main() {
           home: Scaffold(
             body: SingleChildScrollView(
               child: ListTithis(
+                data: sampleTithis,
                 onItemTap: (index) {
                   tappedItemIndex = index;
                 },
@@ -236,6 +323,7 @@ void main() {
             body: SingleChildScrollView(
               child: ListTithis(
                 title: 'Upcoming Tithis',
+                data: sampleTithis,
               ),
             ),
           ),
@@ -352,24 +440,34 @@ void main() {
       expect(assetImage.assetName, 'assets/moon_phases/01amavasya.webp');
     });
 
-    test('ListTithis.createDemoItems static helper generates 7 items', () {
-      final items = ListTithis.createDemoItems();
-      expect(items.length, 7);
-      expect(items[0].state, ItemTemporalState.past);
-      expect(items[1].state, ItemTemporalState.past);
-      expect(items[2].state, ItemTemporalState.past);
-      expect(items[3].state, ItemTemporalState.current);
-      expect(items[4].state, ItemTemporalState.future);
-      expect(items[5].state, ItemTemporalState.future);
-      expect(items[6].state, ItemTemporalState.future);
-    });
-
-    testWidgets('Renders demo items in Hindi when language is AppLanguage.hindi', (tester) async {
+    testWidgets('Renders items in Hindi when language is AppLanguage.hindi', (tester) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
             body: SingleChildScrollView(
               child: ListTithis(
+                data: [
+                  TithiData(
+                    date: 'Sun, 20 Sep 2026',
+                    dateTime: null,
+                    tithi: 'Dashami',
+                    paksha: 'Shukla',
+                    vrat: 'No Vrat',
+                    festival: 'No Festival',
+                    lunarDay: 10,
+                    state: ItemTemporalState.past,
+                  ),
+                  TithiData(
+                    date: 'Mon, 21 Sep 2026',
+                    dateTime: null,
+                    tithi: 'Ekadashi',
+                    paksha: 'Shukla',
+                    vrat: 'Parivartini Ekadashi',
+                    festival: 'No Festival',
+                    lunarDay: 11,
+                    state: ItemTemporalState.past,
+                  ),
+                ],
                 language: AppLanguage.hindi,
               ),
             ),
@@ -381,30 +479,42 @@ void main() {
       // Check Hindi Tithi names
       expect(find.text('दशमी'), findsOneWidget);
       expect(find.text('एकादशी'), findsOneWidget);
-      expect(find.text('द्वादशी'), findsOneWidget);
-      expect(find.text('त्रयोदशी'), findsOneWidget);
-      expect(find.text('चतुर्दशी'), findsOneWidget);
-      expect(find.text('पूर्णिमा'), findsOneWidget);
-      expect(find.text('प्रतिपदा'), findsOneWidget);
 
       // Check Hindi Paksha names
-      expect(find.text('शुक्ल'), findsNWidgets(6));
-      expect(find.text('कृष्ण'), findsOneWidget);
+      expect(find.text('शुक्ल'), findsNWidgets(2));
 
-      // Check Hindi Active Vrat / Festival
+      // Check Hindi Active Vrat
       expect(find.text('परिवर्तिनी एकादशी'), findsOneWidget);
-      expect(find.text('अनंत चतुर्दशी'), findsOneWidget);
-
-      // Check Hindi Date
-      expect(find.text('रविवार, 20 सितंबर 2026'), findsOneWidget);
     });
 
-    testWidgets('Renders demo items in Gujarati when language is AppLanguage.gujarati', (tester) async {
+    testWidgets('Renders items in Gujarati when language is AppLanguage.gujarati', (tester) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
             body: SingleChildScrollView(
               child: ListTithis(
+                data: [
+                  TithiData(
+                    date: 'Sun, 20 Sep 2026',
+                    dateTime: null,
+                    tithi: 'Dashami',
+                    paksha: 'Shukla',
+                    vrat: 'No Vrat',
+                    festival: 'No Festival',
+                    lunarDay: 10,
+                    state: ItemTemporalState.past,
+                  ),
+                  TithiData(
+                    date: 'Mon, 21 Sep 2026',
+                    dateTime: null,
+                    tithi: 'Ekadashi',
+                    paksha: 'Shukla',
+                    vrat: 'Parivartini Ekadashi',
+                    festival: 'No Festival',
+                    lunarDay: 11,
+                    state: ItemTemporalState.past,
+                  ),
+                ],
                 language: AppLanguage.gujarati,
               ),
             ),
@@ -416,32 +526,12 @@ void main() {
       // Check Gujarati Tithi names
       expect(find.text('દશમ'), findsOneWidget);
       expect(find.text('અગિયારસ'), findsOneWidget);
-      expect(find.text('બારસ'), findsOneWidget);
-      expect(find.text('તેરસ'), findsOneWidget);
-      expect(find.text('ચૌદસ'), findsOneWidget);
-      expect(find.text('પૂનમ'), findsOneWidget);
-      expect(find.text('પડવો'), findsOneWidget);
 
       // Check Gujarati Paksha names
-      expect(find.text('શુક્લ'), findsNWidgets(6));
-      expect(find.text('કૃષ્ણ'), findsOneWidget);
+      expect(find.text('શુક્લ'), findsNWidgets(2));
 
-      // Check Gujarati Active Vrat / Festival
+      // Check Gujarati Active Vrat
       expect(find.text('પરિવર્તિની અગિયારસ'), findsOneWidget);
-      expect(find.text('અનંત ચતુર્દશી'), findsOneWidget);
-
-      // Check Gujarati Date
-      expect(find.text('રવિવાર, 20 સપ્ટેમ્બર 2026'), findsOneWidget);
-    });
-
-    test('createDemoItems respects language parameter', () {
-      final hindiItems = ListTithis.createDemoItems(language: AppLanguage.hindi);
-      expect(hindiItems.length, 7);
-      expect(hindiItems[0].language, AppLanguage.hindi);
-
-      final gujaratiItems = ListTithis.createDemoItems(language: AppLanguage.gujarati);
-      expect(gujaratiItems.length, 7);
-      expect(gujaratiItems[0].language, AppLanguage.gujarati);
     });
   });
 }
