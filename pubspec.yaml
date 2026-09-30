@@ -65,6 +65,7 @@ msix_config:
   identity_name: com.udaysutaria.tithinow
   msix_version: 1.0.0.0
   logo_path: assets/images/LauncherIcon.png
+  install_certificate: false
 
 flutter_launcher_icons:
   android: "launcher_icon"
