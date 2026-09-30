@@ -1,0 +1,94 @@
+name: Build Installers
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build-windows-msix:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: "stable"
+
+      - name: Enable Windows desktop
+        run: flutter config --enable-windows-desktop
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Build MSIX
+        run: dart run msix:create
+
+      - name: Find MSIX file
+        id: find_msix
+        shell: bash
+        run: |
+          MSIX_PATH=$(find build -name "*.msix" | head -n 1)
+          echo "msix_path=$MSIX_PATH" >> "$GITHUB_OUTPUT"
+
+      - name: Upload MSIX artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-msix-installer
+          path: ${{ steps.find_msix.outputs.msix_path }}
+
+  build-macos-dmg:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: "stable"
+
+      - name: Enable macOS desktop
+        run: flutter config --enable-macos-desktop
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Build macOS app
+        run: flutter build macos --release
+
+      - name: Install create-dmg
+        run: brew install create-dmg
+
+      - name: Locate .app bundle
+        id: find_app
+        run: |
+          APP_PATH=$(find build/macos/Build/Products/Release -maxdepth 1 -name "*.app" | head -n 1)
+          APP_NAME=$(basename "$APP_PATH" .app)
+          echo "app_path=$APP_PATH" >> "$GITHUB_OUTPUT"
+          echo "app_name=$APP_NAME" >> "$GITHUB_OUTPUT"
+
+      - name: Create DMG
+        run: |
+          mkdir -p dist
+          create-dmg \
+            --volname "${{ steps.find_app.outputs.app_name }}" \
+            --window-size 600 400 \
+            --icon-size 100 \
+            --app-drop-link 450 200 \
+            "dist/${{ steps.find_app.outputs.app_name }}.dmg" \
+            "${{ steps.find_app.outputs.app_path }}" \
+            || true
+          # create-dmg returns non-zero on some benign AppleScript/Finder
+          # warnings even when the dmg is created successfully, so we
+          # verify the file actually exists before failing the job.
+          test -f "dist/${{ steps.find_app.outputs.app_name }}.dmg"
+
+      - name: Upload DMG artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-unsigned-dmg
+          path: dist/*.dmg
