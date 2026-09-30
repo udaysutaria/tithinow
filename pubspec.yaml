@@ -57,6 +57,14 @@ dev_dependencies:
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
   flutter_launcher_icons: ^0.14.3
+  msix: ^3.18.0
+
+msix_config:
+  display_name: TithiNow
+  publisher_display_name: UdaySutaria
+  identity_name: com.udaysutaria.tithinow
+  msix_version: 1.0.0.0
+  logo_path: assets/images/LauncherIcon.png
 
 flutter_launcher_icons:
   android: "launcher_icon"
