@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart' show ScrollDirection;
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../constants/panchang_terms.dart';
 import '../../services/sweph_service.dart' show PanchangCalculationResult;
@@ -241,7 +243,14 @@ class PanchangData {
   String resolveLabelKarana(AppLanguage lang) => labelKarana ?? PanchangLabels.karana(lang);
 
   /// Resolves label for Rashi (Moon Sign).
-  String resolveLabelRashi(AppLanguage lang) => labelRashi ?? PanchangLabels.rashi(lang);
+  String resolveLabelRashi(AppLanguage lang) {
+    if (labelRashi != null &&
+        labelRashi != 'Rashi' &&
+        labelRashi != 'Moon Sign') {
+      return labelRashi!;
+    }
+    return PanchangLabels.rashi(lang);
+  }
 
   /// Resolves label for Surya Rashi (Sun Sign).
   String resolveLabelSuryaRashi(AppLanguage lang) {
@@ -408,6 +417,7 @@ class CardPanchang extends StatefulWidget {
   final double spacing;
   final double sliderHeight;
   final ValueChanged<int>? onPageChanged;
+  final bool enableAutoplay;
 
   /// Language for localizing terms. If not specified, dynamically follows [AppDatabase.languageNotifier].
   final AppLanguage? language;
@@ -436,10 +446,11 @@ class CardPanchang extends StatefulWidget {
     super.key,
     this.data,
     this.mode = PanchangLayoutMode.auto,
-    this.spacing = AppSpacing.spacing8,
+    this.spacing = AppSpacing.spacing16,
     this.sliderHeight = 180.0,
     this.onPageChanged,
     this.language,
+    this.enableAutoplay = true,
     this.nakshatra,
     this.nakshatraEnum,
     this.month,
@@ -465,10 +476,11 @@ class CardPanchang extends StatefulWidget {
     PanchangCalculationResult result, {
     Key? key,
     PanchangLayoutMode mode = PanchangLayoutMode.auto,
-    double spacing = AppSpacing.spacing8,
+    double spacing = AppSpacing.spacing16,
     double sliderHeight = 180.0,
     ValueChanged<int>? onPageChanged,
     AppLanguage? language,
+    bool enableAutoplay = true,
   }) {
     return CardPanchang(
       key: key,
@@ -491,6 +503,7 @@ class CardPanchang extends StatefulWidget {
       sliderHeight: sliderHeight,
       onPageChanged: onPageChanged,
       language: language,
+      enableAutoplay: enableAutoplay,
     );
   }
 
@@ -516,10 +529,11 @@ class CardPanchang extends StatefulWidget {
     String? suryaRashi,
     Rashi? suryaRashiEnum,
     PanchangLayoutMode mode = PanchangLayoutMode.auto,
-    double spacing = AppSpacing.spacing8,
+    double spacing = AppSpacing.spacing16,
     double sliderHeight = 180.0,
     ValueChanged<int>? onPageChanged,
     AppLanguage? language,
+    bool enableAutoplay = true,
   }) {
     return CardPanchang(
       key: key,
@@ -548,6 +562,7 @@ class CardPanchang extends StatefulWidget {
       sliderHeight: sliderHeight,
       onPageChanged: onPageChanged,
       language: language,
+      enableAutoplay: enableAutoplay,
     );
   }
 
@@ -566,6 +581,9 @@ class _CardPanchangState extends State<CardPanchang> {
   late final PageController _pageController;
   int _currentPage = 0;
   late AppLanguage _databaseLanguage;
+  Timer? _autoplayTimer;
+  Timer? _resumeTimer;
+  bool _isUserInteracting = false;
 
   @override
   void initState() {
@@ -573,6 +591,9 @@ class _CardPanchangState extends State<CardPanchang> {
     _pageController = PageController(initialPage: 0);
     _databaseLanguage = appLanguageNotifier.value;
     appLanguageNotifier.addListener(_onLanguageChanged);
+    if (widget.enableAutoplay) {
+      _startAutoplay();
+    }
   }
 
   void _onLanguageChanged() {
@@ -584,10 +605,80 @@ class _CardPanchangState extends State<CardPanchang> {
   }
 
   @override
+  void didUpdateWidget(CardPanchang oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.enableAutoplay != widget.enableAutoplay) {
+      if (widget.enableAutoplay) {
+        _startAutoplay();
+      } else {
+        _stopAutoplay();
+        _resumeTimer?.cancel();
+        _resumeTimer = null;
+      }
+    }
+  }
+
+  @override
   void dispose() {
+    _stopAutoplay();
+    _resumeTimer?.cancel();
+    _resumeTimer = null;
     appLanguageNotifier.removeListener(_onLanguageChanged);
     _pageController.dispose();
     super.dispose();
+  }
+
+  void _startAutoplay() {
+    _stopAutoplay();
+    if (!widget.enableAutoplay) return;
+    _autoplayTimer = Timer.periodic(const Duration(seconds: 4), (_) {
+      if (!mounted || !_pageController.hasClients || _isUserInteracting) return;
+      final int current = _pageController.page?.round() ?? _currentPage;
+      final int nextPage = (current + 1) % 3;
+      _pageController.animateToPage(
+        nextPage,
+        duration: const Duration(milliseconds: 350),
+        curve: Curves.easeInOut,
+      );
+    });
+  }
+
+  void _stopAutoplay() {
+    _autoplayTimer?.cancel();
+    _autoplayTimer = null;
+  }
+
+  void _startResumeTimer() {
+    _resumeTimer?.cancel();
+    if (!widget.enableAutoplay) return;
+    _resumeTimer = Timer(const Duration(seconds: 10), () {
+      if (mounted && !_isUserInteracting && widget.enableAutoplay) {
+        _startAutoplay();
+      }
+    });
+  }
+
+  void _onScrollNotification(ScrollNotification notification) {
+    if (notification is ScrollStartNotification) {
+      if (notification.dragDetails != null) {
+        _isUserInteracting = true;
+        _stopAutoplay();
+        _resumeTimer?.cancel();
+        _resumeTimer = null;
+      }
+    } else if (notification is UserScrollNotification) {
+      if (notification.direction != ScrollDirection.idle) {
+        _isUserInteracting = true;
+        _stopAutoplay();
+        _resumeTimer?.cancel();
+        _resumeTimer = null;
+      }
+    } else if (notification is ScrollEndNotification) {
+      if (_isUserInteracting) {
+        _isUserInteracting = false;
+        _startResumeTimer();
+      }
+    }
   }
 
   AppLanguage get _effectiveLanguage => widget.language ?? _databaseLanguage;
@@ -633,6 +724,17 @@ class _CardPanchangState extends State<CardPanchang> {
     final effectiveMode = _resolveLayoutMode(context);
     final lang = _effectiveLanguage;
 
+    if (effectiveMode != PanchangLayoutMode.mobileSlider) {
+      _stopAutoplay();
+      _resumeTimer?.cancel();
+      _resumeTimer = null;
+    } else if (widget.enableAutoplay &&
+        _autoplayTimer == null &&
+        _resumeTimer == null &&
+        !_isUserInteracting) {
+      _startAutoplay();
+    }
+
     switch (effectiveMode) {
       case PanchangLayoutMode.mobileSlider:
         return _buildMobileSlider(context, lang);
@@ -673,19 +775,25 @@ class _CardPanchangState extends State<CardPanchang> {
       children: [
         SizedBox(
           height: widget.sliderHeight,
-          child: PageView(
-            controller: _pageController,
-            onPageChanged: (index) {
-              setState(() {
-                _currentPage = index;
-              });
-              widget.onPageChanged?.call(index);
+          child: NotificationListener<ScrollNotification>(
+            onNotification: (notification) {
+              _onScrollNotification(notification);
+              return false;
             },
-            children: [
-              _build2x2Grid(slide1),
-              _build2x2Grid(slide2),
-              _build2x2Grid(slide3),
-            ],
+            child: PageView(
+              controller: _pageController,
+              onPageChanged: (index) {
+                setState(() {
+                  _currentPage = index;
+                });
+                widget.onPageChanged?.call(index);
+              },
+              children: [
+                _build2x2Grid(slide1),
+                _build2x2Grid(slide2),
+                _build2x2Grid(slide3),
+              ],
+            ),
           ),
         ),
         const SizedBox(height: AppSpacing.spacing12),
@@ -729,11 +837,15 @@ class _CardPanchangState extends State<CardPanchang> {
         final bool isActive = _currentPage == index;
         return GestureDetector(
           onTap: () {
+            _stopAutoplay();
+            _resumeTimer?.cancel();
+            _resumeTimer = null;
             _pageController.animateToPage(
               index,
               duration: const Duration(milliseconds: 300),
               curve: Curves.easeInOut,
             );
+            _startResumeTimer();
           },
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 250),

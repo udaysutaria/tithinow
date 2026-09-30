@@ -3,6 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../constants/muhurta_data.dart';
 import '../../constants/panchang_terms.dart';
 import '../../theme/design_system.dart';
+import '../../services/alarm_service.dart';
+import '../molecules/list_item_alarms.dart' show AlarmType;
 import '../molecules/list_item_tab_content.dart';
 
 /// Organism widget displaying the "Muhurta" tab content.
@@ -38,6 +40,9 @@ class ListTabContentMuhurta extends StatefulWidget {
   /// Explicit set of item indices that are currently active [ItemTemporalState.current].
   /// If provided, overrides dynamic time resolution.
   final Set<int>? currentIndices;
+
+  /// Optional set of active alarm slot indices. If null, dynamically syncs with [AlarmService.alarmsNotifier].
+  final Set<int>? activeAlarms;
 
   /// Simulated reference time used to evaluate interval temporal states.
   /// If provided, compares each interval's [MuhurtaInterval.startTime] and
@@ -90,6 +95,7 @@ class ListTabContentMuhurta extends StatefulWidget {
     this.sunset = const TimeOfDay(hour: 18, minute: 33),
     this.language,
     this.currentIndices,
+    this.activeAlarms,
     this.currentTime,
     this.items,
     this.customIntervals,
@@ -123,6 +129,13 @@ class _ListTabContentMuhurtaState extends State<ListTabContentMuhurta> {
     }
     _databaseLanguage = appLanguageNotifier.value;
     appLanguageNotifier.addListener(_onLanguageChanged);
+    AlarmService.instance.alarmsNotifier.addListener(_onAlarmsChanged);
+  }
+
+  void _onAlarmsChanged() {
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   @override
@@ -145,6 +158,7 @@ class _ListTabContentMuhurtaState extends State<ListTabContentMuhurta> {
 
   @override
   void dispose() {
+    AlarmService.instance.alarmsNotifier.removeListener(_onAlarmsChanged);
     appLanguageNotifier.removeListener(_onLanguageChanged);
     super.dispose();
   }
@@ -224,15 +238,103 @@ class _ListTabContentMuhurtaState extends State<ListTabContentMuhurta> {
     widget.onCountdownEnded?.call(index, muhurta);
   }
 
-  void _handleAlarmTap(int index, Muhurta muhurta) {
-    setState(() {
-      if (_activeAlarms.contains(index)) {
-        _activeAlarms.remove(index);
-      } else {
-        _activeAlarms.add(index);
+  Set<int> _computeActiveAlarms(List<MuhurtaInterval> intervals) {
+    if (widget.activeAlarms != null) {
+      return widget.activeAlarms!;
+    }
+    final allAlarms = AlarmService.instance.alarmsNotifier.value;
+    final activeSet = Set<int>.from(_activeAlarms);
+    for (int i = 0; i < intervals.length; i++) {
+      final interval = intervals[i];
+      final hasAlarm = allAlarms.any((a) =>
+          a.isActive &&
+          a.type == AlarmType.muhurta &&
+          a.triggerTime.year == interval.startTime.year &&
+          a.triggerTime.month == interval.startTime.month &&
+          a.triggerTime.day == interval.startTime.day &&
+          a.triggerTime.hour == interval.startTime.hour &&
+          a.triggerTime.minute == interval.startTime.minute);
+      if (hasAlarm) {
+        activeSet.add(i);
       }
-    });
-    widget.onAlarmTap?.call(index, muhurta, _activeAlarms.contains(index));
+    }
+    return activeSet;
+  }
+
+  Future<void> _handleAlarmTap(
+    int index,
+    Muhurta muhurta,
+    MuhurtaInterval interval,
+    Set<int> currentActive,
+  ) async {
+    final isCurrentlyActive = currentActive.contains(index);
+
+    if (widget.onAlarmTap != null) {
+      setState(() {
+        if (isCurrentlyActive) {
+          _activeAlarms.remove(index);
+        } else {
+          _activeAlarms.add(index);
+        }
+      });
+      widget.onAlarmTap!(index, muhurta, !isCurrentlyActive);
+      return;
+    }
+
+    if (isCurrentlyActive) {
+      setState(() {
+        _activeAlarms.remove(index);
+      });
+      final existing = AlarmService.instance.alarmsNotifier.value.where((a) =>
+          a.isActive &&
+          a.type == AlarmType.muhurta &&
+          a.triggerTime.year == interval.startTime.year &&
+          a.triggerTime.month == interval.startTime.month &&
+          a.triggerTime.day == interval.startTime.day &&
+          a.triggerTime.hour == interval.startTime.hour &&
+          a.triggerTime.minute == interval.startTime.minute);
+      for (final a in existing) {
+        await AlarmService.instance.deleteAlarmOccurrence(a.externalId);
+      }
+    } else {
+      if (interval.startTime.isBefore(DateTime.now())) {
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text(
+              'Cannot set alarm for an interval that has already started or passed.',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 14,
+                fontFamily: 'Inter',
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            backgroundColor: const Color(0xFF1E2020),
+            duration: const Duration(seconds: 3),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+              side: BorderSide(color: Colors.white.withValues(alpha: 0.15)),
+            ),
+          ),
+        );
+        return;
+      }
+      setState(() {
+        _activeAlarms.add(index);
+      });
+      final title = muhurta.name(_effectiveLanguage);
+      await AlarmService.instance.scheduleMuhurtaAlarm(
+        title: title,
+        date: interval.startTime,
+        timeRange: interval.timeRange,
+        startTime: interval.startTime,
+      );
+      if (mounted) {
+        AlarmService.showAlarmSetSnackbar(context, interval.startTime);
+      }
+    }
   }
 
   @override
@@ -254,8 +356,8 @@ class _ListTabContentMuhurtaState extends State<ListTabContentMuhurta> {
         );
 
     final referenceTime = _resolveReferenceTime(effectiveDate, intervals);
-
     final effectiveLanguage = _effectiveLanguage;
+    final activeAlarmsSet = _computeActiveAlarms(intervals);
 
     final List<Widget> itemWidgets = [];
     for (int i = 0; i < intervals.length; i++) {
@@ -276,9 +378,9 @@ class _ListTabContentMuhurtaState extends State<ListTabContentMuhurta> {
         onCountdownEnded: state == ItemTemporalState.current
             ? () => _handleCountdownEnded(i, interval.muhurta)
             : null,
-        isAlarmActive: _activeAlarms.contains(i),
+        isAlarmActive: activeAlarmsSet.contains(i),
         onAlarmTap: state == ItemTemporalState.future
-            ? () => _handleAlarmTap(i, interval.muhurta)
+            ? () => _handleAlarmTap(i, interval.muhurta, interval, activeAlarmsSet)
             : null,
         onTap: widget.onItemTap != null
             ? () => widget.onItemTap!(i, interval.muhurta)

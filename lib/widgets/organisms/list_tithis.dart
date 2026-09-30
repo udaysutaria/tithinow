@@ -133,11 +133,8 @@ class _ListTithisState extends State<ListTithis> {
     if (widget.initialActiveAlarms != oldWidget.initialActiveAlarms &&
         widget.initialActiveAlarms != null) {
       _activeAlarms = Set<int>.from(widget.initialActiveAlarms!);
-    } else if (widget.data != oldWidget.data && widget.data != null) {
-      _activeAlarms = {
-        for (int i = 0; i < widget.data!.length; i++)
-          if (widget.data![i].isAlarmActive) i,
-      };
+    } else {
+      _initActiveAlarms();
     }
   }
 

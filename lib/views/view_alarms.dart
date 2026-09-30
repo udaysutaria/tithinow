@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../constants/panchang_terms.dart';
 import '../database/app_database.dart';
+import '../models/alarm_record.dart';
+import '../services/alarm_service.dart';
 import '../theme/design_system.dart';
 import '../widgets/widgets.dart';
 import 'app_navigator.dart';
@@ -53,13 +55,107 @@ typedef ViewAlarms = AlarmsView;
 class _AlarmsViewState extends State<AlarmsView> {
   final GlobalKey<ScaffoldState> _mobileScaffoldKey = GlobalKey<ScaffoldState>();
   late AppLanguage _language;
+  List<AlarmRecord> _dbAlarmRecords = [];
 
   @override
   void initState() {
     super.initState();
     _language = widget.initialLanguage ?? AppDatabase.instance.languageNotifier.value;
     AppDatabase.instance.languageNotifier.addListener(_onDatabaseLanguageChanged);
+    AlarmService.instance.alarmsNotifier.addListener(_onAlarmsChanged);
     _loadSavedLanguage();
+    _loadAlarmsFromDb();
+  }
+
+  void _onAlarmsChanged() {
+    if (widget.alarmData != null) return;
+    if (mounted) {
+      setState(() {
+        _dbAlarmRecords = AlarmService.instance.alarmsNotifier.value;
+      });
+    }
+  }
+
+  Future<void> _loadAlarmsFromDb() async {
+    if (widget.alarmData != null) return;
+    try {
+      final records = await AppDatabase.instance.getAllAlarms();
+      if (mounted) {
+        setState(() {
+          _dbAlarmRecords = records;
+        });
+      }
+    } catch (_) {}
+  }
+
+  List<AlarmData> get _effectiveAlarmData {
+    if (widget.alarmData != null) return widget.alarmData!;
+    return _dbAlarmRecords.map((r) => AlarmData(
+      type: r.type,
+      title: r.title,
+      date: r.date,
+      time: r.timeDisplay,
+      isAlarmActive: r.isActive,
+    )).toList();
+  }
+
+  Future<void> _handleAlarmTap(int index, bool isActive) async {
+    if (widget.onAlarmTap != null) {
+      widget.onAlarmTap!(index, isActive);
+      return;
+    }
+    if (index < _dbAlarmRecords.length) {
+      final record = _dbAlarmRecords[index];
+      if (record.isRepeating && record.parentRuleId != null) {
+        final deleted = await ModalSetTithiAlarm.showDeleteDialog(
+          context: context,
+          record: record,
+        );
+        if (!deleted && mounted) {
+          setState(() {});
+        }
+      } else {
+        await AlarmService.instance.deleteAlarmOccurrence(record.externalId);
+      }
+    }
+  }
+
+  Future<void> _handleEditTap(int index) async {
+    if (widget.onEditTap != null) {
+      widget.onEditTap!(index);
+      return;
+    }
+    if (index < _dbAlarmRecords.length) {
+      final record = _dbAlarmRecords[index];
+      final initTime = TimeOfDay(
+        hour: record.triggerTime.hour,
+        minute: record.triggerTime.minute,
+      );
+      final result = await ModalSetTithiAlarm.show(
+        context: context,
+        tithiName: record.tithiName ?? record.title,
+        date: record.triggerTime,
+        initialTime: initTime,
+        initialRepeating: record.isRepeating,
+        language: _language,
+      );
+      if (result != null && mounted) {
+        if (record.isRepeating && record.parentRuleId != null) {
+          await AlarmService.instance.deleteRepeatingSeries(record.parentRuleId!);
+        } else {
+          await AlarmService.instance.deleteAlarmOccurrence(record.externalId);
+        }
+        final newRecord = await AlarmService.instance.scheduleTithiAlarm(
+          tithiName: record.tithiName ?? record.title,
+          baseDate: record.triggerTime,
+          time: result.time,
+          isRepeating: result.isRepeating,
+        );
+        if (newRecord != null && mounted) {
+          AlarmService.showAlarmSetSnackbar(context, newRecord.triggerTime);
+        }
+      }
+    }
   }
 
   @override
@@ -94,6 +190,7 @@ class _AlarmsViewState extends State<AlarmsView> {
 
   @override
   void dispose() {
+    AlarmService.instance.alarmsNotifier.removeListener(_onAlarmsChanged);
     AppDatabase.instance.languageNotifier.removeListener(_onDatabaseLanguageChanged);
     super.dispose();
   }
@@ -150,12 +247,12 @@ class _AlarmsViewState extends State<AlarmsView> {
                     child: Center(
                       child: ConstrainedBox(
                         constraints: const BoxConstraints(maxWidth: 720),
-                        child: (widget.alarmData != null && widget.alarmData!.isNotEmpty)
+                        child: _effectiveAlarmData.isNotEmpty
                             ? ListAlarms(
                                 language: _language,
-                                data: widget.alarmData,
-                                onAlarmTap: widget.onAlarmTap,
-                                onEditTap: widget.onEditTap,
+                                data: _effectiveAlarmData,
+                                onAlarmTap: _handleAlarmTap,
+                                onEditTap: _handleEditTap,
                                 onItemTap: widget.onItemTap,
                                 shrinkWrap: true,
                                 physics: const NeverScrollableScrollPhysics(),
@@ -202,12 +299,12 @@ class _AlarmsViewState extends State<AlarmsView> {
                 child: Center(
                   child: ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: 480),
-                    child: (widget.alarmData != null && widget.alarmData!.isNotEmpty)
+                    child: _effectiveAlarmData.isNotEmpty
                         ? ListAlarms(
                             language: _language,
-                            data: widget.alarmData,
-                            onAlarmTap: widget.onAlarmTap,
-                            onEditTap: widget.onEditTap,
+                            data: _effectiveAlarmData,
+                            onAlarmTap: _handleAlarmTap,
+                            onEditTap: _handleEditTap,
                             onItemTap: widget.onItemTap,
                             shrinkWrap: true,
                             physics: const NeverScrollableScrollPhysics(),

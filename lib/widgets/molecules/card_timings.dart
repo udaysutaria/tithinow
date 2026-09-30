@@ -112,8 +112,8 @@ class _CardTimingsState extends State<CardTimings> {
   late AppLanguage _databaseLanguage;
 
   bool get _isToday {
-    final d = widget.date ?? DateTime.now();
-    final now = DateTime.now();
+    final now = widget.currentTime ?? DateTime.now();
+    final d = widget.date ?? now;
     return d.year == now.year && d.month == now.month && d.day == now.day;
   }
 
@@ -180,16 +180,16 @@ class _CardTimingsState extends State<CardTimings> {
   }
 
   bool get _isPast {
-    final d = widget.date ?? DateTime.now();
-    final now = DateTime.now();
+    final now = widget.currentTime ?? DateTime.now();
+    final d = widget.date ?? now;
     final today = DateTime(now.year, now.month, now.day);
     final target = DateTime(d.year, d.month, d.day);
     return target.isBefore(today);
   }
 
   bool get _isFuture {
-    final d = widget.date ?? DateTime.now();
-    final now = DateTime.now();
+    final now = widget.currentTime ?? DateTime.now();
+    final d = widget.date ?? now;
     final today = DateTime(now.year, now.month, now.day);
     final target = DateTime(d.year, d.month, d.day);
     return target.isAfter(today);

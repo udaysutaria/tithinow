@@ -167,15 +167,15 @@ class CardPanchangSkeleton extends StatelessWidget {
           Row(
             children: [
               Expanded(child: _buildSubItemSkeleton()),
-              const SizedBox(width: AppSpacing.spacing8),
+              const SizedBox(width: AppSpacing.spacing16),
               Expanded(child: _buildSubItemSkeleton()),
             ],
           ),
-          const SizedBox(height: AppSpacing.spacing8),
+          const SizedBox(height: AppSpacing.spacing16),
           Row(
             children: [
               Expanded(child: _buildSubItemSkeleton()),
-              const SizedBox(width: AppSpacing.spacing8),
+              const SizedBox(width: AppSpacing.spacing16),
               Expanded(child: _buildSubItemSkeleton()),
             ],
           ),

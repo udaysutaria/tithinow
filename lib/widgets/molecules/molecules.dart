@@ -6,3 +6,4 @@ export 'list_item_alarms.dart';
 export 'list_item_panchang.dart';
 export 'list_item_tab_content.dart';
 export 'list_item_tithi.dart';
+export 'modal_set_tithi_alarm.dart';

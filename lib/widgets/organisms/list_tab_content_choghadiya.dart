@@ -3,6 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../constants/choghadiya_data.dart';
 import '../../constants/panchang_terms.dart';
 import '../../theme/design_system.dart';
+import '../../services/alarm_service.dart';
+import '../molecules/list_item_alarms.dart' show AlarmType;
 import '../molecules/list_item_tab_content.dart';
 
 /// Organism widget displaying the "Choghadiya" tab content.
@@ -27,6 +29,9 @@ class ListTabContentChoghadiya extends StatefulWidget {
 
   /// Language for Choghadiya names. If not specified, dynamically follows [AppDatabase.languageNotifier].
   final AppLanguage? language;
+
+  /// Optional set of active alarm slot indices. If null, dynamically syncs with [AlarmService.alarmsNotifier].
+  final Set<int>? activeAlarms;
 
   /// Index (0..15) of the currently active Choghadiya interval.
   /// If null, dynamically resolved by matching [DateTime.now()] against slot boundaries,
@@ -57,6 +62,7 @@ class ListTabContentChoghadiya extends StatefulWidget {
     this.sunrise = const TimeOfDay(hour: 6, minute: 27),
     this.sunset = const TimeOfDay(hour: 18, minute: 33),
     this.language,
+    this.activeAlarms,
     this.currentIntervalIndex,
     this.spacing = AppSpacing.spacing12,
     this.sectionSpacing = AppSpacing.spacing24,
@@ -81,6 +87,13 @@ class _ListTabContentChoghadiyaState extends State<ListTabContentChoghadiya> {
     _activeCurrentIndex = widget.currentIntervalIndex;
     _databaseLanguage = appLanguageNotifier.value;
     appLanguageNotifier.addListener(_onLanguageChanged);
+    AlarmService.instance.alarmsNotifier.addListener(_onAlarmsChanged);
+  }
+
+  void _onAlarmsChanged() {
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   @override
@@ -101,6 +114,7 @@ class _ListTabContentChoghadiyaState extends State<ListTabContentChoghadiya> {
 
   @override
   void dispose() {
+    AlarmService.instance.alarmsNotifier.removeListener(_onAlarmsChanged);
     appLanguageNotifier.removeListener(_onLanguageChanged);
     super.dispose();
   }
@@ -134,6 +148,105 @@ class _ListTabContentChoghadiyaState extends State<ListTabContentChoghadiya> {
     });
   }
 
+  Set<int> _computeActiveAlarms(List<ChoghadiyaInterval> intervals) {
+    if (widget.activeAlarms != null) {
+      return widget.activeAlarms!;
+    }
+    final allAlarms = AlarmService.instance.alarmsNotifier.value;
+    final activeSet = Set<int>.from(_activeAlarms);
+    for (int i = 0; i < intervals.length; i++) {
+      final interval = intervals[i];
+      final hasAlarm = allAlarms.any((a) =>
+          a.isActive &&
+          a.type == AlarmType.choghadiya &&
+          a.triggerTime.year == interval.startTime.year &&
+          a.triggerTime.month == interval.startTime.month &&
+          a.triggerTime.day == interval.startTime.day &&
+          a.triggerTime.hour == interval.startTime.hour &&
+          a.triggerTime.minute == interval.startTime.minute);
+      if (hasAlarm) {
+        activeSet.add(i);
+      }
+    }
+    return activeSet;
+  }
+
+  Future<void> _handleSlotAlarmTap(
+    int slotIndex,
+    List<ChoghadiyaInterval> intervals,
+    Set<int> currentActive,
+  ) async {
+    final isCurrentlyActive = currentActive.contains(slotIndex);
+    final interval = intervals[slotIndex];
+
+    if (widget.onAlarmTap != null) {
+      setState(() {
+        if (isCurrentlyActive) {
+          _activeAlarms.remove(slotIndex);
+        } else {
+          _activeAlarms.add(slotIndex);
+        }
+      });
+      widget.onAlarmTap!(slotIndex, !isCurrentlyActive);
+      return;
+    }
+
+    if (isCurrentlyActive) {
+      setState(() {
+        _activeAlarms.remove(slotIndex);
+      });
+      final existing = AlarmService.instance.alarmsNotifier.value.where((a) =>
+          a.isActive &&
+          a.type == AlarmType.choghadiya &&
+          a.triggerTime.year == interval.startTime.year &&
+          a.triggerTime.month == interval.startTime.month &&
+          a.triggerTime.day == interval.startTime.day &&
+          a.triggerTime.hour == interval.startTime.hour &&
+          a.triggerTime.minute == interval.startTime.minute);
+      for (final a in existing) {
+        await AlarmService.instance.deleteAlarmOccurrence(a.externalId);
+      }
+    } else {
+      if (interval.startTime.isBefore(DateTime.now())) {
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text(
+              'Cannot set alarm for an interval that has already started or passed.',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 14,
+                fontFamily: 'Inter',
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            backgroundColor: const Color(0xFF1E2020),
+            duration: const Duration(seconds: 3),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+              side: BorderSide(color: Colors.white.withValues(alpha: 0.15)),
+            ),
+          ),
+        );
+        return;
+      }
+      setState(() {
+        _activeAlarms.add(slotIndex);
+      });
+      final title = '${interval.choghadiya.name(_effectiveLanguage)} Choghadiya';
+      await AlarmService.instance.scheduleChoghadiyaAlarm(
+        title: title,
+        date: interval.startTime,
+        timeRange: interval.timeRange,
+        startTime: interval.startTime,
+      );
+      if (mounted) {
+        AlarmService.showAlarmSetSnackbar(context, interval.startTime);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final effectiveDate = widget.date ?? DateTime.now();
@@ -147,6 +260,7 @@ class _ListTabContentChoghadiyaState extends State<ListTabContentChoghadiya> {
     final dayIntervals = intervals.sublist(0, 8);
     final nightIntervals = intervals.sublist(8, 16);
     final effectiveLanguage = _effectiveLanguage;
+    final activeAlarmsSet = _computeActiveAlarms(intervals);
 
     return SingleChildScrollView(
       physics: widget.physics,
@@ -163,18 +277,9 @@ class _ListTabContentChoghadiyaState extends State<ListTabContentChoghadiya> {
             startIndex: 0,
             language: effectiveLanguage,
             spacing: widget.spacing,
-            activeAlarms: _activeAlarms,
+            activeAlarms: activeAlarmsSet,
             onCurrentItemEnded: () => _handleCurrentItemEnded(intervals.length - 1, currentIndex),
-            onAlarmTap: (slotIndex) {
-              setState(() {
-                if (_activeAlarms.contains(slotIndex)) {
-                  _activeAlarms.remove(slotIndex);
-                } else {
-                  _activeAlarms.add(slotIndex);
-                }
-              });
-              widget.onAlarmTap?.call(slotIndex, _activeAlarms.contains(slotIndex));
-            },
+            onAlarmTap: (slotIndex) => _handleSlotAlarmTap(slotIndex, intervals, activeAlarmsSet),
           ),
 
           SizedBox(height: widget.sectionSpacing),
@@ -187,18 +292,9 @@ class _ListTabContentChoghadiyaState extends State<ListTabContentChoghadiya> {
             startIndex: 8,
             language: effectiveLanguage,
             spacing: widget.spacing,
-            activeAlarms: _activeAlarms,
+            activeAlarms: activeAlarmsSet,
             onCurrentItemEnded: () => _handleCurrentItemEnded(intervals.length - 1, currentIndex),
-            onAlarmTap: (slotIndex) {
-              setState(() {
-                if (_activeAlarms.contains(slotIndex)) {
-                  _activeAlarms.remove(slotIndex);
-                } else {
-                  _activeAlarms.add(slotIndex);
-                }
-              });
-              widget.onAlarmTap?.call(slotIndex, _activeAlarms.contains(slotIndex));
-            },
+            onAlarmTap: (slotIndex) => _handleSlotAlarmTap(slotIndex, intervals, activeAlarmsSet),
           ),
         ],
       ),

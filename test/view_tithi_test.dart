@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sweph/sweph.dart';
 import 'package:tithinow/database/app_database.dart';
+import 'package:tithinow/models/alarm_record.dart';
+import 'package:tithinow/services/alarm_service.dart';
 import 'package:tithinow/theme/design_system.dart';
 import 'package:tithinow/views/view_tithi.dart';
 import 'package:tithinow/views/view_tithi_detail.dart';
@@ -276,8 +278,65 @@ void main() {
       await tester.tap(alarmToTap);
       await tester.pumpAndSettle();
 
+      // Modal bottom sheet opens, tap 'Set Alarm' to confirm
+      final setAlarmBtn = find.widgetWithText(ElevatedButton, 'Set Alarm');
+      expect(setAlarmBtn, findsOneWidget);
+      await tester.tap(setAlarmBtn);
+      await tester.pumpAndSettle();
+
       final updatedAlarmWidget = tester.widget<ButtonAlarm>(alarmToTap);
       expect(updatedAlarmWidget.isActive, !initialActive);
+    });
+
+    testWidgets('Tapping active repeating alarm and clicking Cancel keeps alarm active in TithiView', (tester) async {
+      final now = DateTime.now();
+      final futureDate = DateTime(now.year, now.month, now.day + 2);
+      final repeatingAlarm = AlarmRecord(
+        externalId: 7771,
+        type: AlarmType.tithi,
+        title: 'Chaturthi',
+        date: 'Test Date',
+        timeDisplay: '07:00 am',
+        triggerTime: DateTime(futureDate.year, futureDate.month, futureDate.day, 7, 0),
+        isActive: true,
+        isRepeating: true,
+        parentRuleId: 'rule_chaturthi_repeat',
+      );
+      AlarmService.instance.alarmsNotifier.value = [repeatingAlarm];
+
+      await tester.pumpWidget(
+        buildTestableWidget(const TithiView()),
+      );
+      await tester.pumpAndSettle();
+
+      // Scroll forward to reveal future items
+      await tester.drag(find.byType(ListTithis), const Offset(0, -200));
+      await tester.pumpAndSettle();
+
+      final hitTestableAlarms = find.byType(ButtonAlarm).hitTestable();
+      final activeAlarmElements = hitTestableAlarms.evaluate().where((e) {
+        final w = e.widget as ButtonAlarm;
+        return w.isActive;
+      });
+      expect(activeAlarmElements.isNotEmpty, isTrue);
+
+      final activeAlarmFinder = find.byWidget(activeAlarmElements.first.widget);
+      await tester.tap(activeAlarmFinder);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Delete Alarm'), findsOneWidget);
+      expect(find.text('Cancel'), findsOneWidget);
+
+      // Click Cancel
+      await tester.tap(find.text('Cancel'));
+      await tester.pumpAndSettle();
+
+      // The alarm button MUST remain active!
+      final activeAlarmsAfterCancel = find.byType(ButtonAlarm).hitTestable().evaluate().where((e) {
+        final w = e.widget as ButtonAlarm;
+        return w.isActive;
+      });
+      expect(activeAlarmsAfterCancel.isNotEmpty, isTrue);
     });
   });
 }

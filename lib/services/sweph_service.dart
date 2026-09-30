@@ -367,7 +367,7 @@ class SwephService {
       rules: festivalRules ?? const [],
     );
 
-    // 5. Generate Muhurta intervals matching Drik Panchang
+    // 5. Generate Muhurta intervals matching classical Vedic Drik-Ganita rules
     final muhurtaIntervals = MuhurtaData.generateIntervals(
       date: date,
       sunriseDateTime: sunrise,

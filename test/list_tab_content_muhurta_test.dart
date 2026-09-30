@@ -428,7 +428,7 @@ void main() {
         }
       }
 
-      // Abhijit is rightly omitted on Wednesday per Drik Panchang
+      // Abhijit is rightly omitted on Wednesday per classical Vedic rules
       expect(find.text('Abhijit Muhurta'), findsNothing);
 
       // At 10:36 PM on Wednesday: 0 active items, 9 past items, 1 future item (Nishita)
@@ -493,7 +493,7 @@ void main() {
 
       expect(durMuhurtaWidgets.length, 2);
       expect(durMuhurtaWidgets[0].timeRange, '08:52 am - 09:40 am');
-      // Tuesday 7th night muhurta matching Drik Panchang standard (11:18 pm - 12:06 am with default 06:27/18:33 times)
+      // Tuesday 7th night muhurta matching classical Vedic standard (11:18 pm - 12:06 am with default 06:27/18:33 times)
       expect(durMuhurtaWidgets[1].timeRange, '11:18 pm - 12:06 am');
     });
 
@@ -717,6 +717,48 @@ void main() {
       // Amrit Kalam is formed in Purva Bhadrapada late night
       final amrit = result.muhurtaIntervals.where((i) => i.muhurta == Muhurta.amritKalam);
       expect(amrit.isNotEmpty, isTrue);
+    });
+
+    test('Vidaal Yoga and Aadal Yoga transitions when Sun transits into Hasta on Sep 27, 2026', () async {
+      await Sweph.init();
+      Sweph.swe_set_sid_mode(SiderealMode.SE_SIDM_LAHIRI);
+
+      const delhi = City(
+        id: 2,
+        name: 'New Delhi',
+        state: 'Delhi',
+        latitude: 28.6139,
+        longitude: 77.2090,
+      );
+
+      final result = await SwephService.instance.calculatePanchang(
+        date: DateTime(2026, 9, 27),
+        city: delhi,
+      );
+
+      final vidaal = result.muhurtaIntervals.where((i) => i.muhurta == Muhurta.vidaalYoga).toList();
+      final aadal = result.muhurtaIntervals.where((i) => i.muhurta == Muhurta.aadalYoga).toList();
+      final ssy = result.muhurtaIntervals.where((i) => i.muhurta == Muhurta.sarvarthaSiddhiYoga).toList();
+
+      expect(vidaal.isNotEmpty, isTrue);
+      // Vidaal Yoga starts when Moon enters Revati (~11:08 AM)
+      expect(vidaal.first.startTime.hour, 11);
+      expect(vidaal.first.startTime.minute, inInclusiveRange(7, 10));
+
+      // Vidaal Yoga terminates in early afternoon when Sun enters Hasta (~01:20 PM - 01:25 PM), NOT next sunrise
+      expect(vidaal.first.endTime.hour, 13);
+      expect(vidaal.first.endTime.minute, inInclusiveRange(18, 26));
+
+      // Aadal Yoga is formed both morning (before Revati) and afternoon (after Sun enters Hasta)
+      expect(aadal.length, 2);
+      expect(aadal[0].startTime.hour, 6);
+      expect(aadal[0].endTime.hour, 11);
+      expect(aadal[1].startTime.hour, 13);
+
+      // Sarvartha Siddhi Yoga runs until Uttara Bhadrapada ends at ~11:08 AM
+      expect(ssy.isNotEmpty, isTrue);
+      expect(ssy.first.endTime.hour, 11);
+      expect(ssy.first.endTime.minute, inInclusiveRange(7, 10));
     });
   });
 }

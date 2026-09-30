@@ -187,6 +187,9 @@ void main() {
       await tester.pumpWidget(
         buildTestableWidget(
           TithiDetailView(
+            tithi: 'Ekadashi',
+            paksha: 'Shukla Paksha',
+            dateTime: DateTime.now().add(const Duration(days: 2)),
             onAlarmChanged: (active) => lastAlarmState = active,
           ),
           size: const Size(390, 844),
@@ -205,15 +208,21 @@ void main() {
       ButtonAlarm button = tester.widget(alarmButtonFinder);
       expect(button.isActive, false);
 
-      // Tap to toggle
+      // Tap to open Set Alarm modal
       await tester.tap(alarmButtonFinder);
+      await tester.pumpAndSettle();
+
+      // Modal is presented, tap 'Set Alarm' button to confirm
+      final setAlarmBtn = find.widgetWithText(ElevatedButton, 'Set Alarm');
+      expect(setAlarmBtn, findsOneWidget);
+      await tester.tap(setAlarmBtn);
       await tester.pumpAndSettle();
 
       button = tester.widget(alarmButtonFinder);
       expect(button.isActive, true);
       expect(lastAlarmState, true);
 
-      // Tap again to toggle off
+      // Tap again to toggle off (deletes alarm)
       await tester.tap(alarmButtonFinder);
       await tester.pumpAndSettle();
 

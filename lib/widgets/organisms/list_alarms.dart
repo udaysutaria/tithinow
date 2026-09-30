@@ -136,7 +136,7 @@ class _ListAlarmsState extends State<ListAlarms> {
     if (widget.initialActiveAlarms != oldWidget.initialActiveAlarms &&
         widget.initialActiveAlarms != null) {
       _activeAlarms = Set<int>.from(widget.initialActiveAlarms!);
-    } else if (widget.data != oldWidget.data || widget.language != oldWidget.language) {
+    } else {
       _initActiveAlarms();
     }
   }

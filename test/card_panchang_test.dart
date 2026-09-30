@@ -255,7 +255,7 @@ void main() {
       expect(find.text('गणेश विसर्जन'), findsOneWidget);
     });
 
-    testWidgets('Swiping to Slide 3 renders Yoga, Karana, Rashi and Sun Sign', (tester) async {
+    testWidgets('Swiping to Slide 3 renders Yoga, Karana, Moon Sign and Sun Sign', (tester) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
@@ -264,6 +264,7 @@ void main() {
                 width: 380,
                 child: CardPanchang(
                   mode: PanchangLayoutMode.mobileSlider,
+                  enableAutoplay: false,
                 ),
               ),
             ),
@@ -285,7 +286,7 @@ void main() {
       expect(find.text('Vishkambha'), findsOneWidget);
       expect(find.text('Karana'), findsOneWidget);
       expect(find.text('Bava'), findsOneWidget);
-      expect(find.text('Rashi'), findsOneWidget);
+      expect(find.text('Moon Sign'), findsOneWidget);
       expect(find.text('Sun Sign'), findsOneWidget);
     });
 
@@ -310,10 +311,199 @@ void main() {
       expect(find.text('आयुष्मान्'), findsOneWidget);
       expect(find.text('करण'), findsOneWidget);
       expect(find.text('विष्टि (भद्रा)'), findsOneWidget);
-      expect(find.text('राशि'), findsOneWidget);
+      expect(find.text('चंद्र राशि'), findsOneWidget);
       expect(find.text('मकर'), findsOneWidget);
       expect(find.text('सूर्य राशि'), findsOneWidget);
       expect(find.text('कन्या'), findsOneWidget);
+
+      // Gujarati
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: CardPanchang(
+              mode: PanchangLayoutMode.desktopGrid4x2,
+              language: AppLanguage.gujarati,
+              yogaEnum: Yoga.ayushman,
+              karanaEnum: Karana.vishti,
+              rashiEnum: Rashi.makara,
+              suryaRashiEnum: Rashi.kanya,
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('ચંદ્ર રાશિ'), findsOneWidget);
+      expect(find.text('સૂર્ય રાશિ'), findsOneWidget);
+      expect(find.text('મકર'), findsOneWidget);
+      expect(find.text('કન્યા'), findsOneWidget);
+    });
+
+    testWidgets('In each slide space between column and row is 16px', (tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: Center(
+              child: SizedBox(
+                width: 380,
+                child: CardPanchang(
+                  mode: PanchangLayoutMode.mobileSlider,
+                  enableAutoplay: false,
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Find the SizedBox separators in the 2x2 grid
+      final sizedBoxes = tester.widgetList<SizedBox>(find.descendant(
+        of: find.byType(PageView),
+        matching: find.byType(SizedBox),
+      ));
+
+      // There should be horizontal gaps of 16px width and vertical gaps of 16px height
+      final columnGaps = sizedBoxes.where((box) => box.width == 16.0);
+      final rowGaps = sizedBoxes.where((box) => box.height == 16.0);
+
+      expect(columnGaps.isNotEmpty, isTrue);
+      expect(rowGaps.isNotEmpty, isTrue);
+    });
+
+    testWidgets('Autoplay advances slides every 4 seconds', (tester) async {
+      int activePage = 0;
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Center(
+              child: SizedBox(
+                width: 380,
+                child: CardPanchang(
+                  mode: PanchangLayoutMode.mobileSlider,
+                  enableAutoplay: true,
+                  onPageChanged: (page) => activePage = page,
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(activePage, 0);
+      expect(find.text('Nakshatras'), findsOneWidget);
+
+      // Advance by 4 seconds
+      await tester.pump(const Duration(seconds: 4));
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(activePage, 1);
+      expect(find.text('Sunrise'), findsOneWidget);
+
+      // Advance by 4 seconds
+      await tester.pump(const Duration(seconds: 4));
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(activePage, 2);
+      expect(find.text('Moon Sign'), findsOneWidget);
+
+      // Advance by 4 seconds: wraps back to 0
+      await tester.pump(const Duration(seconds: 4));
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(activePage, 0);
+      expect(find.text('Nakshatras'), findsOneWidget);
+    });
+
+    testWidgets('Manual swipe stops autoplay, and resumes after 10 seconds of inactivity', (tester) async {
+      int activePage = 0;
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Center(
+              child: SizedBox(
+                width: 380,
+                child: CardPanchang(
+                  mode: PanchangLayoutMode.mobileSlider,
+                  enableAutoplay: true,
+                  onPageChanged: (page) => activePage = page,
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(activePage, 0);
+
+      // User manually swipes from slide 0 to slide 1
+      await tester.drag(find.byType(PageView), const Offset(-300, 0));
+      await tester.pumpAndSettle();
+      expect(activePage, 1);
+
+      // Autoplay is stopped! After 4 seconds, page should NOT change
+      await tester.pump(const Duration(seconds: 4));
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(activePage, 1);
+
+      // After 8 seconds (still < 10 seconds), page should STILL not change
+      await tester.pump(const Duration(seconds: 4));
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(activePage, 1);
+
+      // Now pass the 10-second idle mark (another 2 seconds, total 10 seconds since swipe ended)
+      await tester.pump(const Duration(seconds: 2));
+      // At this point, resume timer has fired, restarting autoplay.
+      // Autoplay interval is 4 seconds, so after 4 seconds it advances to page 2:
+      await tester.pump(const Duration(seconds: 4));
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(activePage, 2);
+      expect(find.text('Moon Sign'), findsOneWidget);
+    });
+
+    testWidgets('Dot indicator tap pauses autoplay and resumes after 10 seconds', (tester) async {
+      int activePage = 0;
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Center(
+              child: SizedBox(
+                width: 380,
+                child: CardPanchang(
+                  mode: PanchangLayoutMode.mobileSlider,
+                  enableAutoplay: true,
+                  onPageChanged: (page) => activePage = page,
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(activePage, 0);
+
+      // Find the dot indicators (each wrapped in GestureDetector)
+      final dotFinders = find.descendant(
+        of: find.byType(Row).last,
+        matching: find.byType(GestureDetector),
+      );
+      expect(dotFinders, findsNWidgets(3));
+
+      // Tap the 3rd dot (index 2: Slide 3)
+      await tester.tap(dotFinders.at(2));
+      await tester.pumpAndSettle();
+      expect(activePage, 2);
+
+      // Autoplay stopped: after 4s, still on page 2
+      await tester.pump(const Duration(seconds: 4));
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(activePage, 2);
+
+      // Wait remaining 6 seconds to complete 10s idle delay
+      await tester.pump(const Duration(seconds: 6));
+
+      // After 10s has passed, autoplay has resumed. After 4s interval, it advances to slide 0:
+      await tester.pump(const Duration(seconds: 4));
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(activePage, 0);
+      expect(find.text('Nakshatras'), findsOneWidget);
     });
   });
 }

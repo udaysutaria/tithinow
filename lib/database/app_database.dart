@@ -8,6 +8,8 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import '../constants/panchang_terms.dart';
 import '../models/city.dart';
 import '../models/festival_rule.dart';
+import '../models/alarm_record.dart';
+import '../constants/alarm_sound_data.dart';
 
 /// SQLite Database manager for TithiNow.
 ///
@@ -39,6 +41,10 @@ class AppDatabase {
   /// Reactive notifier that triggers whenever festival rules are imported, synced, or updated.
   final ValueNotifier<int> festivalsNotifier = ValueNotifier<int>(0);
 
+  /// Reactive notifier for the selected alarm sound ('sound_1', 'sound_2', etc.).
+  final ValueNotifier<String> alarmSoundNotifier =
+      ValueNotifier<String>(AlarmSounds.defaultSoundId);
+
   /// Default database file name.
   static const String dbName = 'tithinow.db';
 
@@ -46,6 +52,7 @@ class AppDatabase {
   static const String tableCities = 'cities';
   static const String tableMeta = 'app_meta';
   static const String tableFestivals = 'festivals';
+  static const String tableAlarms = 'alarms';
 
   /// Meta keys.
   static const String metaCitiesImported = 'cities_imported';
@@ -61,6 +68,7 @@ class AppDatabase {
   static const String metaCityLat = 'city_lat';
   static const String metaCityLng = 'city_lng';
   static const String metaLanguage = 'language';
+  static const String metaAlarmSound = 'alarm_sound';
 
   /// Ensures SQLite FFI is initialized for Linux, Windows, or unit tests.
   static void initializeFfiIfNeeded() {
@@ -100,8 +108,9 @@ class AppDatabase {
       version: 1,
       onCreate: _createDB,
       onOpen: (db) async {
-        // Ensure festivals table exists even if DB was created previously
+        // Ensure festivals and alarms tables exist even if DB was created previously
         await _ensureFestivalsTable(db);
+        await _ensureAlarmsTable(db);
         // Check if cities and festivals need to be imported on first launch
         await _checkAndImportCities(db);
         await _checkAndImportFestivals(db);
@@ -155,6 +164,9 @@ class AppDatabase {
 
     // 3. Festivals & Vrats Rules Table
     await _createFestivalsTable(db);
+
+    // 4. Alarms Table
+    await _createAlarmsTable(db);
   }
 
   /// Creates the festivals table and its performance indexes.
@@ -196,6 +208,52 @@ class AppDatabase {
   /// Ensures festivals table exists (for existing app databases without version bump).
   Future<void> _ensureFestivalsTable(Database db) async {
     await _createFestivalsTable(db);
+  }
+
+  /// Creates the alarms table and performance indexes.
+  Future<void> _createAlarmsTable(Database db) async {
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS $tableAlarms (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        external_id INTEGER UNIQUE NOT NULL,
+        type TEXT NOT NULL,
+        title TEXT NOT NULL,
+        date TEXT NOT NULL,
+        time_display TEXT NOT NULL,
+        trigger_time INTEGER NOT NULL,
+        is_active INTEGER NOT NULL DEFAULT 1,
+        created_at INTEGER NOT NULL,
+        parent_rule_id TEXT,
+        is_repeating INTEGER NOT NULL DEFAULT 0,
+        tithi_name TEXT
+      )
+    ''');
+
+    await db.execute(
+      'CREATE INDEX IF NOT EXISTS idx_alarms_ext ON $tableAlarms (external_id)',
+    );
+    await db.execute(
+      'CREATE INDEX IF NOT EXISTS idx_alarms_trigger ON $tableAlarms (trigger_time)',
+    );
+  }
+
+  /// Ensures alarms table exists and has latest columns.
+  Future<void> _ensureAlarmsTable(Database db) async {
+    await _createAlarmsTable(db);
+    try {
+      await db.execute('ALTER TABLE $tableAlarms ADD COLUMN parent_rule_id TEXT');
+    } catch (_) {}
+    try {
+      await db.execute('ALTER TABLE $tableAlarms ADD COLUMN is_repeating INTEGER NOT NULL DEFAULT 0');
+    } catch (_) {}
+    try {
+      await db.execute('ALTER TABLE $tableAlarms ADD COLUMN tithi_name TEXT');
+    } catch (_) {}
+    try {
+      await db.execute(
+        'CREATE INDEX IF NOT EXISTS idx_alarms_parent_rule ON $tableAlarms (parent_rule_id)',
+      );
+    } catch (_) {}
   }
 
   /// Checks if cities CSV was already imported. If not, imports it.
@@ -766,6 +824,128 @@ class AppDatabase {
       whereArgs: ['solar_sankranti', normalizedSolar],
     );
     return maps.map(FestivalRule.fromMap).toList();
+  }
+
+  // ===========================================================================
+  // Alarms & Ringtones CRUD Methods
+  // ===========================================================================
+
+  /// Inserts or updates an alarm schedule record.
+  Future<void> saveAlarm(AlarmRecord record, {Database? db}) async {
+    final targetDb = db ?? await database;
+    await targetDb.insert(
+      tableAlarms,
+      record.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  /// Inserts a batch of alarm records in a single high-performance transaction.
+  Future<void> saveAlarms(List<AlarmRecord> records, {Database? db}) async {
+    if (records.isEmpty) return;
+    final targetDb = db ?? await database;
+    final batch = targetDb.batch();
+    for (final record in records) {
+      batch.insert(
+        tableAlarms,
+        record.toMap(),
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+    }
+    await batch.commit(noResult: true);
+  }
+
+  /// Deletes an alarm by its external ID.
+  Future<void> deleteAlarm(int externalId, {Database? db}) async {
+    final targetDb = db ?? await database;
+    await targetDb.delete(
+      tableAlarms,
+      where: 'external_id = ?',
+      whereArgs: [externalId],
+    );
+  }
+
+  /// Deletes all alarms belonging to a repeating rule series by [parentRuleId].
+  Future<void> deleteAlarmsByParentRuleId(String parentRuleId, {Database? db}) async {
+    final targetDb = db ?? await database;
+    await targetDb.delete(
+      tableAlarms,
+      where: 'parent_rule_id = ?',
+      whereArgs: [parentRuleId],
+    );
+  }
+
+  /// Fetches all alarms belonging to a repeating rule series by [parentRuleId].
+  Future<List<AlarmRecord>> getAlarmsByParentRuleId(String parentRuleId, {Database? db}) async {
+    final targetDb = db ?? await database;
+    final maps = await targetDb.query(
+      tableAlarms,
+      where: 'parent_rule_id = ?',
+      whereArgs: [parentRuleId],
+      orderBy: 'trigger_time ASC',
+    );
+    return maps.map(AlarmRecord.fromMap).toList();
+  }
+
+  /// Fetches an alarm by its external ID.
+  Future<AlarmRecord?> getAlarmByExternalId(int externalId, {Database? db}) async {
+    final targetDb = db ?? await database;
+    final maps = await targetDb.query(
+      tableAlarms,
+      where: 'external_id = ?',
+      whereArgs: [externalId],
+      limit: 1,
+    );
+    if (maps.isEmpty) return null;
+    return AlarmRecord.fromMap(maps.first);
+  }
+
+  /// Retrieves all alarms ordered by scheduled trigger time ascending.
+  Future<List<AlarmRecord>> getAllAlarms({Database? db}) async {
+    final targetDb = db ?? await database;
+    final maps = await targetDb.query(
+      tableAlarms,
+      orderBy: 'trigger_time ASC',
+    );
+    return maps.map(AlarmRecord.fromMap).toList();
+  }
+
+  /// Retrieves all active alarms ordered by scheduled trigger time ascending.
+  Future<List<AlarmRecord>> getActiveAlarms({Database? db}) async {
+    final targetDb = db ?? await database;
+    final maps = await targetDb.query(
+      tableAlarms,
+      where: 'is_active = 1',
+      orderBy: 'trigger_time ASC',
+    );
+    return maps.map(AlarmRecord.fromMap).toList();
+  }
+
+  /// Toggles the active status of an alarm.
+  Future<void> toggleAlarmActive(int externalId, bool isActive, {Database? db}) async {
+    final targetDb = db ?? await database;
+    await targetDb.update(
+      tableAlarms,
+      {'is_active': isActive ? 1 : 0},
+      where: 'external_id = ?',
+      whereArgs: [externalId],
+    );
+  }
+
+  /// Reads the saved alarm sound ID from metadata (defaults to [AlarmSounds.defaultSoundId]).
+  Future<String> getSavedAlarmSound({Database? db}) async {
+    final val = await getMeta(metaAlarmSound, db: db);
+    final soundId = val ?? AlarmSounds.defaultSoundId;
+    if (alarmSoundNotifier.value != soundId) {
+      alarmSoundNotifier.value = soundId;
+    }
+    return soundId;
+  }
+
+  /// Persists the selected alarm sound ID and notifies listeners.
+  Future<void> saveAlarmSound(String soundId, {Database? db}) async {
+    await setMeta(metaAlarmSound, soundId, db: db);
+    alarmSoundNotifier.value = soundId;
   }
 
   /// Closes the database connection.

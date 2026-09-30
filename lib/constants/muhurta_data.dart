@@ -26,7 +26,7 @@ class MuhurtaInterval {
 
 /// Constants and deterministic Vedic calculation rules for Muhurta intervals.
 ///
-/// Divides the day and night into Vedic timing periods, matching Drik Panchang rules:
+/// Divides the day and night into Vedic timing periods, matching classical Drik-Ganita astrological rules:
 /// - Brahma Muhurta (2 night muhurtas before sunrise to 1 night muhurta before sunrise)
 /// - Pratah Sandhya (3 ghatis / 1.5 night muhurtas before sunrise until sunrise)
 /// - Abhijit Muhurta (8th daytime muhurta around solar noon; **omitted on Wednesday**)
@@ -133,41 +133,27 @@ class MuhurtaData {
       final weekday = Weekday.fromDateTime(date);
       final tzOffset = _resolveTimezoneOffset(city);
 
-      final srUtc = sunriseTime.subtract(tzOffset);
-      final srJd = Sweph.swe_julday(
-        srUtc.year,
-        srUtc.month,
-        srUtc.day,
-        srUtc.hour + srUtc.minute / 60.0 + srUtc.second / 3600.0,
-        CalendarType.SE_GREG_CAL,
-      );
-
-      // Sun Nakshatra at Sunrise
-      final sun = Sweph.swe_calc_ut(srJd, HeavenlyBody.SE_SUN, flags);
-      final sunNak = (sun.longitude / (360.0 / 27.0)).floor() + 1;
-      final sunNak28 = toNakshatra28(sunNak);
-
-      // Helper to find exact local time when Moon crosses target longitude
-      DateTime findMoonTransit(double targetDeg, DateTime guessTime) {
+      // Helper to find exact local time when celestial body crosses target longitude
+      DateTime findTransit(HeavenlyBody body, double targetDeg, DateTime guessTime) {
         final utc = guessTime.subtract(tzOffset);
         double jd1 = Sweph.swe_julday(
           utc.year,
           utc.month,
           utc.day,
-          utc.hour + (utc.minute - 60) / 60.0,
+          utc.hour + (utc.minute - 120) / 60.0,
           CalendarType.SE_GREG_CAL,
         );
         double jd2 = Sweph.swe_julday(
           utc.year,
           utc.month,
           utc.day,
-          utc.hour + (utc.minute + 60) / 60.0,
+          utc.hour + (utc.minute + 120) / 60.0,
           CalendarType.SE_GREG_CAL,
         );
 
-        for (int i = 0; i < 20; i++) {
+        for (int i = 0; i < 25; i++) {
           final mid = (jd1 + jd2) / 2.0;
-          final m = Sweph.swe_calc_ut(mid, HeavenlyBody.SE_MOON, flags);
+          final m = Sweph.swe_calc_ut(mid, body, flags);
           double diff = m.longitude - targetDeg;
           if (diff < -180.0) diff += 360.0;
           if (diff > 180.0) diff -= 360.0;
@@ -191,7 +177,7 @@ class MuhurtaData {
         );
       }
 
-      // Collect Nakshatra spans covering [sunriseTime, nextSunriseTime]
+      // 1. Collect Moon Nakshatra spans covering [sunriseTime, nextSunriseTime]
       final spans = <({int nakshatra, DateTime start, DateTime end})>[];
       DateTime searchTime = sunriseTime.subtract(const Duration(hours: 30));
       final searchEnd = nextSunriseTime.add(const Duration(hours: 30));
@@ -214,10 +200,10 @@ class MuhurtaData {
         if (currentNak == null) {
           currentNak = nak;
           final targetDeg = ((nak - 1) * (360.0 / 27.0)) % 360.0;
-          currentStart = findMoonTransit(targetDeg, searchTime);
+          currentStart = findTransit(HeavenlyBody.SE_MOON, targetDeg, searchTime);
         } else if (nak != currentNak) {
           final targetDeg = ((nak - 1) * (360.0 / 27.0)) % 360.0;
-          final transTime = findMoonTransit(targetDeg, searchTime);
+          final transTime = findTransit(HeavenlyBody.SE_MOON, targetDeg, searchTime);
 
           spans.add((
             nakshatra: currentNak,
@@ -231,68 +217,158 @@ class MuhurtaData {
         searchTime = searchTime.add(const Duration(minutes: 30));
       }
 
+      // 2. Identify all critical boundary times in [sunriseTime, nextSunriseTime]
+      // A Yoga based on Sun-Moon relationship can transition when EITHER Moon OR Sun changes Nakshatra.
+      final criticalTimes = <DateTime>{sunriseTime, nextSunriseTime};
+
+      // Add Moon Nakshatra transitions occurring within the Panchang day
+      for (final span in spans) {
+        if (span.end.isAfter(sunriseTime) && span.end.isBefore(nextSunriseTime)) {
+          criticalTimes.add(span.end);
+        }
+      }
+
+      // Detect Sun Nakshatra transition between sunrise and next sunrise
+      final srUtc = sunriseTime.subtract(tzOffset);
+      final srJd = Sweph.swe_julday(
+        srUtc.year,
+        srUtc.month,
+        srUtc.day,
+        srUtc.hour + srUtc.minute / 60.0 + srUtc.second / 3600.0,
+        CalendarType.SE_GREG_CAL,
+      );
+      final nsrUtc = nextSunriseTime.subtract(tzOffset);
+      final nsrJd = Sweph.swe_julday(
+        nsrUtc.year,
+        nsrUtc.month,
+        nsrUtc.day,
+        nsrUtc.hour + nsrUtc.minute / 60.0 + nsrUtc.second / 3600.0,
+        CalendarType.SE_GREG_CAL,
+      );
+
+      final sunSr = Sweph.swe_calc_ut(srJd, HeavenlyBody.SE_SUN, flags);
+      final sunNsr = Sweph.swe_calc_ut(nsrJd, HeavenlyBody.SE_SUN, flags);
+      final sunNakSr = (sunSr.longitude / (360.0 / 27.0)).floor() + 1;
+      final sunNakNsr = (sunNsr.longitude / (360.0 / 27.0)).floor() + 1;
+
+      if (sunNakSr != sunNakNsr) {
+        final targetDeg = ((sunNakNsr - 1) * (360.0 / 27.0)) % 360.0;
+        double jd1 = srJd;
+        double jd2 = nsrJd;
+        for (int i = 0; i < 25; i++) {
+          final mid = (jd1 + jd2) / 2.0;
+          final s = Sweph.swe_calc_ut(mid, HeavenlyBody.SE_SUN, flags);
+          double diff = s.longitude - targetDeg;
+          if (diff < -180.0) diff += 360.0;
+          if (diff > 180.0) diff -= 360.0;
+          if (diff < 0) {
+            jd1 = mid;
+          } else {
+            jd2 = mid;
+          }
+        }
+        final transUtc = Sweph.swe_revjul((jd1 + jd2) / 2.0, CalendarType.SE_GREG_CAL);
+        final shifted = transUtc.add(tzOffset);
+        final sunTransit = DateTime(
+          shifted.year,
+          shifted.month,
+          shifted.day,
+          shifted.hour,
+          shifted.minute,
+          shifted.second,
+          shifted.millisecond,
+          shifted.microsecond,
+        );
+        if (sunTransit.isAfter(sunriseTime) && sunTransit.isBefore(nextSunriseTime)) {
+          criticalTimes.add(sunTransit);
+        }
+      }
+
+      final sortedTimes = criticalTimes.toList()..sort();
       final List<MuhurtaInterval> rawIntervals = [];
 
+      // Evaluate Yogas for each time slice
+      for (int i = 0; i < sortedTimes.length - 1; i++) {
+        final sliceStart = sortedTimes[i];
+        final sliceEnd = sortedTimes[i + 1];
+        if (sliceEnd.difference(sliceStart).inSeconds < 30) continue;
+
+        final midTime = sliceStart.add(
+          Duration(microseconds: sliceEnd.difference(sliceStart).inMicroseconds ~/ 2),
+        );
+        final midUtc = midTime.subtract(tzOffset);
+        final midJd = Sweph.swe_julday(
+          midUtc.year,
+          midUtc.month,
+          midUtc.day,
+          midUtc.hour + midUtc.minute / 60.0 + midUtc.second / 3600.0,
+          CalendarType.SE_GREG_CAL,
+        );
+
+        final m = Sweph.swe_calc_ut(midJd, HeavenlyBody.SE_MOON, flags);
+        final s = Sweph.swe_calc_ut(midJd, HeavenlyBody.SE_SUN, flags);
+
+        final moonNak27 = (m.longitude / (360.0 / 27.0)).floor() + 1;
+        final sunNak27 = (s.longitude / (360.0 / 27.0)).floor() + 1;
+        final moonNak28 = toNakshatra28(moonNak27);
+        final sunNak28 = toNakshatra28(sunNak27);
+
+        // 1. Sarvartha Siddhi Yoga
+        if (sarvarthaSiddhiNakshatras[weekday]?.contains(moonNak27) == true) {
+          rawIntervals.add(
+            MuhurtaInterval(
+              muhurta: Muhurta.sarvarthaSiddhiYoga,
+              timeRange: formatRange(sliceStart, sliceEnd),
+              startTime: sliceStart,
+              endTime: sliceEnd,
+              index: 0,
+            ),
+          );
+        }
+
+        // 2. Ravi Yoga (distance in {4, 6, 9, 10, 13, 20})
+        final dist27 = ((moonNak27 - sunNak27 + 27) % 27) + 1;
+        if (const {4, 6, 9, 10, 13, 20}.contains(dist27)) {
+          rawIntervals.add(
+            MuhurtaInterval(
+              muhurta: Muhurta.raviYoga,
+              timeRange: formatRange(sliceStart, sliceEnd),
+              startTime: sliceStart,
+              endTime: sliceEnd,
+              index: 0,
+            ),
+          );
+        }
+
+        // 3. Aadal Yoga & Vidaal Yoga (28-Nakshatra system)
+        final dist28 = ((moonNak28 - sunNak28 + 28) % 28) + 1;
+        if (const {2, 7, 9, 14, 16, 21, 23, 28}.contains(dist28)) {
+          rawIntervals.add(
+            MuhurtaInterval(
+              muhurta: Muhurta.aadalYoga,
+              timeRange: formatRange(sliceStart, sliceEnd),
+              startTime: sliceStart,
+              endTime: sliceEnd,
+              index: 0,
+            ),
+          );
+        } else if (const {3, 6, 10, 13, 17, 20, 24, 27}.contains(dist28)) {
+          rawIntervals.add(
+            MuhurtaInterval(
+              muhurta: Muhurta.vidaalYoga,
+              timeRange: formatRange(sliceStart, sliceEnd),
+              startTime: sliceStart,
+              endTime: sliceEnd,
+              index: 0,
+            ),
+          );
+        }
+      }
+
+      // 4. Varjyam & Amrit Kalam (evaluated per Moon Nakshatra span)
       for (final span in spans) {
         if (span.end.isAfter(sunriseTime) && span.start.isBefore(nextSunriseTime)) {
-          final nakNum = span.nakshatra;
-          final overlapStart = span.start.isBefore(sunriseTime) ? sunriseTime : span.start;
-          final overlapEnd = span.end.isAfter(nextSunriseTime) ? nextSunriseTime : span.end;
-
-          // 1. Sarvartha Siddhi Yoga
-          if (sarvarthaSiddhiNakshatras[weekday]?.contains(nakNum) == true) {
-            rawIntervals.add(
-              MuhurtaInterval(
-                muhurta: Muhurta.sarvarthaSiddhiYoga,
-                timeRange: formatRange(overlapStart, overlapEnd),
-                startTime: overlapStart,
-                endTime: overlapEnd,
-                index: 0,
-              ),
-            );
-          }
-
-          // 2. Ravi Yoga (distance in {4, 6, 9, 10, 13, 20})
-          final dist27 = ((nakNum - sunNak + 27) % 27) + 1;
-          if (const {4, 6, 9, 10, 13, 20}.contains(dist27)) {
-            rawIntervals.add(
-              MuhurtaInterval(
-                muhurta: Muhurta.raviYoga,
-                timeRange: formatRange(overlapStart, overlapEnd),
-                startTime: overlapStart,
-                endTime: overlapEnd,
-                index: 0,
-              ),
-            );
-          }
-
-          // 3. Aadal Yoga & Vidaal Yoga (28-Nakshatra system)
-          final moonNak28 = toNakshatra28(nakNum);
-          final dist28 = ((moonNak28 - sunNak28 + 28) % 28) + 1;
-          if (const {2, 7, 9, 14, 16, 21, 23, 28}.contains(dist28)) {
-            rawIntervals.add(
-              MuhurtaInterval(
-                muhurta: Muhurta.aadalYoga,
-                timeRange: formatRange(overlapStart, overlapEnd),
-                startTime: overlapStart,
-                endTime: overlapEnd,
-                index: 0,
-              ),
-            );
-          } else if (const {3, 6, 10, 13, 17, 20, 24, 27}.contains(dist28)) {
-            rawIntervals.add(
-              MuhurtaInterval(
-                muhurta: Muhurta.vidaalYoga,
-                timeRange: formatRange(overlapStart, overlapEnd),
-                startTime: overlapStart,
-                endTime: overlapEnd,
-                index: 0,
-              ),
-            );
-          }
-
-          // 4. Varjyam & Amrit Kalam
-          final cfg = nakshatraGhatis[nakNum];
+          final cfg = nakshatraGhatis[span.nakshatra];
           if (cfg != null) {
             final durMicros = span.end.difference(span.start).inMicroseconds;
 
@@ -304,12 +380,14 @@ class MuhurtaData {
               Duration(microseconds: (durMicros * (4.0 / 60.0)).round()),
             );
             if (vEnd.isAfter(sunriseTime) && vStart.isBefore(nextSunriseTime)) {
+              final effStart = vStart.isBefore(sunriseTime) ? sunriseTime : vStart;
+              final effEnd = vEnd.isAfter(nextSunriseTime) ? nextSunriseTime : vEnd;
               rawIntervals.add(
                 MuhurtaInterval(
                   muhurta: Muhurta.varjyam,
-                  timeRange: formatRange(vStart, vEnd),
-                  startTime: vStart,
-                  endTime: vEnd,
+                  timeRange: formatRange(effStart, effEnd),
+                  startTime: effStart,
+                  endTime: effEnd,
                   index: 0,
                 ),
               );
@@ -323,12 +401,14 @@ class MuhurtaData {
               Duration(microseconds: (durMicros * (4.0 / 60.0)).round()),
             );
             if (aEnd.isAfter(sunriseTime) && aStart.isBefore(nextSunriseTime)) {
+              final effStart = aStart.isBefore(sunriseTime) ? sunriseTime : aStart;
+              final effEnd = aEnd.isAfter(nextSunriseTime) ? nextSunriseTime : aEnd;
               rawIntervals.add(
                 MuhurtaInterval(
                   muhurta: Muhurta.amritKalam,
-                  timeRange: formatRange(aStart, aEnd),
-                  startTime: aStart,
-                  endTime: aEnd,
+                  timeRange: formatRange(effStart, effEnd),
+                  startTime: effStart,
+                  endTime: effEnd,
                   index: 0,
                 ),
               );
@@ -337,24 +417,34 @@ class MuhurtaData {
         }
       }
 
-      // Merge contiguous spans for the same Muhurta (e.g. continuous Ravi Yoga spanning multiple nakshatras)
+      // Merge contiguous spans for the same Muhurta type
       final merged = <MuhurtaInterval>[];
+      final byMuhurta = <Muhurta, List<MuhurtaInterval>>{};
       for (final interval in rawIntervals) {
-        if (merged.isNotEmpty &&
-            merged.last.muhurta == interval.muhurta &&
-            merged.last.endTime.difference(interval.startTime).abs() <= const Duration(minutes: 1)) {
-          final prev = merged.removeLast();
-          merged.add(
-            MuhurtaInterval(
-              muhurta: prev.muhurta,
-              timeRange: formatRange(prev.startTime, interval.endTime),
-              startTime: prev.startTime,
-              endTime: interval.endTime,
+        byMuhurta.putIfAbsent(interval.muhurta, () => []).add(interval);
+      }
+
+      for (final entry in byMuhurta.entries) {
+        final list = entry.value..sort((a, b) => a.startTime.compareTo(b.startTime));
+        MuhurtaInterval? cur;
+        for (final item in list) {
+          if (cur == null) {
+            cur = item;
+          } else if (item.startTime.difference(cur.endTime).abs() <= const Duration(minutes: 1)) {
+            cur = MuhurtaInterval(
+              muhurta: cur.muhurta,
+              timeRange: formatRange(cur.startTime, item.endTime),
+              startTime: cur.startTime,
+              endTime: item.endTime,
               index: 0,
-            ),
-          );
-        } else {
-          merged.add(interval);
+            );
+          } else {
+            merged.add(cur);
+            cur = item;
+          }
+        }
+        if (cur != null) {
+          merged.add(cur);
         }
       }
 
@@ -367,7 +457,7 @@ class MuhurtaData {
   /// Generates the full list of Muhurta intervals for a given [date].
   ///
   /// Each of the [Muhurta] enum values in [panchang_terms.dart] is calculated
-  /// based on Vedic astrology rules and astronomical positions matching Drik Panchang:
+  /// based on Vedic astrology rules and astronomical positions matching classical Drik-Ganita standards:
   /// - [Muhurta.abhijitMuhurta]: **excluded on Wednesday** as Abhijit is malefic on Wednesday
   /// - [Muhurta.godhuliMuhurta]: starts at sunset and lasts 24 minutes (1 ghati)
   /// - [Muhurta.pratahSandhya]: 3 ghatis (1.5 night muhurtas) before sunrise to sunrise
@@ -467,7 +557,7 @@ class MuhurtaData {
       Weekday.saturday => 0, // 1st part (~06:00 am - 07:30 am)
     };
 
-    // Dur Muhurtam intervals per weekday (Drik Panchang rules):
+    // Dur Muhurtam intervals per weekday (classical Vedic astrology rules):
     // In Vedic astrology, Dur Muhurtam occurs twice on Monday, Tuesday, Thursday,
     // Friday, and Saturday; and once on Sunday and Wednesday.
     // On Wednesday, the 8th daytime muhurta (solar noon) is Dur Muhurtam, replacing Abhijit.
@@ -567,7 +657,7 @@ class MuhurtaData {
     );
 
     // 3. Abhijit Muhurta: 8th daytime muhurta centered at solar noon.
-    // NOTE: In Vedic astrology and Drik Panchang, Abhijit Muhurta is NOT available
+    // NOTE: In classical Vedic astrology, Abhijit Muhurta is NOT available
     // on Wednesday as the 8th muhurta on Wednesday is inauspicious (Dur Muhurtam).
     if (weekday != Weekday.wednesday) {
       addInterval(

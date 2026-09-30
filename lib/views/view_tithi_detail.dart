@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import '../constants/panchang_terms.dart';
 import '../database/app_database.dart';
+import '../models/alarm_record.dart';
 import '../models/city.dart';
 import '../models/festival_rule.dart';
+import '../services/alarm_service.dart';
 import '../services/sweph_service.dart';
 import '../theme/design_system.dart';
 import '../widgets/widgets.dart';
@@ -55,18 +57,15 @@ class TithiDetailView extends StatefulWidget {
 typedef ViewTithiDetail = TithiDetailView;
 
 class _TithiDetailViewState extends State<TithiDetailView> {
-  late bool _isAlarmActive;
   late AppLanguage _language;
   PanchangCalculationResult? _calculationResult;
 
   @override
   void initState() {
     super.initState();
-    _isAlarmActive = widget.isAlarmActive ??
-        widget.tithiData?.isAlarmActive ??
-        false;
     _language = widget.initialLanguage ?? AppDatabase.instance.languageNotifier.value;
     AppDatabase.instance.languageNotifier.addListener(_onLanguageChanged);
+    AlarmService.instance.alarmsNotifier.addListener(_onAlarmsChanged);
 
     final effectiveDate = _effectiveDateTime;
     final now = DateTime.now();
@@ -78,6 +77,12 @@ class _TithiDetailViewState extends State<TithiDetailView> {
     }
 
     _loadPanchangCalculation();
+  }
+
+  void _onAlarmsChanged() {
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   Future<void> _loadPanchangCalculation() async {
@@ -103,9 +108,6 @@ class _TithiDetailViewState extends State<TithiDetailView> {
   @override
   void didUpdateWidget(covariant TithiDetailView oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.isAlarmActive != null && widget.isAlarmActive != oldWidget.isAlarmActive) {
-      _isAlarmActive = widget.isAlarmActive!;
-    }
     if (widget.initialLanguage != oldWidget.initialLanguage &&
         widget.initialLanguage != null) {
       _language = widget.initialLanguage!;
@@ -122,6 +124,7 @@ class _TithiDetailViewState extends State<TithiDetailView> {
 
   @override
   void dispose() {
+    AlarmService.instance.alarmsNotifier.removeListener(_onAlarmsChanged);
     AppDatabase.instance.languageNotifier.removeListener(_onLanguageChanged);
     super.dispose();
   }
@@ -189,16 +192,66 @@ class _TithiDetailViewState extends State<TithiDetailView> {
     return _derivedDayData?.festival ?? PanchangLabels.noFestival(_language);
   }
 
-  void _toggleAlarm() {
-    setState(() {
-      _isAlarmActive = !_isAlarmActive;
-    });
-    widget.onAlarmChanged?.call(_isAlarmActive);
+  bool get _isEffectivelyAlarmActive {
+    final activeAlarms = AlarmService.instance.alarmsNotifier.value;
+    final d = _effectiveDateTime;
+    return activeAlarms.any((a) =>
+        a.isActive &&
+        a.type == AlarmType.tithi &&
+        a.triggerTime.year == d.year &&
+        a.triggerTime.month == d.month &&
+        a.triggerTime.day == d.day);
+  }
+
+  Future<void> _toggleAlarm() async {
+    final d = _effectiveDateTime;
+    final activeAlarms = AlarmService.instance.alarmsNotifier.value;
+    AlarmRecord? existingAlarm;
+    for (final a in activeAlarms) {
+      if (a.isActive &&
+          a.type == AlarmType.tithi &&
+          a.triggerTime.year == d.year &&
+          a.triggerTime.month == d.month &&
+          a.triggerTime.day == d.day) {
+        existingAlarm = a;
+        break;
+      }
+    }
+
+    if (existingAlarm != null) {
+      final deleted = await ModalSetTithiAlarm.showDeleteDialog(
+        context: context,
+        record: existingAlarm,
+      );
+      if (deleted) {
+        widget.onAlarmChanged?.call(false);
+      }
+    } else {
+      final result = await ModalSetTithiAlarm.show(
+        context: context,
+        tithiName: _effectiveTithi,
+        date: d,
+        language: _language,
+      );
+      if (result != null && mounted) {
+        final record = await AlarmService.instance.scheduleTithiAlarm(
+          tithiName: _effectiveTithi,
+          baseDate: d,
+          time: result.time,
+          isRepeating: result.isRepeating,
+        );
+        if (record != null && mounted) {
+          AlarmService.showAlarmSetSnackbar(context, record.triggerTime);
+          widget.onAlarmChanged?.call(true);
+        }
+      }
+    }
   }
 
   List<Widget> _buildContentWidgets() {
     final result = _calculationResult;
     final hasHeaderData = _effectiveTithi.isNotEmpty && _effectivePaksha.isNotEmpty;
+    final isAlarmActive = _isEffectivelyAlarmActive;
 
     return [
       // 1st Widget: CardTithi with active alarm button toggle
@@ -206,7 +259,7 @@ class _TithiDetailViewState extends State<TithiDetailView> {
         CardTithi.fromCalculationResult(
           result,
           isDetail: true,
-          isAlarmActive: _isAlarmActive,
+          isAlarmActive: isAlarmActive,
           onAlarmTap: _toggleAlarm,
           language: _language,
         )
@@ -220,7 +273,7 @@ class _TithiDetailViewState extends State<TithiDetailView> {
           pakshaEnum: widget.pakshaEnum,
           moonPhaseAsset: _effectiveMoonAsset,
           lunarDay: _effectiveLunarDay,
-          isAlarmActive: _isAlarmActive,
+          isAlarmActive: isAlarmActive,
           onAlarmTap: _toggleAlarm,
           language: _language,
         )

@@ -2,7 +2,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import '../constants/panchang_terms.dart';
 import '../database/app_database.dart';
+import '../models/alarm_record.dart';
 import '../models/city.dart';
+import '../services/alarm_service.dart';
 import '../services/sweph_service.dart';
 import '../services/wordpress_sync_service.dart';
 import '../theme/design_system.dart';
@@ -80,6 +82,7 @@ class _TithiViewState extends State<TithiView> {
     AppDatabase.instance.cityNotifier.addListener(_onCityChanged);
     AppDatabase.instance.lunarSystemNotifier.addListener(_onLunarSystemChanged);
     AppDatabase.instance.festivalsNotifier.addListener(_onFestivalsChanged);
+    AlarmService.instance.alarmsNotifier.addListener(_syncAlarmStates);
     _loadLanguage();
     _initDatesAndTithis();
     _scrollController = ScrollController(
@@ -98,6 +101,34 @@ class _TithiViewState extends State<TithiView> {
     });
     _loadRealPanchangData();
     unawaited(WordPressSyncService.instance.syncFestivals());
+  }
+
+  void _syncAlarmStates() {
+    if (!mounted) return;
+    final activeAlarms = AlarmService.instance.alarmsNotifier.value;
+    setState(() {
+      _tithiDataList = _tithiDataList.map((d) {
+        if (d.dateTime == null) return d;
+        final hasAlarm = activeAlarms.any((a) =>
+            a.isActive &&
+            a.type == AlarmType.tithi &&
+            a.triggerTime.year == d.dateTime!.year &&
+            a.triggerTime.month == d.dateTime!.month &&
+            a.triggerTime.day == d.dateTime!.day);
+        return TithiData(
+          date: d.date,
+          dateTime: d.dateTime,
+          tithi: d.tithi,
+          paksha: d.paksha,
+          vrat: d.vrat,
+          festival: d.festival,
+          lunarDay: d.lunarDay,
+          moonPhaseAsset: d.moonPhaseAsset,
+          state: d.state,
+          isAlarmActive: hasAlarm,
+        );
+      }).toList();
+    });
   }
 
   void _onLanguageChanged() {
@@ -134,6 +165,7 @@ class _TithiViewState extends State<TithiView> {
 
   @override
   void dispose() {
+    AlarmService.instance.alarmsNotifier.removeListener(_syncAlarmStates);
     AppDatabase.instance.languageNotifier.removeListener(_onLanguageChanged);
     AppDatabase.instance.cityNotifier.removeListener(_onCityChanged);
     AppDatabase.instance.lunarSystemNotifier.removeListener(_onLunarSystemChanged);
@@ -211,27 +243,28 @@ class _TithiViewState extends State<TithiView> {
         lunarSystem: lunarSystem,
       );
       if (mounted) {
-        final userAlarmStates = <DateTime, bool>{
-          for (final item in _tithiDataList)
-            if (item.dateTime != null) item.dateTime!: item.isAlarmActive,
-        };
+        final activeAlarms = AlarmService.instance.alarmsNotifier.value;
         setState(() {
           _tithiDataList = realData.map((d) {
-            if (d.dateTime != null && userAlarmStates.containsKey(d.dateTime!)) {
-              return TithiData(
-                date: d.date,
-                dateTime: d.dateTime,
-                tithi: d.tithi,
-                paksha: d.paksha,
-                vrat: d.vrat,
-                festival: d.festival,
-                lunarDay: d.lunarDay,
-                moonPhaseAsset: d.moonPhaseAsset,
-                state: d.state,
-                isAlarmActive: userAlarmStates[d.dateTime!] ?? d.isAlarmActive,
-              );
-            }
-            return d;
+            final hasAlarm = d.dateTime != null &&
+                activeAlarms.any((a) =>
+                    a.isActive &&
+                    a.type == AlarmType.tithi &&
+                    a.triggerTime.year == d.dateTime!.year &&
+                    a.triggerTime.month == d.dateTime!.month &&
+                    a.triggerTime.day == d.dateTime!.day);
+            return TithiData(
+              date: d.date,
+              dateTime: d.dateTime,
+              tithi: d.tithi,
+              paksha: d.paksha,
+              vrat: d.vrat,
+              festival: d.festival,
+              lunarDay: d.lunarDay,
+              moonPhaseAsset: d.moonPhaseAsset,
+              state: d.state,
+              isAlarmActive: hasAlarm,
+            );
           }).toList();
         });
       }
@@ -248,8 +281,29 @@ class _TithiViewState extends State<TithiView> {
             festivalRules: rules,
           );
           if (mounted) {
+            final activeAlarms = AlarmService.instance.alarmsNotifier.value;
             setState(() {
-              _tithiDataList = withFestivals;
+              _tithiDataList = withFestivals.map((d) {
+                final hasAlarm = d.dateTime != null &&
+                    activeAlarms.any((a) =>
+                        a.isActive &&
+                        a.type == AlarmType.tithi &&
+                        a.triggerTime.year == d.dateTime!.year &&
+                        a.triggerTime.month == d.dateTime!.month &&
+                        a.triggerTime.day == d.dateTime!.day);
+                return TithiData(
+                  date: d.date,
+                  dateTime: d.dateTime,
+                  tithi: d.tithi,
+                  paksha: d.paksha,
+                  vrat: d.vrat,
+                  festival: d.festival,
+                  lunarDay: d.lunarDay,
+                  moonPhaseAsset: d.moonPhaseAsset,
+                  state: d.state,
+                  isAlarmActive: hasAlarm,
+                );
+              }).toList();
             });
           }
         }
@@ -305,23 +359,52 @@ class _TithiViewState extends State<TithiView> {
     navigateToDestination(context, index, currentIndex: 1);
   }
 
-  void _handleAlarmTap(int index, bool isActive) {
-    if (index >= 0 && index < _tithiDataList.length) {
-      final old = _tithiDataList[index];
-      setState(() {
-        _tithiDataList[index] = TithiData(
-          date: old.date,
-          dateTime: old.dateTime,
-          tithi: old.tithi,
-          paksha: old.paksha,
-          vrat: old.vrat,
-          festival: old.festival,
-          lunarDay: old.lunarDay,
-          moonPhaseAsset: old.moonPhaseAsset,
-          state: old.state,
-          isAlarmActive: isActive,
+  Future<void> _handleAlarmTap(int index, bool isActive) async {
+    if (index < 0 || index >= _tithiDataList.length) return;
+    final item = _tithiDataList[index];
+    if (item.dateTime == null) return;
+
+    final activeAlarms = AlarmService.instance.alarmsNotifier.value;
+    AlarmRecord? existingAlarm;
+    for (final a in activeAlarms) {
+      if (a.isActive &&
+          a.type == AlarmType.tithi &&
+          a.triggerTime.year == item.dateTime!.year &&
+          a.triggerTime.month == item.dateTime!.month &&
+          a.triggerTime.day == item.dateTime!.day) {
+        existingAlarm = a;
+        break;
+      }
+    }
+
+    if (existingAlarm != null) {
+      // User tapped active alarm button to delete it
+      final deleted = await ModalSetTithiAlarm.showDeleteDialog(
+        context: context,
+        record: existingAlarm,
+      );
+      if (!deleted && mounted) {
+        _syncAlarmStates();
+      }
+    } else {
+      // User tapped inactive alarm button to set an alarm
+      final result = await ModalSetTithiAlarm.show(
+        context: context,
+        tithiName: item.tithi,
+        date: item.dateTime!,
+        language: _language,
+      );
+      if (result != null && mounted) {
+        final record = await AlarmService.instance.scheduleTithiAlarm(
+          tithiName: item.tithi,
+          baseDate: item.dateTime!,
+          time: result.time,
+          isRepeating: result.isRepeating,
         );
-      });
+        if (record != null && mounted) {
+          AlarmService.showAlarmSetSnackbar(context, record.triggerTime);
+        }
+      }
     }
   }
 

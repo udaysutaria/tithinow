@@ -42,6 +42,9 @@ dependencies:
   path: ^1.9.1
   sqflite_common_ffi: ^2.4.3
   http: ^1.6.0
+  alarm: ^5.13.2
+  audioplayers: ^6.8.1
+  permission_handler: 12.0.3
 
 dev_dependencies:
   flutter_test:

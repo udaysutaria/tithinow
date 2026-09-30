@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../constants/panchang_terms.dart';
+import '../constants/alarm_sound_data.dart';
 import '../database/app_database.dart';
 import '../models/city.dart';
+import '../services/alarm_service.dart';
 import '../services/sweph_service.dart';
 import '../theme/design_system.dart';
 import '../widgets/widgets.dart';
@@ -67,11 +69,13 @@ class _SettingsState extends State<Settings> {
   late String _lunarSystem;
   late City _selectedCity;
   late String _selectedLanguage;
+  late String _selectedAlarmSound;
 
   // Stored initial state to detect user modifications in Settings mode
   late String _savedLunarSystem;
   late City _savedCity;
   late String _savedLanguage;
+  late String _savedAlarmSound;
 
   AppLanguage get _effectiveLanguage => AppLanguage.fromString(_selectedLanguage);
 
@@ -88,10 +92,12 @@ class _SettingsState extends State<Settings> {
                 AppLanguage.gujarati => 'Gujarati',
                 AppLanguage.english => 'English',
               });
+    _selectedAlarmSound = AppDatabase.instance.alarmSoundNotifier.value;
 
     _savedLunarSystem = _lunarSystem;
     _savedCity = _selectedCity;
     _savedLanguage = _selectedLanguage;
+    _savedAlarmSound = _selectedAlarmSound;
 
     if (!widget.isOnboarding &&
         widget.initialCity == null &&
@@ -105,6 +111,7 @@ class _SettingsState extends State<Settings> {
       final db = AppDatabase.instance;
       final prefs = await db.getUserPreferences();
       final savedCity = await db.getSavedCity();
+      final savedSound = await db.getSavedAlarmSound();
 
       if (mounted) {
         setState(() {
@@ -119,10 +126,12 @@ class _SettingsState extends State<Settings> {
               AppLanguage.gujarati => 'Gujarati',
             };
           }
+          _selectedAlarmSound = savedSound;
 
           _savedLunarSystem = _lunarSystem;
           _savedCity = _selectedCity;
           _savedLanguage = _selectedLanguage;
+          _savedAlarmSound = _selectedAlarmSound;
         });
       }
     } catch (_) {
@@ -134,6 +143,7 @@ class _SettingsState extends State<Settings> {
     if (_lunarSystem != _savedLunarSystem) return true;
     if (_selectedCity.id != _savedCity.id) return true;
     if (_selectedLanguage != _savedLanguage) return true;
+    if (_selectedAlarmSound != _savedAlarmSound) return true;
     return false;
   }
 
@@ -164,6 +174,7 @@ class _SettingsState extends State<Settings> {
       city: _selectedCity,
       language: _selectedLanguage,
     );
+    await AppDatabase.instance.saveAlarmSound(_selectedAlarmSound);
     SwephService.instance.clearCache();
 
     if (!mounted) return;
@@ -172,9 +183,27 @@ class _SettingsState extends State<Settings> {
       _savedLunarSystem = _lunarSystem;
       _savedCity = _selectedCity;
       _savedLanguage = _selectedLanguage;
+      _savedAlarmSound = _selectedAlarmSound;
     });
 
     widget.onUpdate?.call();
+  }
+
+  Future<void> _openAlarmSoundPicker() async {
+    final String? chosen = await showModalBottomSheet<String>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => _AlarmSoundPickerBottomSheet(
+        currentSoundId: _selectedAlarmSound,
+      ),
+    );
+
+    if (chosen != null && mounted) {
+      setState(() {
+        _selectedAlarmSound = chosen;
+      });
+    }
   }
 
   Future<void> _openCityPicker() async {
@@ -511,6 +540,16 @@ class _SettingsState extends State<Settings> {
             child: Container(
               width: double.infinity,
               padding: const EdgeInsets.symmetric(vertical: 24),
+              decoration: BoxDecoration(
+                border: !widget.isOnboarding
+                    ? Border(
+                        bottom: BorderSide(
+                          width: 1,
+                          color: Colors.white.withValues(alpha: 0.15),
+                        ),
+                      )
+                    : null,
+              ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -564,6 +603,69 @@ class _SettingsState extends State<Settings> {
             ),
           ),
         ),
+
+        // 5. Alarm Sound Selection Row (Only in Settings mode)
+        if (!widget.isOnboarding)
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: _openAlarmSoundPicker,
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 24),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        'Alarm Sound',
+                        style: GoogleFonts.inter(
+                          color: const Color(0xFFE5E5DD),
+                          fontSize: 16,
+                          fontWeight: FontWeight.w400,
+                          height: 1.50,
+                        ),
+                      ),
+                    ),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Text(
+                          AlarmSounds.getById(_selectedAlarmSound).title,
+                          textAlign: TextAlign.right,
+                          style: GoogleFonts.inter(
+                            color: const Color(0xFFE5E5DD),
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                            height: 1.26,
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: Center(
+                            child: SvgPicture.asset(
+                              'assets/icons/IconChevronForward.svg',
+                              width: 24,
+                              height: 24,
+                              colorFilter: const ColorFilter.mode(
+                                Color(0xFFE5E5DD),
+                                BlendMode.srcIn,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
 
         const SizedBox(height: 32),
 
@@ -1004,6 +1106,162 @@ class _LanguagePickerBottomSheet extends StatelessWidget {
                 ),
               ],
               const SizedBox(height: 16),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Modal Bottom Sheet for selecting the alarm ringtone with live sound preview.
+class _AlarmSoundPickerBottomSheet extends StatefulWidget {
+  final String currentSoundId;
+
+  const _AlarmSoundPickerBottomSheet({required this.currentSoundId});
+
+  @override
+  State<_AlarmSoundPickerBottomSheet> createState() =>
+      _AlarmSoundPickerBottomSheetState();
+}
+
+class _AlarmSoundPickerBottomSheetState
+    extends State<_AlarmSoundPickerBottomSheet> {
+  late String _selectedSoundId;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedSoundId = widget.currentSoundId;
+  }
+
+  @override
+  void dispose() {
+    AlarmService.instance.stopSoundPreview();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.background,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        border: Border(
+          top: BorderSide(
+            color: AppColors.outline,
+            width: 1,
+          ),
+        ),
+      ),
+      child: SafeArea(
+        top: false,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 12),
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: AppColors.outline,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Row(
+                  children: [
+                    Text(
+                      'Alarm Sound',
+                      style: GoogleFonts.sora(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.onSurfaceVariant,
+                      ),
+                    ),
+                    const Spacer(),
+                    IconButton(
+                      icon: const Icon(Icons.close, color: AppColors.onSurface),
+                      onPressed: () {
+                        AlarmService.instance.stopSoundPreview();
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 8),
+              for (final sound in AlarmSounds.all) ...[
+                Divider(color: AppColors.outline, height: 1),
+                Material(
+                  color: Colors.transparent,
+                  child: ValueListenableBuilder<String?>(
+                    valueListenable:
+                        AlarmService.instance.previewingSoundNotifier,
+                    builder: (context, playingId, _) {
+                      final bool isPlaying = playingId == sound.id;
+                      final bool isSelected = _selectedSoundId == sound.id;
+
+                      return ListTile(
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 6,
+                        ),
+                        leading: IconButton(
+                          icon: Icon(
+                            isPlaying
+                                ? Icons.stop_circle_rounded
+                                : Icons.play_circle_fill_rounded,
+                            color: isPlaying
+                                ? AppColors.primary
+                                : AppColors.onSurfaceVariant,
+                            size: 32,
+                          ),
+                          onPressed: () {
+                            AlarmService.instance.toggleSoundPreview(sound.id);
+                          },
+                        ),
+                        title: Text(
+                          sound.title,
+                          style: GoogleFonts.inter(
+                            fontSize: 16,
+                            fontWeight:
+                                isSelected ? FontWeight.w600 : FontWeight.w400,
+                            color: isSelected
+                                ? AppColors.primary
+                                : AppColors.onSurfaceVariant,
+                          ),
+                        ),
+                        subtitle: Text(
+                          sound.subtitle,
+                          style: GoogleFonts.inter(
+                            fontSize: 13,
+                            color: AppColors.onSurface,
+                          ),
+                        ),
+                        trailing: isSelected
+                            ? const Icon(
+                                Icons.check,
+                                color: AppColors.primary,
+                                size: 20,
+                              )
+                            : null,
+                        onTap: () {
+                          AlarmService.instance.stopSoundPreview();
+                          setState(() {
+                            _selectedSoundId = sound.id;
+                          });
+                          Navigator.of(context).pop(sound.id);
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ],
+              const SizedBox(height: 24),
             ],
           ),
         ),

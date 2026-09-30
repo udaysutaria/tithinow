@@ -208,9 +208,9 @@ class PanchangLabels {
       };
 
   static String rashi(AppLanguage lang) => switch (lang) {
-        AppLanguage.english => 'Rashi',
-        AppLanguage.hindi => 'राशि',
-        AppLanguage.gujarati => 'રાશિ',
+        AppLanguage.english => 'Moon Sign',
+        AppLanguage.hindi => 'चंद्र राशि',
+        AppLanguage.gujarati => 'ચંદ્ર રાશિ',
       };
 
   static String vrat(AppLanguage lang) => switch (lang) {

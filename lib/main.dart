@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:tithinow/database/app_database.dart';
+import 'package:tithinow/services/alarm_service.dart';
 import 'package:tithinow/services/sweph_service.dart';
 import 'package:tithinow/services/wordpress_sync_service.dart';
 import 'package:tithinow/theme/design_system.dart';
@@ -18,11 +19,12 @@ void main() {
     FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
   }
 
-  // Pre-warm SQLite database, language, today's Panchang calculation, and sync festivals
+  // Pre-warm SQLite database, language, today's Panchang calculation, alarms, and sync festivals
   unawaited(AppDatabase.instance.database);
   unawaited(AppDatabase.instance.getSavedLanguage());
   unawaited(SwephService.instance.preloadTodayPanchang());
   unawaited(WordPressSyncService.instance.syncFestivals());
+  unawaited(AlarmService.instance.init());
 
   runApp(const MyApp());
 }
@@ -100,7 +102,12 @@ class _MyAppState extends State<MyApp> {
           setState(() {
             _isSplashVisible = false;
           });
+          unawaited(AlarmService.instance.requestNotificationPermissions());
         }
+      });
+    } else {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        unawaited(AlarmService.instance.requestNotificationPermissions());
       });
     }
   }
@@ -119,6 +126,7 @@ class _MyAppState extends State<MyApp> {
           );
 
     return MaterialApp(
+      navigatorKey: AlarmService.instance.navigatorKey,
       title: 'TithiNow',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.darkTheme,
