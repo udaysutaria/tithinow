@@ -27,18 +27,12 @@ jobs:
       - name: Build MSIX
         run: dart run msix:create
 
-      - name: Find MSIX file
-        id: find_msix
-        shell: bash
-        run: |
-          MSIX_PATH=$(find build -name "*.msix" | head -n 1)
-          echo "msix_path=$MSIX_PATH" >> "$GITHUB_OUTPUT"
-
       - name: Upload MSIX artifact
         uses: actions/upload-artifact@v4
         with:
           name: windows-msix-installer
-          path: ${{ steps.find_msix.outputs.msix_path }}
+          path: build/**/*.msix
+          if-no-files-found: error
 
   build-macos-dmg:
     runs-on: macos-latest
@@ -92,3 +86,4 @@ jobs:
         with:
           name: macos-unsigned-dmg
           path: dist/*.dmg
+          if-no-files-found: error
