@@ -338,6 +338,51 @@ void main() {
       });
       expect(activeAlarmsAfterCancel.isNotEmpty, isTrue);
     });
+
+    testWidgets('Scrolling near bottom dynamically loads dates beyond 31 Dec 2028 without limitation', (tester) async {
+      await tester.pumpWidget(
+        buildTestableWidget(const TithiView()),
+      );
+      await tester.pumpAndSettle();
+
+      final listTithisBefore = tester.widget<ListTithis>(find.byType(ListTithis));
+      expect(listTithisBefore.data, isNotNull);
+      final initialCount = listTithisBefore.data!.length;
+      expect(initialCount, 1096);
+      expect(listTithisBefore.data!.last.date, 'Sun, 31 Dec 2028');
+
+      // Scroll towards the end to trigger dynamic future loading
+      final scrollableFinder = find.byType(Scrollable).first;
+      final state = tester.state<ScrollableState>(scrollableFinder);
+      state.position.jumpTo(state.position.maxScrollExtent - 2000);
+      await tester.pumpAndSettle();
+
+      final listTithisAfter = tester.widget<ListTithis>(find.byType(ListTithis));
+      expect(listTithisAfter.data!.length, greaterThan(initialCount));
+      expect(listTithisAfter.data!.last.dateTime!.year, greaterThanOrEqualTo(2029));
+    });
+
+    testWidgets('Scrolling near top dynamically loads dates before 1 Jan 2026 without limitation', (tester) async {
+      await tester.pumpWidget(
+        buildTestableWidget(const TithiView()),
+      );
+      await tester.pumpAndSettle();
+
+      final listTithisBefore = tester.widget<ListTithis>(find.byType(ListTithis));
+      expect(listTithisBefore.data, isNotNull);
+      final initialCount = listTithisBefore.data!.length;
+      expect(listTithisBefore.data!.first.date, 'Thu, 1 Jan 2026');
+
+      // Scroll near the top to trigger dynamic past loading
+      final scrollableFinder = find.byType(Scrollable).first;
+      final state = tester.state<ScrollableState>(scrollableFinder);
+      state.position.jumpTo(100);
+      await tester.pumpAndSettle();
+
+      final listTithisAfter = tester.widget<ListTithis>(find.byType(ListTithis));
+      expect(listTithisAfter.data!.length, greaterThan(initialCount));
+      expect(listTithisAfter.data!.first.dateTime!.year, lessThanOrEqualTo(2025));
+    });
   });
 }
 
