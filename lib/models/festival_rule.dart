@@ -151,12 +151,23 @@ class FestivalRule {
       importanceLevel: _parseString(acf['importance_level']) ?? 'major',
       isFasting: isFasting,
       nameEn: _parseString(acf['festival_name_en']) ??
+          _parseString(acf['name_en']) ??
           (json['title'] is Map ? _parseString(json['title']['rendered']) ?? '' : ''),
-      nameHi: _parseString(acf['festival_name_hi']) ?? '',
-      nameGu: _parseString(acf['festival_name_gu']) ?? '',
-      descriptionEn: _parseString(acf['description_en']) ?? '',
-      descriptionHi: _parseString(acf['description_hi']) ?? '',
-      descriptionGu: _parseString(acf['description_gu']) ?? '',
+      nameHi: _parseString(acf['festival_name_hi']) ??
+          _parseString(acf['name_hi']) ??
+          '',
+      nameGu: _parseString(acf['festival_name_gu']) ??
+          _parseString(acf['name_gu']) ??
+          '',
+      descriptionEn: _parseString(acf['description_en']) ??
+          _parseString(acf['desc_en']) ??
+          '',
+      descriptionHi: _parseString(acf['description_hi']) ??
+          _parseString(acf['desc_hi']) ??
+          '',
+      descriptionGu: _parseString(acf['description_gu']) ??
+          _parseString(acf['desc_gu']) ??
+          '',
       eventType: _parseString(acf['event_type']) ?? 'lunar_tithi',
       daySelectionRule: _parseString(acf['day_selection_rule']) ?? 'udaya',
       lunarMonth: _parseString(acf['lunar_month']),
@@ -352,5 +363,22 @@ class FestivalRule {
     if (cat == 'vrat') return true;
     if (isFasting) return true;
     return false;
+  }
+
+  /// Registers this festival rule's multilingual names with [PanchangLabels].
+  void registerWithPanchangLabels() {
+    PanchangLabels.registerObservance(
+      en: nameEn,
+      hi: nameHi,
+      gu: nameGu,
+      festivalId: festivalId,
+    );
+  }
+
+  /// Registers an entire collection of festival rules into [PanchangLabels].
+  static void registerRules(Iterable<FestivalRule> rules) {
+    for (final rule in rules) {
+      rule.registerWithPanchangLabels();
+    }
   }
 }

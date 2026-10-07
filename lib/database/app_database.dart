@@ -803,6 +803,7 @@ class AppDatabase {
     }
 
     await batch.commit(noResult: true);
+    FestivalRule.registerRules(rules);
     festivalsNotifier.value++;
     return rules.length;
   }
@@ -821,7 +822,11 @@ class AppDatabase {
       tableFestivals,
       orderBy: 'importance_level ASC, name_en ASC',
     );
-    return maps.map(FestivalRule.fromMap).toList();
+    final rules = maps.map(FestivalRule.fromMap).toList();
+    if (rules.isNotEmpty) {
+      FestivalRule.registerRules(rules);
+    }
+    return rules;
   }
 
   /// Retrieves a specific [FestivalRule] by its unique [festivalId] slug.

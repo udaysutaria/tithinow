@@ -136,6 +136,9 @@ class SwephService {
       final city = await AppDatabase.instance.getSavedCity() ?? City.mumbai;
       final lunarSystem = await AppDatabase.instance.getSavedLunarSystem();
       final rules = await AppDatabase.instance.getAllFestivalRules();
+      if (rules.isNotEmpty) {
+        FestivalRule.registerRules(rules);
+      }
       final now = DateTime.now();
       final result = await calculatePanchang(
         date: DateTime(now.year, now.month, now.day),
@@ -352,6 +355,10 @@ class SwephService {
 
     final HinduMonth hinduMonth =
         effectiveSystem == 'amanta' ? amantaMonth : purnimantaMonth;
+
+    if (festivalRules != null && festivalRules.isNotEmpty) {
+      FestivalRule.registerRules(festivalRules);
+    }
 
     // 4. Evaluate Festival & Vrat Rules
     final matchedRules = _evaluateFestivalRules(
@@ -868,14 +875,34 @@ class SwephService {
         rules: festivalRules,
       );
 
+      FestivalRule? matchedVratRule;
+      FestivalRule? matchedFestivalRule;
+
       for (final rule in matched) {
-        if (rule.isVrat && vrat == 'No Vrat') {
+        if (rule.isVrat && matchedVratRule == null) {
+          matchedVratRule = rule;
           vrat = rule.nameEn;
         }
-        if (rule.isFestival && festival == 'No Festival') {
+        if (rule.isFestival && matchedFestivalRule == null) {
+          matchedFestivalRule = rule;
           festival = rule.nameEn;
         }
       }
+
+      return TithiData(
+        date: dateString,
+        dateTime: itemDate,
+        tithi: tithi.name(AppLanguage.english),
+        paksha: paksha.name(AppLanguage.english),
+        vrat: vrat,
+        festival: festival,
+        vratRule: matchedVratRule,
+        festivalRule: matchedFestivalRule,
+        lunarDay: tithiTotalIndex,
+        moonPhaseAsset: ListItemTithi.getMoonAsset(tithiTotalIndex),
+        state: state,
+        isAlarmActive: isAlarmActive,
+      );
     }
 
     return TithiData(
@@ -901,6 +928,9 @@ class SwephService {
     List<FestivalRule> festivalRules = const [],
   }) async {
     await init();
+    if (festivalRules.isNotEmpty) {
+      FestivalRule.registerRules(festivalRules);
+    }
     return List<TithiData>.generate(
       dates.length,
       (i) {

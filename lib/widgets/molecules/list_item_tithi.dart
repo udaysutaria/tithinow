@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../constants/panchang_terms.dart';
+import '../../models/festival_rule.dart';
 import '../../theme/design_system.dart';
 import '../atoms/button_alarm.dart';
 import '../atoms/skeleton_loader.dart';
@@ -24,6 +25,8 @@ class ListItemTithi extends StatelessWidget {
   final String paksha;
   final String? vrat;
   final String? festival;
+  final FestivalRule? vratRule;
+  final FestivalRule? festivalRule;
   final String? moonPhaseAsset;
   final int? lunarDay;
   final bool isAlarmActive;
@@ -47,6 +50,8 @@ class ListItemTithi extends StatelessWidget {
     required this.paksha,
     this.vrat = 'No Vrat',
     this.festival = 'No Festival',
+    this.vratRule,
+    this.festivalRule,
     this.moonPhaseAsset,
     this.lunarDay,
     this.isAlarmActive = false,
@@ -65,6 +70,8 @@ class ListItemTithi extends StatelessWidget {
     required String paksha,
     String? vrat = 'No Vrat',
     String? festival = 'No Festival',
+    FestivalRule? vratRule,
+    FestivalRule? festivalRule,
     String? moonPhaseAsset,
     int? lunarDay,
     VoidCallback? onTap,
@@ -80,6 +87,8 @@ class ListItemTithi extends StatelessWidget {
       paksha: paksha,
       vrat: vrat,
       festival: festival,
+      vratRule: vratRule,
+      festivalRule: festivalRule,
       moonPhaseAsset: moonPhaseAsset,
       lunarDay: lunarDay,
       onTap: onTap,
@@ -97,6 +106,8 @@ class ListItemTithi extends StatelessWidget {
     required String paksha,
     String? vrat = 'No Vrat',
     String? festival = 'No Festival',
+    FestivalRule? vratRule,
+    FestivalRule? festivalRule,
     String? moonPhaseAsset,
     int? lunarDay,
     VoidCallback? onTap,
@@ -112,6 +123,8 @@ class ListItemTithi extends StatelessWidget {
       paksha: paksha,
       vrat: vrat,
       festival: festival,
+      vratRule: vratRule,
+      festivalRule: festivalRule,
       moonPhaseAsset: moonPhaseAsset,
       lunarDay: lunarDay,
       onTap: onTap,
@@ -129,6 +142,8 @@ class ListItemTithi extends StatelessWidget {
     required String paksha,
     String? vrat = 'No Vrat',
     String? festival = 'No Festival',
+    FestivalRule? vratRule,
+    FestivalRule? festivalRule,
     String? moonPhaseAsset,
     int? lunarDay,
     bool isAlarmActive = false,
@@ -146,6 +161,8 @@ class ListItemTithi extends StatelessWidget {
       paksha: paksha,
       vrat: vrat,
       festival: festival,
+      vratRule: vratRule,
+      festivalRule: festivalRule,
       moonPhaseAsset: moonPhaseAsset,
       lunarDay: lunarDay,
       isAlarmActive: isAlarmActive,
@@ -225,22 +242,6 @@ class ListItemTithi extends StatelessWidget {
     }
   }
 
-  /// Known translations for active demo/common Vrats.
-  static const Map<String, ({String hi, String gu})> _knownVrats = {
-    'parivartini ekadashi': (hi: 'परिवर्तिनी एकादशी', gu: 'પરિવર્તિની અગિયારસ'),
-    'vamana jayanti': (hi: 'वामन जयंती', gu: 'વામન જયંતી'),
-    'pradosh vrat': (hi: 'प्रदोष व्रत', gu: 'પ્રદોષ વ્રત'),
-    'ekadashi': (hi: 'एकादशी', gu: 'અગિયારસ'),
-    'satyanarayan vrat': (hi: 'सत्यनारायण व्रत', gu: 'સત્યનારાયણ વ્રત'),
-  };
-
-  /// Known translations for active demo/common Festivals.
-  static const Map<String, ({String hi, String gu})> _knownFestivals = {
-    'anant chaturdashi': (hi: 'अनंत चतुर्दशी', gu: 'અનંત ચતુર્દશી'),
-    'bhadrapada purnima': (hi: 'भाद्रपद पूर्णिमा', gu: 'ભાદ્રપદ પૂર્ણિમા'),
-    'pitrupaksha begins': (hi: 'पितृपक्ष प्रारंभ', gu: 'પિતૃપક્ષ પ્રારંભ'),
-    'ganesh visarjan': (hi: 'गणेश विसर्जन', gu: 'ગણેશ વિસર્જન'),
-  };
 
   /// Determines if a Vrat/Festival string is inactive (empty, "No Vrat", etc.).
   static bool isInactiveValue(String? value) {
@@ -428,33 +429,23 @@ class ListItemTithi extends StatelessWidget {
   }
 
   String _resolveLocalizedVrat() {
-    if (isInactiveValue(vrat)) {
-      return PanchangLabels.noVrat(language);
+    if (vratRule != null) {
+      final name = vratRule!.name(language);
+      if (name.isNotEmpty && !isInactiveValue(name)) {
+        return name;
+      }
     }
-    final raw = (vrat ?? '').trim();
-    if (language == AppLanguage.english) return raw;
-    final lower = raw.toLowerCase();
-    if (_knownVrats.containsKey(lower)) {
-      return language == AppLanguage.hindi
-          ? _knownVrats[lower]!.hi
-          : _knownVrats[lower]!.gu;
-    }
-    return raw;
+    return PanchangLabels.resolveVrat(vrat, language);
   }
 
   String _resolveLocalizedFestival() {
-    if (isInactiveValue(festival)) {
-      return PanchangLabels.noFestival(language);
+    if (festivalRule != null) {
+      final name = festivalRule!.name(language);
+      if (name.isNotEmpty && !isInactiveValue(name)) {
+        return name;
+      }
     }
-    final raw = (festival ?? '').trim();
-    if (language == AppLanguage.english) return raw;
-    final lower = raw.toLowerCase();
-    if (_knownFestivals.containsKey(lower)) {
-      return language == AppLanguage.hindi
-          ? _knownFestivals[lower]!.hi
-          : _knownFestivals[lower]!.gu;
-    }
-    return raw;
+    return PanchangLabels.resolveFestival(festival, language);
   }
 
   @override

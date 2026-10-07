@@ -115,18 +115,7 @@ class _TithiViewState extends State<TithiView> {
             a.triggerTime.year == d.dateTime!.year &&
             a.triggerTime.month == d.dateTime!.month &&
             a.triggerTime.day == d.dateTime!.day);
-        return TithiData(
-          date: d.date,
-          dateTime: d.dateTime,
-          tithi: d.tithi,
-          paksha: d.paksha,
-          vrat: d.vrat,
-          festival: d.festival,
-          lunarDay: d.lunarDay,
-          moonPhaseAsset: d.moonPhaseAsset,
-          state: d.state,
-          isAlarmActive: hasAlarm,
-        );
+        return d.copyWith(isAlarmActive: hasAlarm);
       }).toList();
     });
   }
@@ -253,18 +242,7 @@ class _TithiViewState extends State<TithiView> {
                     a.triggerTime.year == d.dateTime!.year &&
                     a.triggerTime.month == d.dateTime!.month &&
                     a.triggerTime.day == d.dateTime!.day);
-            return TithiData(
-              date: d.date,
-              dateTime: d.dateTime,
-              tithi: d.tithi,
-              paksha: d.paksha,
-              vrat: d.vrat,
-              festival: d.festival,
-              lunarDay: d.lunarDay,
-              moonPhaseAsset: d.moonPhaseAsset,
-              state: d.state,
-              isAlarmActive: hasAlarm,
-            );
+            return d.copyWith(isAlarmActive: hasAlarm);
           }).toList();
         });
       }
@@ -291,18 +269,7 @@ class _TithiViewState extends State<TithiView> {
                         a.triggerTime.year == d.dateTime!.year &&
                         a.triggerTime.month == d.dateTime!.month &&
                         a.triggerTime.day == d.dateTime!.day);
-                return TithiData(
-                  date: d.date,
-                  dateTime: d.dateTime,
-                  tithi: d.tithi,
-                  paksha: d.paksha,
-                  vrat: d.vrat,
-                  festival: d.festival,
-                  lunarDay: d.lunarDay,
-                  moonPhaseAsset: d.moonPhaseAsset,
-                  state: d.state,
-                  isAlarmActive: hasAlarm,
-                );
+                return d.copyWith(isAlarmActive: hasAlarm);
               }).toList();
             });
           }

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart' show ScrollDirection;
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../constants/panchang_terms.dart';
+import '../../models/festival_rule.dart';
 import '../../services/sweph_service.dart' show PanchangCalculationResult;
 import '../../theme/design_system.dart';
 
@@ -41,6 +42,8 @@ class PanchangData {
   final HinduMonth? monthEnum;
   final String? vrat;
   final String? festival;
+  final FestivalRule? vratRule;
+  final FestivalRule? festivalRule;
   final String sunrise;
   final String sunset;
   final String moonrise;
@@ -77,6 +80,8 @@ class PanchangData {
     this.monthEnum,
     this.vrat = 'No Vrat',
     this.festival = 'No Festival',
+    this.vratRule,
+    this.festivalRule,
     this.sunrise = '06:27 AM',
     this.sunset = '06:33 PM',
     this.moonrise = '05:08 PM',
@@ -128,11 +133,26 @@ class PanchangData {
   }
 
   /// Resolves the localized Vrat value.
-  String resolveVrat(AppLanguage lang) => PanchangLabels.resolveVrat(vrat, lang);
+  String resolveVrat(AppLanguage lang) {
+    if (vratRule != null) {
+      final name = vratRule!.name(lang);
+      if (name.isNotEmpty && !isInactive(name)) {
+        return name;
+      }
+    }
+    return PanchangLabels.resolveVrat(vrat, lang);
+  }
 
   /// Resolves the localized Festival value.
-  String resolveFestival(AppLanguage lang) =>
-      PanchangLabels.resolveFestival(festival, lang);
+  String resolveFestival(AppLanguage lang) {
+    if (festivalRule != null) {
+      final name = festivalRule!.name(lang);
+      if (name.isNotEmpty && !isInactive(name)) {
+        return name;
+      }
+    }
+    return PanchangLabels.resolveFestival(festival, lang);
+  }
 
   /// Resolves label for Nakshatra.
   String resolveLabelNakshatra(AppLanguage lang) {
@@ -429,6 +449,8 @@ class CardPanchang extends StatefulWidget {
   final HinduMonth? monthEnum;
   final String? vrat;
   final String? festival;
+  final FestivalRule? vratRule;
+  final FestivalRule? festivalRule;
   final String? sunrise;
   final String? sunset;
   final String? moonrise;
@@ -457,6 +479,8 @@ class CardPanchang extends StatefulWidget {
     this.monthEnum,
     this.vrat,
     this.festival,
+    this.vratRule,
+    this.festivalRule,
     this.sunrise,
     this.sunset,
     this.moonrise,
@@ -489,6 +513,8 @@ class CardPanchang extends StatefulWidget {
         monthEnum: result.hinduMonth,
         vrat: result.primaryVrat?.nameEn ?? 'No Vrat',
         festival: result.primaryFestival?.nameEn ?? 'No Festival',
+        vratRule: result.primaryVrat,
+        festivalRule: result.primaryFestival,
         sunrise: result.sunriseFormatted,
         sunset: result.sunsetFormatted,
         moonrise: result.moonriseFormatted,
@@ -516,6 +542,8 @@ class CardPanchang extends StatefulWidget {
     HinduMonth? monthEnum,
     String? vrat,
     String? festival,
+    FestivalRule? vratRule,
+    FestivalRule? festivalRule,
     String sunrise = '06:27 AM',
     String sunset = '06:33 PM',
     String moonrise = '05:08 PM',
@@ -544,6 +572,8 @@ class CardPanchang extends StatefulWidget {
         monthEnum: monthEnum,
         vrat: vrat ?? 'No Vrat',
         festival: festival ?? 'No Festival',
+        vratRule: vratRule,
+        festivalRule: festivalRule,
         sunrise: sunrise,
         sunset: sunset,
         moonrise: moonrise,
@@ -692,6 +722,8 @@ class _CardPanchangState extends State<CardPanchang> {
       monthEnum: widget.monthEnum ?? base.monthEnum,
       vrat: widget.vrat ?? base.vrat,
       festival: widget.festival ?? base.festival,
+      vratRule: widget.vratRule ?? base.vratRule,
+      festivalRule: widget.festivalRule ?? base.festivalRule,
       sunrise: widget.sunrise ?? base.sunrise,
       sunset: widget.sunset ?? base.sunset,
       moonrise: widget.moonrise ?? base.moonrise,
