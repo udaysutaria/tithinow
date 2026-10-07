@@ -233,6 +233,12 @@ class AppDatabase {
   /// Ensures festivals table exists (for existing app databases without version bump).
   Future<void> _ensureFestivalsTable(Database db) async {
     await _createFestivalsTable(db);
+    final tableInfo = await db.rawQuery('PRAGMA table_info($tableFestivals)');
+    final existingColumns = tableInfo
+        .map((row) => (row['name'] as String?)?.toLowerCase())
+        .whereType<String>()
+        .toSet();
+
     const newColumns = [
       'fasting_type TEXT',
       'parana_rule TEXT',
@@ -261,9 +267,12 @@ class AppDatabase {
       'verification_notes TEXT',
     ];
     for (final col in newColumns) {
-      try {
-        await db.execute('ALTER TABLE $tableFestivals ADD COLUMN $col');
-      } catch (_) {}
+      final colName = col.split(' ').first.toLowerCase();
+      if (!existingColumns.contains(colName)) {
+        try {
+          await db.execute('ALTER TABLE $tableFestivals ADD COLUMN $col');
+        } catch (_) {}
+      }
     }
   }
 
@@ -297,15 +306,25 @@ class AppDatabase {
   /// Ensures alarms table exists and has latest columns.
   Future<void> _ensureAlarmsTable(Database db) async {
     await _createAlarmsTable(db);
-    try {
-      await db.execute('ALTER TABLE $tableAlarms ADD COLUMN parent_rule_id TEXT');
-    } catch (_) {}
-    try {
-      await db.execute('ALTER TABLE $tableAlarms ADD COLUMN is_repeating INTEGER NOT NULL DEFAULT 0');
-    } catch (_) {}
-    try {
-      await db.execute('ALTER TABLE $tableAlarms ADD COLUMN tithi_name TEXT');
-    } catch (_) {}
+    final tableInfo = await db.rawQuery('PRAGMA table_info($tableAlarms)');
+    final existingColumns = tableInfo
+        .map((row) => (row['name'] as String?)?.toLowerCase())
+        .whereType<String>()
+        .toSet();
+
+    const newColumns = [
+      'parent_rule_id TEXT',
+      'is_repeating INTEGER NOT NULL DEFAULT 0',
+      'tithi_name TEXT',
+    ];
+    for (final col in newColumns) {
+      final colName = col.split(' ').first.toLowerCase();
+      if (!existingColumns.contains(colName)) {
+        try {
+          await db.execute('ALTER TABLE $tableAlarms ADD COLUMN $col');
+        } catch (_) {}
+      }
+    }
     try {
       await db.execute(
         'CREATE INDEX IF NOT EXISTS idx_alarms_parent_rule ON $tableAlarms (parent_rule_id)',

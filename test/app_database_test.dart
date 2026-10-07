@@ -170,5 +170,21 @@ void main() {
       expect(ahmedabad, isNotNull);
       expect(ahmedabad!.state, 'Gujarat');
     });
+
+    test('Ensuring tables multiple times is idempotent and does not produce duplicate column errors', () async {
+      final db = await AppDatabase.initCustomDatabase(inMemory: true);
+      // Run table ensuring logic twice on the same DB
+      final festivalsInfo = await db.rawQuery('PRAGMA table_info(${AppDatabase.tableFestivals})');
+      final festivalColNames = festivalsInfo.map((r) => r['name'] as String).toSet();
+      expect(festivalColNames.contains('fasting_type'), isTrue);
+      expect(festivalColNames.contains('sampradaya'), isTrue);
+
+      final alarmsInfo = await db.rawQuery('PRAGMA table_info(${AppDatabase.tableAlarms})');
+      final alarmColNames = alarmsInfo.map((r) => r['name'] as String).toSet();
+      expect(alarmColNames.contains('parent_rule_id'), isTrue);
+      expect(alarmColNames.contains('is_repeating'), isTrue);
+      expect(alarmColNames.contains('tithi_name'), isTrue);
+      await db.close();
+    });
   });
 }

@@ -4,6 +4,7 @@ import '../constants/panchang_terms.dart';
 import '../database/app_database.dart';
 import '../models/alarm_record.dart';
 import '../models/city.dart';
+import '../models/festival_rule.dart';
 import '../services/alarm_service.dart';
 import '../services/sweph_service.dart';
 import '../services/wordpress_sync_service.dart';
@@ -64,15 +65,17 @@ class _TithiViewState extends State<TithiView> {
     'Dec',
   ];
 
-  late final List<DateTime> _dates;
+  late List<DateTime> _dates;
   late List<TithiData> _tithiDataList;
-  late final int _todayIndex;
+  late int _todayIndex;
   late final DateTime _today;
 
   late ScrollController _scrollController;
   late DateTime _visibleMonth;
   late AppLanguage _language;
   bool _isTodayInViewport = true;
+  bool _isLoadingMoreFuture = false;
+  bool _isLoadingMorePast = false;
 
   @override
   void initState() {
@@ -308,6 +311,175 @@ class _TithiViewState extends State<TithiView> {
         _visibleMonth = newMonth;
         _isTodayInViewport = inViewport;
       });
+    }
+
+    // Dynamic infinite scroll forward: automatically loads dates beyond 2028 when approaching bottom
+    if (widget.endDate == null && !_isLoadingMoreFuture) {
+      final position = _scrollController.position;
+      if (position.hasPixels && position.hasContentDimensions) {
+        final maxScroll = position.maxScrollExtent;
+        if (maxScroll > 0 && offset >= maxScroll - (50 * _itemTotalHeight)) {
+          _loadMoreFutureDates();
+        }
+      }
+    }
+
+    // Dynamic infinite scroll backward: loads past dates when scrolling near top
+    if (widget.startDate == null && !_isLoadingMorePast) {
+      final position = _scrollController.position;
+      if (position.hasPixels && position.hasContentDimensions) {
+        if (offset > 0 && offset <= (20 * _itemTotalHeight)) {
+          _loadMorePastDates();
+        }
+      }
+    }
+  }
+
+  Future<void> _loadMoreFutureDates() async {
+    if (_isLoadingMoreFuture || widget.endDate != null) return;
+    _isLoadingMoreFuture = true;
+
+    final lastDate = _dates.last;
+    const batchDays = 365;
+    final newDates = List<DateTime>.generate(
+      batchDays,
+      (i) => DateTime(lastDate.year, lastDate.month, lastDate.day + 1 + i),
+    );
+
+    final newItems = List<TithiData>.generate(batchDays, (i) {
+      final date = newDates[i];
+      final itemDate = DateTime(date.year, date.month, date.day);
+      final dateString =
+          '${_weekdays[date.weekday - 1]}, ${date.day} ${_months[date.month - 1]} ${date.year}';
+      return TithiData(
+        date: dateString,
+        dateTime: itemDate,
+        tithi: '',
+        paksha: '',
+        vrat: null,
+        festival: null,
+        lunarDay: null,
+        moonPhaseAsset: null,
+        state: ItemTemporalState.future,
+        isAlarmActive: false,
+      );
+    });
+
+    setState(() {
+      _dates.addAll(newDates);
+      _tithiDataList.addAll(newItems);
+    });
+
+    try {
+      final city = AppDatabase.instance.cityNotifier.value ?? City.mumbai;
+      final lunarSystem = AppDatabase.instance.lunarSystemNotifier.value;
+      List<FestivalRule> rules = const [];
+      try {
+        rules = await AppDatabase.instance.getAllFestivalRules();
+      } catch (_) {}
+
+      final calculated = await SwephService.instance.calculateCalendarRange(
+        dates: newDates,
+        city: city,
+        today: _today,
+        lunarSystem: lunarSystem,
+        festivalRules: rules,
+      );
+
+      if (mounted) {
+        final activeAlarms = AlarmService.instance.alarmsNotifier.value;
+        setState(() {
+          final startIndex = _tithiDataList.length - batchDays;
+          for (int i = 0; i < calculated.length; i++) {
+            final targetIndex = startIndex + i;
+            if (targetIndex >= 0 && targetIndex < _tithiDataList.length) {
+              final d = calculated[i];
+              final hasAlarm = d.dateTime != null &&
+                  activeAlarms.any((a) =>
+                      a.isActive &&
+                      a.type == AlarmType.tithi &&
+                      a.triggerTime.year == d.dateTime!.year &&
+                      a.triggerTime.month == d.dateTime!.month &&
+                      a.triggerTime.day == d.dateTime!.day);
+              _tithiDataList[targetIndex] = d.copyWith(isAlarmActive: hasAlarm);
+            }
+          }
+        });
+      }
+    } catch (_) {
+    } finally {
+      _isLoadingMoreFuture = false;
+    }
+  }
+
+  Future<void> _loadMorePastDates() async {
+    if (_isLoadingMorePast || widget.startDate != null) return;
+    _isLoadingMorePast = true;
+
+    final firstDate = _dates.first;
+    const batchDays = 365;
+    final newDates = List<DateTime>.generate(
+      batchDays,
+      (i) => DateTime(firstDate.year, firstDate.month, firstDate.day - (batchDays - i)),
+    );
+
+    final newItems = List<TithiData>.generate(batchDays, (i) {
+      final date = newDates[i];
+      final itemDate = DateTime(date.year, date.month, date.day);
+      final dateString =
+          '${_weekdays[date.weekday - 1]}, ${date.day} ${_months[date.month - 1]} ${date.year}';
+      return TithiData(
+        date: dateString,
+        dateTime: itemDate,
+        tithi: '',
+        paksha: '',
+        vrat: null,
+        festival: null,
+        lunarDay: null,
+        moonPhaseAsset: null,
+        state: ItemTemporalState.past,
+        isAlarmActive: false,
+      );
+    });
+
+    setState(() {
+      _dates.insertAll(0, newDates);
+      _tithiDataList.insertAll(0, newItems);
+      _todayIndex += batchDays;
+    });
+
+    if (_scrollController.hasClients) {
+      _scrollController.jumpTo(_scrollController.offset + batchDays * _itemTotalHeight);
+    }
+
+    try {
+      final city = AppDatabase.instance.cityNotifier.value ?? City.mumbai;
+      final lunarSystem = AppDatabase.instance.lunarSystemNotifier.value;
+      List<FestivalRule> rules = const [];
+      try {
+        rules = await AppDatabase.instance.getAllFestivalRules();
+      } catch (_) {}
+
+      final calculated = await SwephService.instance.calculateCalendarRange(
+        dates: newDates,
+        city: city,
+        today: _today,
+        lunarSystem: lunarSystem,
+        festivalRules: rules,
+      );
+
+      if (mounted) {
+        setState(() {
+          for (int i = 0; i < calculated.length; i++) {
+            if (i < _tithiDataList.length) {
+              _tithiDataList[i] = calculated[i];
+            }
+          }
+        });
+      }
+    } catch (_) {
+    } finally {
+      _isLoadingMorePast = false;
     }
   }
 
