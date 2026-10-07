@@ -154,6 +154,8 @@ class WordPressSyncService {
   Future<SyncResult> _fallbackOrSeed(String errorReason) async {
     final cachedCount = await AppDatabase.instance.getFestivalsCount();
     if (cachedCount > 0) {
+      final cachedRules = await AppDatabase.instance.getAllFestivalRules();
+      FestivalRule.registerRules(cachedRules);
       return SyncResult.fromCache(count: cachedCount, error: errorReason);
     }
 

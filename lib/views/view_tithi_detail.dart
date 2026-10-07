@@ -182,14 +182,42 @@ class _TithiDetailViewState extends State<TithiDetailView> {
     return _derivedDayData?.lunarDay;
   }
 
+  FestivalRule? get _effectiveVratRule =>
+      widget.tithiData?.vratRule ?? _calculationResult?.primaryVrat;
+
+  FestivalRule? get _effectiveFestivalRule =>
+      widget.tithiData?.festivalRule ?? _calculationResult?.primaryFestival;
+
   String? get _effectiveVrat {
-    if (widget.vrat != null) return widget.vrat;
-    return _derivedDayData?.vrat ?? PanchangLabels.noVrat(_language);
+    if (_effectiveVratRule != null) {
+      final name = _effectiveVratRule!.name(_language);
+      if (name.isNotEmpty && !PanchangLabels.isInactiveValue(name)) {
+        return name;
+      }
+    }
+    if (widget.vrat != null) {
+      return PanchangLabels.resolveVrat(widget.vrat, _language);
+    }
+    if (_derivedDayData?.vrat != null) {
+      return _derivedDayData!.resolveVrat(_language);
+    }
+    return PanchangLabels.noVrat(_language);
   }
 
   String? get _effectiveFestival {
-    if (widget.festival != null) return widget.festival;
-    return _derivedDayData?.festival ?? PanchangLabels.noFestival(_language);
+    if (_effectiveFestivalRule != null) {
+      final name = _effectiveFestivalRule!.name(_language);
+      if (name.isNotEmpty && !PanchangLabels.isInactiveValue(name)) {
+        return name;
+      }
+    }
+    if (widget.festival != null) {
+      return PanchangLabels.resolveFestival(widget.festival, _language);
+    }
+    if (_derivedDayData?.festival != null) {
+      return _derivedDayData!.resolveFestival(_language);
+    }
+    return PanchangLabels.noFestival(_language);
   }
 
   bool get _isEffectivelyAlarmActive {
@@ -292,6 +320,8 @@ class _TithiDetailViewState extends State<TithiDetailView> {
           language: _language,
           vrat: _effectiveVrat,
           festival: _effectiveFestival,
+          vratRule: _effectiveVratRule,
+          festivalRule: _effectiveFestivalRule,
         ),
       const SizedBox(height: AppSpacing.spacing16),
 

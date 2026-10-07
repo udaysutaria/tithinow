@@ -325,35 +325,151 @@ class PanchangLabels {
         AppLanguage.gujarati => 'ચંદ્રાસ્ત',
       };
 
-  /// Known translations for active demo/common Vrats.
+  /// Dynamic in-memory registry of custom or synced observance translations.
+  static final Map<String, ({String en, String hi, String gu})> _dynamicObservances = {};
+
+  /// Registers a custom or dynamically synced observance translation into the lookup cache.
+  static void registerObservance({
+    required String en,
+    required String hi,
+    required String gu,
+    String? festivalId,
+  }) {
+    final entry = (
+      en: en.trim(),
+      hi: hi.trim().isNotEmpty ? hi.trim() : en.trim(),
+      gu: gu.trim().isNotEmpty ? gu.trim() : en.trim(),
+    );
+    void addKey(String? key) {
+      if (key == null) return;
+      final clean = key.trim().toLowerCase();
+      if (clean.isEmpty) return;
+      _dynamicObservances[clean] = entry;
+      final normalized = _normalizeKey(clean);
+      if (normalized.isNotEmpty) {
+        _dynamicObservances[normalized] = entry;
+      }
+    }
+
+    addKey(en);
+    addKey(festivalId);
+    if (hi.isNotEmpty) addKey(hi);
+    if (gu.isNotEmpty) addKey(gu);
+  }
+
+  /// Normalizes a string key by removing whitespace, hyphens, and non-alphanumeric punctuation.
+  static String _normalizeKey(String input) {
+    return input.toLowerCase().replaceAll(RegExp(r'[^a-z0-9\u0900-\u097F\u0A80-\u0AFF]'), '');
+  }
+
+  /// Known translations for active demo/common Vrats and all 26 Ekadashis from ACF fields.
   static const Map<String, ({String hi, String gu})> knownVrats = {
+    // 26 Vedic Ekadashis
+    'parama ekadashi': (hi: 'परमा एकादशी', gu: 'પરમા એકાદશી'),
+    'padmini ekadashi': (hi: 'पद्मिनी एकादशी', gu: 'પદ્મિની એકાદશી'),
+    'papmochani ekadashi': (hi: 'पापमोचनी एकादशी', gu: 'પાપમોચની એકાદશી'),
+    'amalaki ekadashi': (hi: 'आमलकी एकादशी', gu: 'આમલકી એકાદશી'),
+    'vijaya ekadashi': (hi: 'विजया एकादशी', gu: 'વિજયા એકાદશી'),
+    'jaya ekadashi': (hi: 'जया एकादशी', gu: 'જયા એકાદશી'),
+    'shattila ekadashi': (hi: 'षटतिला एकादशी', gu: 'ષટતિલા એકાદશી'),
+    'putrada ekadashi (pausha)': (hi: 'पुत्रदा एकादशी (पौष)', gu: 'પુત્રદા એકાદશી (પોષ)'),
+    'pausha putrada ekadashi': (hi: 'पुत्रदा एकादशी (पौष)', gu: 'પુત્રદા એકાદશી (પોષ)'),
+    'saphala ekadashi': (hi: 'सफला एकादशी', gu: 'સફલા એકાદશી'),
+    'mokshada ekadashi': (hi: 'मोक्षदा एकादशी', gu: 'મોક્ષદા એકાદશી'),
+    'utpanna ekadashi': (hi: 'उत्पन्ना एकादशी', gu: 'ઉત્પન્ના એકાદશી'),
+    'prabodhini ekadashi (devuthi ekadashi)': (hi: 'प्रबोधिनी एकादशी (देवउठनी एकादशी)', gu: 'પ્રબોધિની એકાદશી (દેવઉઠી એકાદશી)'),
+    'prabodhini ekadashi': (hi: 'प्रबोधिनी एकादशी (देवउठनी एकादशी)', gu: 'પ્રબોધિની એકાદશી (દેવઉઠી એકાદશી)'),
+    'devutthana ekadashi': (hi: 'देवउठनी एकादशी', gu: 'દેવઉઠી એકાદશી'),
+    'devuthi ekadashi': (hi: 'देवउठनी एकादशी', gu: 'દેવઉઠી એકાદશી'),
+    'rama ekadashi': (hi: 'रमा एकादशी', gu: 'રમા એકાદશી'),
+    'papankusha ekadashi': (hi: 'पापांकुशा एकादशी', gu: 'પાપાંકુશા એકાદશી'),
+    'indira ekadashi': (hi: 'इंदिरा एकादशी', gu: 'ઇન્દિરા એકાદશી'),
+    'parivartini / jal jhilani ekadashi': (hi: 'परिवर्तिनी (जलझूलनी) एकादशी', gu: 'પરિવર્તિની (જળઝીલણી) એકાદશી'),
     'parivartini ekadashi': (hi: 'परिवर्तिनी एकादशी', gu: 'પરિવર્તિની અગિયારસ'),
+    'jal jhilani ekadashi': (hi: 'जलझूलनी एकादशी', gu: 'જળઝીલણી એકાદશી'),
+    'aja ekadashi': (hi: 'अजा एकादशी', gu: 'અજા એકાદશી'),
+    'pavitra / putrada ekadashi (shravana)': (hi: 'पवित्रा / पुत्रदा एकादशी (श्रावण)', gu: 'પવિત્રા / પુત્રદા એકાદશી (શ્રાવણ)'),
+    'pavitra ekadashi': (hi: 'पवित्रा एकादशी', gu: 'પવિત્રા એકાદશી'),
+    'shravana putrada ekadashi': (hi: 'पुत्रदा एकादशी (श्रावण)', gu: 'પુત્રદા એકાદશી (શ્રાવણ)'),
+    'putrada ekadashi': (hi: 'पुत्रदा एकादशी', gu: 'પુત્રદા એકાદશી'),
+    'kamika ekadashi': (hi: 'कामिका एकादशी', gu: 'કામિકા એકાદશી'),
+    'devshayani / ashadhi ekadashi': (hi: 'देवशयनी (आषाढ़ी) एकादशी', gu: 'દેવશયની (દેવપોઢી) એકાદશી'),
+    'devshayani ekadashi': (hi: 'देवशयनी एकादशी', gu: 'દેવશયની એકાદશી'),
+    'ashadhi ekadashi': (hi: 'आषाढ़ी एकादशी', gu: 'અષાઢી એકાદશી'),
+    'yogini ekadashi': (hi: 'योगिनी एकादशी', gu: 'યોગિની એકાદશી'),
+    'nirjala ekadashi': (hi: 'निर्जला एकादशी', gu: 'નિર્જલા એકાદશી'),
+    'apara ekadashi': (hi: 'अपरा एकादशी', gu: 'અપરા એકાદશી'),
+    'mohini ekadashi': (hi: 'मोहिनी एकादशी', gu: 'મોહિની એકાદશી'),
+    'varuthini ekadashi': (hi: 'वरूथिनी एकादशी', gu: 'વરુથિની એકાદશી'),
+    'kamada ekadashi': (hi: 'कामदा एकादशी', gu: 'કામદા એકાદશી'),
+    'ekadashi': (hi: 'एकादशी', gu: 'અગિયારસ'),
+
+    // Fasting & Observance Vrats
     'vamana jayanti': (hi: 'वामन जयंती', gu: 'વામન જયંતી'),
     'pradosh vrat': (hi: 'प्रदोष व्रत', gu: 'પ્રદોષ વ્રત'),
-    'ekadashi': (hi: 'एकादशी', gu: 'અગિયારસ'),
+    'pradosh': (hi: 'प्रदोष व्रत', gu: 'પ્રદોષ વ્રત'),
     'satyanarayan vrat': (hi: 'सत्यनारायण व्रत', gu: 'સત્યનારાયણ વ્રત'),
+    'satyanarayan puja': (hi: 'सत्यनारायण पूजा', gu: 'સત્યનારાયણ પૂજા'),
     'karwa chauth': (hi: 'करवा चौथ', gu: 'કરવા ચોથ'),
     'maha shivaratri': (hi: 'महाशिवरात्रि', gu: 'મહાશિવરાત્રી'),
     'mahashivratri': (hi: 'महाशिवरात्रि', gu: 'મહાશિવરાત્રી'),
     'navratri': (hi: 'नवरात्रि', gu: 'નવરાત્રી'),
     'janmashtami': (hi: 'जन्माष्टमी', gu: 'જન્માષ્ટમી'),
+    'krishna janmashtami': (hi: 'श्रीकृष्ण जन्माष्टमी', gu: 'શ્રીકૃષ્ણ જન્માષ્ટમી'),
+    'sankashti chaturthi': (hi: 'संकष्टी चतुर्थी', gu: 'સંકષ્ટી ચતુર્થી'),
+    'vinayaka chaturthi': (hi: 'विनायक चतुर्थी', gu: 'વિનાયક ચતુર્થી'),
+    'somwar vrat': (hi: 'सोमवार व्रत', gu: 'સોમવાર વ્રત'),
+    'guruwar vrat': (hi: 'गुरुवार व्रत', gu: 'ગુરુવાર વ્રત'),
+    'vaibhav lakshmi vrat': (hi: 'वैभव लक्ष्मी व्रत', gu: 'વૈભવ લક્ષ્મી વ્રત'),
+    'santoshi mata vrat': (hi: 'संतोषी माता व्रत', gu: 'સંતોષી માતા વ્રત'),
   };
 
-  /// Known translations for active demo/common Festivals.
+  /// Known translations for active demo/common Festivals and all ACF seed festivals.
   static const Map<String, ({String hi, String gu})> knownFestivals = {
     'anant chaturdashi': (hi: 'अनंत चतुर्दशी', gu: 'અનંત ચતુર્દશી'),
+    'krishna janmashtami': (hi: 'श्रीकृष्ण जन्माष्टमी', gu: 'શ્રીકૃષ્ણ જન્માષ્ટમી'),
+    'janmashtami': (hi: 'जन्माष्टमी', gu: 'જન્માષ્ટમી'),
+    'makar sankranti': (hi: 'मकर संक्रांति', gu: 'મકર સંક્રાંતિ'),
+    'pongal (thai pongal)': (hi: 'पोंगल (थाई पोंगल)', gu: 'પોંગલ (થાઈ પોંગલ)'),
+    'pongal': (hi: 'पोंगल', gu: 'પોંગલ'),
+    'thai pongal': (hi: 'थाई पोंगल', gu: 'થાઈ પોંગલ'),
+    'holika dahan': (hi: 'होलिका दहन', gu: 'હોલિકા દહન'),
+    'holi': (hi: 'होली', gu: 'હોળી'),
+    'maha shivaratri': (hi: 'महाशिवरात्रि', gu: 'મહાશિવરાત્રી'),
+    'mahashivratri': (hi: 'महाशिवरात्रि', gu: 'મહાશિવરાત્રી'),
     'bhadrapada purnima': (hi: 'भाद्रपद पूर्णिमा', gu: 'ભાદ્રપદ પૂર્ણિમા'),
     'pitrupaksha begins': (hi: 'पितृपक्ष प्रारंभ', gu: 'પિતૃપક્ષ પ્રારંભ'),
+    'pitrupaksha': (hi: 'पितृपक्ष', gu: 'પિતૃપક્ષ'),
     'ganesh visarjan': (hi: 'गणेश विसर्जन', gu: 'ગણેશ વિસર્જન'),
+    'ganesh chaturthi': (hi: 'गणेश चतुर्थी', gu: 'ગણેશ ચતુર્થી'),
     'diwali': (hi: 'दीपावली', gu: 'દિવાળી'),
     'deepavali': (hi: 'दीपावली', gu: 'દિવાળી'),
-    'holi': (hi: 'होली', gu: 'હોળી'),
+    'dhanteras': (hi: 'धनतेरस', gu: 'ધનતેરસ'),
+    'naraka chaturdashi': (hi: 'नरक चतुर्दशी', gu: 'નરક ચતુર્દશી'),
+    'govardhan puja': (hi: 'गोवर्धन पूजा', gu: 'ગોવર્ધન પૂજા'),
+    'bhai dooj': (hi: 'भाई दूज', gu: 'ભાઈ બીજ'),
     'raksha bandhan': (hi: 'रक्षाबंधन', gu: 'રક્ષાબંધન'),
     'rakshabandhan': (hi: 'रक्षाबंधन', gu: 'રક્ષાબંધન'),
     'dussehra': (hi: 'दशहरा', gu: 'દશેરા'),
     'vijayadashami': (hi: 'विजयादशमी', gu: 'વિજયાદશમી'),
-    'makar sankranti': (hi: 'मकर संक्रांति', gu: 'મકર સંક્રાંતિ'),
     'ram navami': (hi: 'राम नवमी', gu: 'રામ નવમી'),
+    'rama navami': (hi: 'राम नवमी', gu: 'રામ નવમી'),
+    'hanuman jayanti': (hi: 'हनुमान जयंती', gu: 'હનુમાન જયંતી'),
+    'guru purnima': (hi: 'गुरु पूर्णिमा', gu: 'ગુરુ પૂર્ણિમા'),
+    'sharad purnima': (hi: 'शरद पूर्णिमा', gu: 'શરદ પૂર્ણિમા'),
+    'kartik purnima': (hi: 'कार्तिक पूर्णिमा', gu: 'કારતક પૂર્ણિમા'),
+    'chaitra navratri': (hi: 'चैत्र नवरात्रि', gu: 'ચૈત્ર નવરાત્રી'),
+    'shardiya navratri': (hi: 'शारदीय नवरात्रि', gu: 'શારદીય નવરાત્રી'),
+    'vasant panchami': (hi: 'बसंत पंचमी', gu: 'વસંત પંચમી'),
+    'basant panchami': (hi: 'बसंत पंचमी', gu: 'વસંત પંચમી'),
+    'akshaya tritiya': (hi: 'अक्षय तृतीया', gu: 'અક્ષય તૃતીયા'),
+    'ratha yatra': (hi: 'रथ यात्रा', gu: 'રથ યાત્રા'),
+    'nag panchami': (hi: 'नाग पंचमी', gu: 'નાગ પાંચમ'),
+    'chaitra sukla pratipada': (hi: 'चैत्र शुक्ल प्रतिपदा', gu: 'ચૈત્ર શુક્લ પડવો'),
+    'gudi padwa': (hi: 'गुड़ी पड़वा', gu: 'ગુડી પડવો'),
+    'ugadi': (hi: 'उगादि', gu: 'યુગાદિ'),
+    'new year': (hi: 'नव वर्ष', gu: 'નૂતન વર્ષ'),
+    'bestu varas': (hi: 'बेस्तु वरस', gu: 'બેસતું વર્ષ'),
   };
 
   /// Determines if a Vrat/Festival string is inactive (empty, "No Vrat", etc.).
@@ -376,16 +492,73 @@ class PanchangLabels {
         trimmed == 'તહેવાર નથી';
   }
 
+  /// Internal lookup helper across dynamic registry, static vrats, and static festivals.
+  static ({String hi, String gu, String en})? _lookupObservance(String raw) {
+    final clean = raw.trim().toLowerCase();
+    if (clean.isEmpty) return null;
+
+    // 1. Exact match in dynamic registry
+    if (_dynamicObservances.containsKey(clean)) {
+      return _dynamicObservances[clean];
+    }
+
+    // 2. Exact match in static knownVrats
+    if (knownVrats.containsKey(clean)) {
+      final v = knownVrats[clean]!;
+      return (en: raw, hi: v.hi, gu: v.gu);
+    }
+
+    // 3. Exact match in static knownFestivals
+    if (knownFestivals.containsKey(clean)) {
+      final f = knownFestivals[clean]!;
+      return (en: raw, hi: f.hi, gu: f.gu);
+    }
+
+    // 4. Normalized match (punctuation and spacing stripped)
+    final norm = _normalizeKey(clean);
+    if (norm.isNotEmpty) {
+      if (_dynamicObservances.containsKey(norm)) {
+        return _dynamicObservances[norm];
+      }
+      for (final e in knownVrats.entries) {
+        if (_normalizeKey(e.key) == norm) {
+          return (en: e.key, hi: e.value.hi, gu: e.value.gu);
+        }
+      }
+      for (final e in knownFestivals.entries) {
+        if (_normalizeKey(e.key) == norm) {
+          return (en: e.key, hi: e.value.hi, gu: e.value.gu);
+        }
+      }
+    }
+
+    // 5. Partial/alias match for compound names (e.g. "Parivartini / Jal Jhilani Ekadashi")
+    for (final e in knownVrats.entries) {
+      if (clean.contains(e.key) || (e.key.length > 5 && clean.startsWith(e.key.substring(0, 5)))) {
+        return (en: e.key, hi: e.value.hi, gu: e.value.gu);
+      }
+    }
+    for (final e in knownFestivals.entries) {
+      if (clean.contains(e.key) || (e.key.length > 5 && clean.startsWith(e.key.substring(0, 5)))) {
+        return (en: e.key, hi: e.value.hi, gu: e.value.gu);
+      }
+    }
+
+    return null;
+  }
+
   /// Resolves the localized Vrat string.
   static String resolveVrat(String? raw, AppLanguage lang) {
     if (isInactiveValue(raw)) {
       return noVrat(lang);
     }
     final text = (raw ?? '').trim();
-    if (lang == AppLanguage.english) return text;
-    final lower = text.toLowerCase();
-    if (knownVrats.containsKey(lower)) {
-      return lang == AppLanguage.hindi ? knownVrats[lower]!.hi : knownVrats[lower]!.gu;
+    final found = _lookupObservance(text);
+    if (lang == AppLanguage.english) {
+      return (found != null && found.en.isNotEmpty) ? found.en : text;
+    }
+    if (found != null) {
+      return lang == AppLanguage.hindi ? found.hi : found.gu;
     }
     return text;
   }
@@ -396,10 +569,12 @@ class PanchangLabels {
       return noFestival(lang);
     }
     final text = (raw ?? '').trim();
-    if (lang == AppLanguage.english) return text;
-    final lower = text.toLowerCase();
-    if (knownFestivals.containsKey(lower)) {
-      return lang == AppLanguage.hindi ? knownFestivals[lower]!.hi : knownFestivals[lower]!.gu;
+    final found = _lookupObservance(text);
+    if (lang == AppLanguage.english) {
+      return (found != null && found.en.isNotEmpty) ? found.en : text;
+    }
+    if (found != null) {
+      return lang == AppLanguage.hindi ? found.hi : found.gu;
     }
     return text;
   }

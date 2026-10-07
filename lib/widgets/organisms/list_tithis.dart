@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../constants/panchang_terms.dart';
+import '../../models/festival_rule.dart';
 import '../../theme/design_system.dart';
 import '../atoms/skeleton_loader.dart';
 import '../molecules/list_item_tab_content.dart' show ItemTemporalState;
@@ -24,6 +25,8 @@ class TithiData {
   final String paksha;
   final String? vrat;
   final String? festival;
+  final FestivalRule? vratRule;
+  final FestivalRule? festivalRule;
   final int? lunarDay;
   final String? moonPhaseAsset;
   final ItemTemporalState state;
@@ -36,11 +39,66 @@ class TithiData {
     required this.paksha,
     this.vrat = 'No Vrat',
     this.festival = 'No Festival',
+    this.vratRule,
+    this.festivalRule,
     this.lunarDay,
     this.moonPhaseAsset,
     this.state = ItemTemporalState.current,
     this.isAlarmActive = false,
   });
+
+  /// Resolves the localized Vrat name.
+  String resolveVrat(AppLanguage lang) {
+    if (vratRule != null) {
+      final name = vratRule!.name(lang);
+      if (name.isNotEmpty && !PanchangLabels.isInactiveValue(name)) {
+        return name;
+      }
+    }
+    return PanchangLabels.resolveVrat(vrat, lang);
+  }
+
+  /// Resolves the localized Festival name.
+  String resolveFestival(AppLanguage lang) {
+    if (festivalRule != null) {
+      final name = festivalRule!.name(lang);
+      if (name.isNotEmpty && !PanchangLabels.isInactiveValue(name)) {
+        return name;
+      }
+    }
+    return PanchangLabels.resolveFestival(festival, lang);
+  }
+
+  /// Creates a copy of this [TithiData] with updated fields.
+  TithiData copyWith({
+    String? date,
+    DateTime? dateTime,
+    String? tithi,
+    String? paksha,
+    String? vrat,
+    String? festival,
+    FestivalRule? vratRule,
+    FestivalRule? festivalRule,
+    int? lunarDay,
+    String? moonPhaseAsset,
+    ItemTemporalState? state,
+    bool? isAlarmActive,
+  }) {
+    return TithiData(
+      date: date ?? this.date,
+      dateTime: dateTime ?? this.dateTime,
+      tithi: tithi ?? this.tithi,
+      paksha: paksha ?? this.paksha,
+      vrat: vrat ?? this.vrat,
+      festival: festival ?? this.festival,
+      vratRule: vratRule ?? this.vratRule,
+      festivalRule: festivalRule ?? this.festivalRule,
+      lunarDay: lunarDay ?? this.lunarDay,
+      moonPhaseAsset: moonPhaseAsset ?? this.moonPhaseAsset,
+      state: state ?? this.state,
+      isAlarmActive: isAlarmActive ?? this.isAlarmActive,
+    );
+  }
 }
 
 /// Organism widget displaying a list of Tithi items.
@@ -172,6 +230,8 @@ class _ListTithisState extends State<ListTithis> {
           paksha: d.paksha,
           vrat: d.vrat,
           festival: d.festival,
+          vratRule: d.vratRule,
+          festivalRule: d.festivalRule,
           moonPhaseAsset: d.moonPhaseAsset,
           lunarDay: d.lunarDay,
           maxWidth: widget.maxWidth,
@@ -186,6 +246,8 @@ class _ListTithisState extends State<ListTithis> {
           paksha: d.paksha,
           vrat: d.vrat,
           festival: d.festival,
+          vratRule: d.vratRule,
+          festivalRule: d.festivalRule,
           moonPhaseAsset: d.moonPhaseAsset,
           lunarDay: d.lunarDay,
           maxWidth: widget.maxWidth,
@@ -200,6 +262,8 @@ class _ListTithisState extends State<ListTithis> {
           paksha: d.paksha,
           vrat: d.vrat,
           festival: d.festival,
+          vratRule: d.vratRule,
+          festivalRule: d.festivalRule,
           moonPhaseAsset: d.moonPhaseAsset,
           lunarDay: d.lunarDay,
           isAlarmActive: _activeAlarms.contains(i),
