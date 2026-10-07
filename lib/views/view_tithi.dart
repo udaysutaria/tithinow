@@ -474,19 +474,25 @@ class _TithiViewState extends State<TithiView> {
                             ),
                           ),
                           Expanded(
-                            child: ListTithis(
-                              controller: _scrollController,
-                              data: _tithiDataList,
-                              language: _language,
-                              shrinkWrap: false,
-                              physics: const AlwaysScrollableScrollPhysics(),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: AppSpacing.spacing24,
-                                vertical: AppSpacing.spacing8,
+                            child: RefreshIndicator(
+                              color: AppColors.primary,
+                              onRefresh: () async {
+                                await WordPressSyncService.instance.syncFestivals();
+                              },
+                              child: ListTithis(
+                                controller: _scrollController,
+                                data: _tithiDataList,
+                                language: _language,
+                                shrinkWrap: false,
+                                physics: const AlwaysScrollableScrollPhysics(),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: AppSpacing.spacing24,
+                                  vertical: AppSpacing.spacing8,
+                                ),
+                                itemExtent: _itemTotalHeight,
+                                onItemTap: _handleItemTap,
+                                onAlarmTap: _handleAlarmTap,
                               ),
-                              itemExtent: _itemTotalHeight,
-                              onItemTap: _handleItemTap,
-                              onAlarmTap: _handleAlarmTap,
                             ),
                           ),
                         ],
@@ -533,19 +539,25 @@ class _TithiViewState extends State<TithiView> {
               ),
             ),
             Expanded(
-              child: ListTithis(
-                controller: _scrollController,
-                data: _tithiDataList,
-                language: _language,
-                shrinkWrap: false,
-                physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.spacing16,
-                  vertical: AppSpacing.spacing8,
+              child: RefreshIndicator(
+                color: AppColors.primary,
+                onRefresh: () async {
+                  await WordPressSyncService.instance.syncFestivals();
+                },
+                child: ListTithis(
+                  controller: _scrollController,
+                  data: _tithiDataList,
+                  language: _language,
+                  shrinkWrap: false,
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.spacing16,
+                    vertical: AppSpacing.spacing8,
+                  ),
+                  itemExtent: _itemTotalHeight,
+                  onItemTap: _handleItemTap,
+                  onAlarmTap: _handleAlarmTap,
                 ),
-                itemExtent: _itemTotalHeight,
-                onItemTap: _handleItemTap,
-                onAlarmTap: _handleAlarmTap,
               ),
             ),
             NavBottom(

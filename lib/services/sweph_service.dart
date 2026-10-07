@@ -20,6 +20,7 @@ class PanchangCalculationResult {
   final HinduMonth hinduMonth;
   final HinduMonth amantaMonth;
   final HinduMonth purnimantaMonth;
+  final bool isAdhikaMasa;
   final String lunarSystem;
   final Nakshatra nakshatra;
   final Yoga yoga;
@@ -42,6 +43,7 @@ class PanchangCalculationResult {
     required this.hinduMonth,
     HinduMonth? amantaMonth,
     HinduMonth? purnimantaMonth,
+    this.isAdhikaMasa = false,
     this.lunarSystem = 'purnimanta',
     required this.nakshatra,
     required this.yoga,
@@ -337,7 +339,9 @@ class SwephService {
 
     // Hindu Month:
     // In Amanta calendar, the lunar month is named after the Sun's Rashi at the preceding New Moon (Amavasya).
-    final HinduMonth amantaMonth = _calculateHinduMonth(sunriseJdUt, elongation, flags);
+    final amantaInfo = _calculateAmantaMonthAndAdhika(sunriseJdUt, elongation, flags);
+    final HinduMonth amantaMonth = amantaInfo.month;
+    final bool isAdhikaMasa = amantaInfo.isAdhika;
 
     // In Purnimanta calendar, the month starts after Purnima.
     // In Shukla Paksha (waxing), Purnimanta month name is identical to Amanta.
@@ -360,6 +364,7 @@ class SwephService {
       hinduMonth: hinduMonth,
       amantaMonth: amantaMonth,
       purnimantaMonth: purnimantaMonth,
+      isAdhikaMasa: isAdhikaMasa,
       paksha: paksha,
       tithiNumber: tithiNumber,
       nakshatra: nakshatra,
@@ -389,6 +394,7 @@ class SwephService {
       hinduMonth: hinduMonth,
       amantaMonth: amantaMonth,
       purnimantaMonth: purnimantaMonth,
+      isAdhikaMasa: isAdhikaMasa,
       lunarSystem: effectiveSystem,
       nakshatra: nakshatra,
       yoga: yoga,
@@ -407,8 +413,12 @@ class SwephService {
     return result;
   }
 
-  /// Calculates Amanta Hindu month based on the Sun's Rashi at the preceding New Moon (Amavasya).
-  HinduMonth _calculateHinduMonth(double sunriseJdUt, double currentElongation, SwephFlag flags) {
+  /// Calculates Amanta Hindu month and evaluates whether it is an Adhika Masa (intercalary month).
+  ({HinduMonth month, bool isAdhika}) _calculateAmantaMonthAndAdhika(
+    double sunriseJdUt,
+    double currentElongation,
+    SwephFlag flags,
+  ) {
     // A synodic month is ~29.53 days, elongation progresses ~12.19 deg/day.
     final daysSinceAmavasya = currentElongation / 12.19075;
     double searchJd = sunriseJdUt - daysSinceAmavasya;
@@ -431,7 +441,30 @@ class SwephService {
     // ...
     // Sun in Simha (Leo, index 4) at Amavasya -> Bhadrapada (index 5)
     final monthIndex = (amavasyaRashi.index + 1) % 12;
-    return HinduMonth.values[monthIndex];
+    final month = HinduMonth.values[monthIndex];
+
+    // Find next Amavasya:
+    double nextAmavasyaJd = searchJd + 29.53059;
+    for (int i = 0; i < 4; i++) {
+      final sun = Sweph.swe_calc_ut(nextAmavasyaJd, HeavenlyBody.SE_SUN, flags);
+      final moon = Sweph.swe_calc_ut(nextAmavasyaJd, HeavenlyBody.SE_MOON, flags);
+      double el = (moon.longitude - sun.longitude + 360.0) % 360.0;
+      if (el > 180.0) el -= 360.0;
+      nextAmavasyaJd -= el / 12.19075;
+    }
+    final sunAtNextAmavasya = Sweph.swe_calc_ut(nextAmavasyaJd, HeavenlyBody.SE_SUN, flags);
+    final nextAmavasyaRashi = Rashi.fromDegrees(sunAtNextAmavasya.longitude);
+
+    // If Sun did not transition into a new Rashi between Amavasya 1 and Amavasya 2,
+    // this month has no Sankranti and is an Adhika Masa!
+    final bool isAdhika = (amavasyaRashi == nextAmavasyaRashi);
+
+    return (month: month, isAdhika: isAdhika);
+  }
+
+  /// Calculates Amanta Hindu month based on the Sun's Rashi at the preceding New Moon (Amavasya).
+  HinduMonth calculateHinduMonth(double sunriseJdUt, double currentElongation, SwephFlag flags) {
+    return _calculateAmantaMonthAndAdhika(sunriseJdUt, currentElongation, flags).month;
   }
 
   /// Canonical lunar month pair (Amanta and Purnimanta) for known Krishna Paksha festivals.
@@ -487,6 +520,7 @@ class SwephService {
     required HinduMonth hinduMonth,
     HinduMonth? amantaMonth,
     HinduMonth? purnimantaMonth,
+    bool isAdhikaMasa = false,
     required Paksha paksha,
     required int tithiNumber,
     required Nakshatra nakshatra,
@@ -499,7 +533,16 @@ class SwephService {
 
     for (final rule in rules) {
       if (rule.eventType == 'lunar_tithi') {
-        // Match lunar month (or 'any')
+        // 1. Adhika Masa policy check
+        final adhikaPolicy = rule.adhikaMasaPolicy?.toLowerCase().trim();
+        if (adhikaPolicy == 'adhika_only' && !isAdhikaMasa) {
+          continue;
+        }
+        if (adhikaPolicy == 'nija_only' && isAdhikaMasa) {
+          continue;
+        }
+
+        // 2. Match lunar month (or 'any')
         final ruleMonth = rule.lunarMonth?.toLowerCase().trim();
         if (ruleMonth != null && ruleMonth != 'any') {
           final canonical = _canonicalKrishnaFestivals[rule.festivalId];
@@ -510,19 +553,20 @@ class SwephService {
               continue;
             }
           } else {
-            final isDirectMatch =
-                ruleMonth == hinduMonth.name(AppLanguage.english).toLowerCase();
+            final isDirectMatch = _matchesMonthName(ruleMonth, hinduMonth);
             final isAmantaMatch = amantaMonth != null &&
-                ruleMonth == amantaMonth.name(AppLanguage.english).toLowerCase();
-            final isPurnimantaMatch = purnimantaMonth != null &&
-                ruleMonth == purnimantaMonth.name(AppLanguage.english).toLowerCase();
+                _matchesMonthName(ruleMonth, amantaMonth);
+            final rulePurnimanta = rule.purnimantaMonth?.toLowerCase().trim();
+            final isPurnimantaMatch = rulePurnimanta != null &&
+                purnimantaMonth != null &&
+                _matchesMonthName(rulePurnimanta, purnimantaMonth);
             if (!isDirectMatch && !isAmantaMatch && !isPurnimantaMatch) {
               continue;
             }
           }
         }
 
-        // Match paksha (or 'both')
+        // 3. Match paksha (or 'both')
         final rulePaksha = rule.paksha?.toLowerCase().trim();
         final currentPakshaStr = paksha == Paksha.shukla ? 'shukla' : 'krishna';
         if (rulePaksha != null && rulePaksha != 'both' && rulePaksha != currentPakshaStr) {
@@ -552,6 +596,19 @@ class SwephService {
 
         if (rule.tithiNumber != null && rule.tithiNumber != tithiAtWindow) {
           continue;
+        }
+
+        // 4. Arunodaya Viddha avoidance tie-break check (for Ekadashis with avoid_viddha)
+        if (rule.tieBreakRule == 'avoid_viddha' && rule.tithiNumber == 11) {
+          final arunodayaJd = sunriseJdUt - (96.0 / 1440.0);
+          final sunAtArunodaya = Sweph.swe_calc_ut(arunodayaJd, HeavenlyBody.SE_SUN, flags);
+          final moonAtArunodaya = Sweph.swe_calc_ut(arunodayaJd, HeavenlyBody.SE_MOON, flags);
+          final elAtArunodaya = (moonAtArunodaya.longitude - sunAtArunodaya.longitude + 360.0) % 360.0;
+          final tithiAtArunodaya = ((elAtArunodaya / 12.0).floor() % 15) + 1;
+
+          if (tithiAtArunodaya == 10) {
+            continue;
+          }
         }
 
         // Nakshatra constraint (e.g. Rohini for Sri Jayanti).
@@ -688,6 +745,29 @@ class SwephService {
     return null;
   }
 
+  /// Matches a lunar month string from a rule (which may have alternate transliterations
+  /// like 'ashvina' vs 'ashwin' or 'kartik' vs 'kartika') against a canonical HinduMonth enum.
+  static bool _matchesMonthName(String ruleMonth, HinduMonth month) {
+    final clean = ruleMonth.toLowerCase().trim();
+    final enumName = month.toString().split('.').last.toLowerCase();
+    final englishName = month.name(AppLanguage.english).toLowerCase();
+
+    if (clean == enumName || clean == englishName) return true;
+    if ((clean == 'ashvina' || clean == 'asvina' || clean == 'ashwayuja') &&
+        (enumName == 'ashwin' || englishName == 'ashwin')) {
+      return true;
+    }
+    if ((clean == 'kartik' || clean == 'kartika') &&
+        (enumName == 'kartika' || englishName == 'kartika')) {
+      return true;
+    }
+    if ((clean == 'margashirsha' || clean == 'margasirsha' || clean == 'agrahayana') &&
+        (enumName == 'margashirsha' || englishName == 'margashirsha')) {
+      return true;
+    }
+    return false;
+  }
+
   /// Resolves the timezone offset for the city (default +5:30 for Indian cities).
   Duration _resolveTimezoneOffset(City city) {
     // If city is in India (lat 6-37, lon 68-98), standard IST is +5:30
@@ -758,7 +838,9 @@ class SwephService {
     String festival = 'No Festival';
 
     if (festivalRules.isNotEmpty) {
-      final HinduMonth amantaMonth = _calculateHinduMonth(jdUt, elongation, flags);
+      final amantaInfo = _calculateAmantaMonthAndAdhika(jdUt, elongation, flags);
+      final HinduMonth amantaMonth = amantaInfo.month;
+      final bool isAdhikaMasa = amantaInfo.isAdhika;
       final HinduMonth purnimantaMonth = paksha == Paksha.shukla
           ? amantaMonth
           : HinduMonth.values[(amantaMonth.index + 1) % 12];
@@ -778,6 +860,7 @@ class SwephService {
         hinduMonth: hinduMonth,
         amantaMonth: amantaMonth,
         purnimantaMonth: purnimantaMonth,
+        isAdhikaMasa: isAdhikaMasa,
         paksha: paksha,
         tithiNumber: tithiNumber,
         nakshatra: nakshatra,
