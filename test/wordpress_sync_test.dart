@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+import 'package:tithinow/config/api_config.dart';
 import 'package:tithinow/constants/panchang_terms.dart';
 import 'package:tithinow/database/app_database.dart';
 import 'package:tithinow/models/city.dart';
@@ -243,7 +244,7 @@ void main() {
 
       final service = WordPressSyncService.instance;
       final result = await service.syncFestivals(
-        endpointUrl: 'http://localhost:8888/wp-json/wp/v2/festivals',
+        endpointUrl: ApiConfig.festivalsEndpoint,
         client: mockClient,
       );
 
@@ -267,7 +268,7 @@ void main() {
 
       final service = WordPressSyncService.instance;
       final result = await service.syncFestivals(
-        endpointUrl: 'http://localhost:8888/wp-json/wp/v2/festivals',
+        endpointUrl: ApiConfig.festivalsEndpoint,
         client: offlineClient,
       );
 
@@ -306,6 +307,190 @@ void main() {
       expect(sep25.vrat, 'Anant Chaturdashi');
       expect(sep25.tithi, 'Chaturdashi');
       expect(sep25.paksha, 'Shukla Paksha');
+    });
+
+    test('Parses live ACF fields including adhika_masa_policy, fasting_type, and false booleans', () {
+      const liveJson = '''
+      {
+        "id": 2026,
+        "slug": "parama-ekadashi",
+        "modified": "2026-09-30T10:00:00",
+        "acf": {
+          "festival_id": "parama_ekadashi",
+          "category": "vrat",
+          "importance_level": "regular",
+          "is_fasting": true,
+          "festival_name_en": "Parama Ekadashi",
+          "festival_name_hi": "परमा एकादशी",
+          "festival_name_gu": "પરમા એકાદશી",
+          "description_en": "Adhika month Ekadashi",
+          "fasting_type": "phalahar",
+          "parana_rule": "dwadashi_sunrise",
+          "duration_days": 1,
+          "event_type": "lunar_tithi",
+          "fixed_month": false,
+          "day_selection_rule": "udaya",
+          "tie_break_rule": "avoid_viddha",
+          "lunar_month": "any",
+          "paksha": "krishna",
+          "tithi_number": 11,
+          "adhika_masa_policy": "adhika_only",
+          "solar_month": false,
+          "nakshatra_constraint": "none",
+          "region_variant": "national",
+          "sampradaya": "common",
+          "ayanamsa": "lahiri",
+          "verified": false,
+          "verification_notes": "Smarta rule",
+          "rule_version": 1
+        }
+      }
+      ''';
+      final rule = FestivalRule.fromWordPressJson(jsonDecode(liveJson) as Map<String, dynamic>);
+      expect(rule.id, 2026);
+      expect(rule.festivalId, 'parama_ekadashi');
+      expect(rule.isFasting, true);
+      expect(rule.fastingType, 'phalahar');
+      expect(rule.paranaRule, 'dwadashi_sunrise');
+      expect(rule.tieBreakRule, 'avoid_viddha');
+      expect(rule.adhikaMasaPolicy, 'adhika_only');
+      expect(rule.solarMonth, isNull);
+      expect(rule.fixedMonth, isNull);
+      expect(rule.ayanamsa, 'lahiri');
+      expect(rule.sampradaya, 'common');
+      expect(rule.verified, false);
+      expect(rule.verificationNotes, 'Smarta rule');
+    });
+
+    test('Adhika Ekadashi (Parama Ekadashi) is skipped in non-Adhika months', () async {
+      await SwephService.instance.init();
+      const paramaRule = FestivalRule(
+        id: 2026,
+        festivalId: 'parama_ekadashi',
+        category: 'vrat',
+        importanceLevel: 'regular',
+        isFasting: true,
+        nameEn: 'Parama Ekadashi',
+        eventType: 'lunar_tithi',
+        daySelectionRule: 'udaya',
+        tieBreakRule: 'avoid_viddha',
+        lunarMonth: 'any',
+        paksha: 'krishna',
+        tithiNumber: 11,
+        adhikaMasaPolicy: 'adhika_only',
+      );
+
+      // Oct 6, 2026 is Krishna Ekadashi in a normal (Nija) month (Ashvina).
+      // Parama Ekadashi MUST NOT match because adhika_masa_policy is adhika_only!
+      final oct6 = SwephService.instance.calculateCalendarDay(
+        date: DateTime(2026, 10, 6),
+        city: City.mumbai,
+        today: DateTime(2026, 10, 2),
+        festivalRules: [paramaRule],
+      );
+
+      expect(oct6.vrat, 'No Vrat');
+    });
+
+    test('Nija Ekadashi (Rama Ekadashi) matches in normal month on Oct 6, 2026', () async {
+      await SwephService.instance.init();
+      const ramaRule = FestivalRule(
+        id: 2014,
+        festivalId: 'rama_ekadashi',
+        category: 'vrat',
+        importanceLevel: 'regular',
+        isFasting: true,
+        nameEn: 'Rama Ekadashi',
+        eventType: 'lunar_tithi',
+        daySelectionRule: 'udaya',
+        tieBreakRule: 'avoid_viddha',
+        lunarMonth: 'ashvina',
+        paksha: 'krishna',
+        tithiNumber: 11,
+        adhikaMasaPolicy: 'nija_only',
+      );
+
+      final oct6 = SwephService.instance.calculateCalendarDay(
+        date: DateTime(2026, 10, 6),
+        city: City.mumbai,
+        today: DateTime(2026, 10, 2),
+        festivalRules: [ramaRule],
+      );
+
+      expect(oct6.vrat, 'Rama Ekadashi');
+    });
+
+    test('SQLite roundtrip stores and retrieves all new ACF columns', () async {
+      const rule = FestivalRule(
+        id: 2025,
+        festivalId: 'padmini_ekadashi',
+        category: 'vrat',
+        importanceLevel: 'regular',
+        isFasting: true,
+        nameEn: 'Padmini Ekadashi',
+        eventType: 'lunar_tithi',
+        daySelectionRule: 'udaya',
+        fastingType: 'phalahar',
+        paranaRule: 'dwadashi_sunrise',
+        durationDays: 1,
+        tieBreakRule: 'avoid_viddha',
+        adhikaMasaPolicy: 'adhika_only',
+        sampradaya: 'common',
+        ayanamsa: 'lahiri',
+        verified: true,
+        verificationNotes: 'Verified smarta rule',
+      );
+
+      final count = await db.upsertFestivals([rule]);
+      expect(count, 1);
+
+      final retrieved = await db.getFestivalRuleById('padmini_ekadashi');
+      expect(retrieved, isNotNull);
+      expect(retrieved!.festivalId, 'padmini_ekadashi');
+      expect(retrieved.fastingType, 'phalahar');
+      expect(retrieved.paranaRule, 'dwadashi_sunrise');
+      expect(retrieved.tieBreakRule, 'avoid_viddha');
+      expect(retrieved.adhikaMasaPolicy, 'adhika_only');
+      expect(retrieved.sampradaya, 'common');
+      expect(retrieved.ayanamsa, 'lahiri');
+      expect(retrieved.verified, true);
+      expect(retrieved.verificationNotes, 'Verified smarta rule');
+    });
+
+    test('Successfully syncs and parses live WordPress festivals endpoint', () async {
+      final mockLiveClient = MockClient((request) async {
+        final seedFile = File('assets/data/seed_festivals.json');
+        final content = await seedFile.readAsString();
+        return http.Response(
+          content,
+          200,
+          headers: {
+            'content-type': 'application/json; charset=utf-8',
+            'x-wp-total': '26',
+            'x-wp-totalpages': '1',
+          },
+        );
+      });
+
+      final service = WordPressSyncService.instance;
+      final result = await service.syncFestivals(
+        endpointUrl: ApiConfig.festivalsEndpoint,
+        client: mockLiveClient,
+      );
+
+      expect(result.isSuccess, true);
+      expect(result.count, greaterThanOrEqualTo(26));
+      expect(result.fromCache, false);
+
+      final countInDb = await db.getFestivalsCount();
+      expect(countInDb, greaterThanOrEqualTo(26));
+
+      final parama = await db.getFestivalRuleById('parama_ekadashi');
+      expect(parama, isNotNull);
+      expect(parama!.adhikaMasaPolicy, 'adhika_only');
+      expect(parama.fastingType, 'phalahar');
+      expect(parama.paranaRule, 'dwadashi_sunrise');
+      expect(parama.tieBreakRule, 'avoid_viddha');
     });
   });
 }

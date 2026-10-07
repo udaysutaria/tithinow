@@ -1,500 +1,1591 @@
 [
-    {
-        "id": 38,
-        "date": "2026-09-22T12:46:13",
-        "date_gmt": "2026-09-22T12:46:13",
-        "guid": {
-            "rendered": "http://localhost:8888/udaysutaria/tithinow.data/?post_type=festival&#038;p=38"
-        },
-        "modified": "2026-09-22T18:22:43",
-        "modified_gmt": "2026-09-22T18:22:43",
-        "slug": "anant-chaturdashi",
-        "status": "publish",
-        "type": "festival",
-        "link": "http://localhost:8888/udaysutaria/tithinow.data/festival/anant-chaturdashi/",
-        "title": {
-            "rendered": "Anant Chaturdashi"
-        },
-        "template": "",
-        "meta": {
-            "_acf_changed": false
-        },
-        "class_list": [
-            "post-38",
-            "festival",
-            "type-festival",
-            "status-publish",
-            "hentry"
-        ],
-        "acf": {
-            "festival_id": "anant_chaturdashi",
-            "category": "festival",
-            "importance_level": "major",
-            "is_fasting": true,
-            "festival_name_en": "Anant Chaturdashi",
-            "festival_name_hi": "\u0905\u0928\u0902\u0924 \u091a\u0924\u0941\u0930\u094d\u0926\u0936\u0940",
-            "festival_name_gu": "\u0a85\u0aa8\u0a82\u0aa4 \u0a9a\u0aa4\u0ac1\u0ab0\u0acd\u0aa6\u0ab6\u0ac0",
-            "description_en": "",
-            "description_hi": "",
-            "description_gu": "",
-            "event_type": "lunar_tithi",
-            "day_selection_rule": "udaya",
-            "lunar_month": "bhadrapada",
-            "paksha": "shukla",
-            "tithi_number": 14,
-            "solar_month": "makara",
-            "nakshatra_constraint": "none",
-            "region_variant": "national",
-            "rule_version": 1
-        },
-        "_links": {
-            "self": [
-                {
-                    "href": "http://localhost:8888/udaysutaria/tithinow.data/wp-json/wp/v2/festivals/38",
-                    "targetHints": {
-                        "allow": [
-                            "GET"
-                        ]
-                    }
-                }
-            ],
-            "collection": [
-                {
-                    "href": "http://localhost:8888/udaysutaria/tithinow.data/wp-json/wp/v2/festivals"
-                }
-            ],
-            "about": [
-                {
-                    "href": "http://localhost:8888/udaysutaria/tithinow.data/wp-json/wp/v2/types/festival"
-                }
-            ],
-            "wp:attachment": [
-                {
-                    "href": "http://localhost:8888/udaysutaria/tithinow.data/wp-json/wp/v2/media?parent=38"
-                }
-            ],
-            "curies": [
-                {
-                    "name": "wp",
-                    "href": "https://api.w.org/{rel}",
-                    "templated": true
-                }
-            ]
-        }
+  {
+    "id": 2026,
+    "slug": "parama-ekadashi",
+    "modified": "2026-09-30T10:00:00",
+    "title": {
+      "rendered": "Parama Ekadashi"
     },
-    {
-        "id": 37,
-        "date": "2026-09-21T16:53:08",
-        "date_gmt": "2026-09-21T16:53:08",
-        "guid": {
-            "rendered": "http://localhost:8888/udaysutaria/tithinow.data/?post_type=festival&#038;p=37"
-        },
-        "modified": "2026-09-21T16:53:08",
-        "modified_gmt": "2026-09-21T16:53:08",
-        "slug": "krishna-janmashtami",
-        "status": "publish",
-        "type": "festival",
-        "link": "http://localhost:8888/udaysutaria/tithinow.data/festival/krishna-janmashtami/",
-        "title": {
-            "rendered": "Krishna Janmashtami"
-        },
-        "template": "",
-        "meta": {
-            "_acf_changed": false
-        },
-        "class_list": [
-            "post-37",
-            "festival",
-            "type-festival",
-            "status-publish",
-            "hentry"
-        ],
-        "acf": {
-            "festival_id": "krishna_janmashtami",
-            "category": "festival",
-            "importance_level": "major",
-            "is_fasting": true,
-            "festival_name_en": "Krishna Janmashtami",
-            "festival_name_hi": "\u0936\u094d\u0930\u0940\u0915\u0943\u0937\u094d\u0923 \u091c\u0928\u094d\u092e\u093e\u0937\u094d\u091f\u092e\u0940 ",
-            "festival_name_gu": "\u0ab6\u0acd\u0ab0\u0ac0\u0a95\u0ac3\u0ab7\u0acd\u0aa3 \u0a9c\u0aa8\u0acd\u0aae\u0abe\u0ab7\u0acd\u0a9f\u0aae\u0ac0",
-            "description_en": "",
-            "description_hi": "",
-            "description_gu": "",
-            "event_type": "lunar_tithi",
-            "day_selection_rule": "udaya",
-            "lunar_month": "bhadrapada",
-            "paksha": "krishna",
-            "tithi_number": 8,
-            "solar_month": "makara",
-            "nakshatra_constraint": "none",
-            "region_variant": "national",
-            "rule_version": 2
-        },
-        "_links": {
-            "self": [
-                {
-                    "href": "http://localhost:8888/udaysutaria/tithinow.data/wp-json/wp/v2/festivals/37",
-                    "targetHints": {
-                        "allow": [
-                            "GET"
-                        ]
-                    }
-                }
-            ],
-            "collection": [
-                {
-                    "href": "http://localhost:8888/udaysutaria/tithinow.data/wp-json/wp/v2/festivals"
-                }
-            ],
-            "about": [
-                {
-                    "href": "http://localhost:8888/udaysutaria/tithinow.data/wp-json/wp/v2/types/festival"
-                }
-            ],
-            "wp:attachment": [
-                {
-                    "href": "http://localhost:8888/udaysutaria/tithinow.data/wp-json/wp/v2/media?parent=37"
-                }
-            ],
-            "curies": [
-                {
-                    "name": "wp",
-                    "href": "https://api.w.org/{rel}",
-                    "templated": true
-                }
-            ]
-        }
-    },
-    {
-        "id": 36,
-        "date": "2026-09-21T16:51:30",
-        "date_gmt": "2026-09-21T16:51:30",
-        "guid": {
-            "rendered": "http://localhost:8888/udaysutaria/tithinow.data/?post_type=festival&#038;p=36"
-        },
-        "modified": "2026-09-21T16:51:30",
-        "modified_gmt": "2026-09-21T16:51:30",
-        "slug": "makar-sankranti",
-        "status": "publish",
-        "type": "festival",
-        "link": "http://localhost:8888/udaysutaria/tithinow.data/festival/makar-sankranti/",
-        "title": {
-            "rendered": "Makar Sankranti"
-        },
-        "template": "",
-        "meta": {
-            "_acf_changed": false
-        },
-        "class_list": [
-            "post-36",
-            "festival",
-            "type-festival",
-            "status-publish",
-            "hentry"
-        ],
-        "acf": {
-            "festival_id": "makar_sankranti",
-            "category": "festival",
-            "importance_level": "major",
-            "is_fasting": false,
-            "festival_name_en": "Makar Sankranti",
-            "festival_name_hi": "\u092e\u0915\u0930 \u0938\u0902\u0915\u094d\u0930\u093e\u0902\u0924\u093f",
-            "festival_name_gu": "\u0aae\u0a95\u0ab0 \u0ab8\u0a82\u0a95\u0acd\u0ab0\u0abe\u0a82\u0aa4\u0abf",
-            "description_en": "",
-            "description_hi": "",
-            "description_gu": "",
-            "event_type": "solar_sankranti",
-            "day_selection_rule": "punyakaal",
-            "lunar_month": "chaitra",
-            "paksha": "shukla",
-            "tithi_number": 1,
-            "solar_month": "makara",
-            "nakshatra_constraint": "none",
-            "region_variant": "national",
-            "rule_version": 1
-        },
-        "_links": {
-            "self": [
-                {
-                    "href": "http://localhost:8888/udaysutaria/tithinow.data/wp-json/wp/v2/festivals/36",
-                    "targetHints": {
-                        "allow": [
-                            "GET"
-                        ]
-                    }
-                }
-            ],
-            "collection": [
-                {
-                    "href": "http://localhost:8888/udaysutaria/tithinow.data/wp-json/wp/v2/festivals"
-                }
-            ],
-            "about": [
-                {
-                    "href": "http://localhost:8888/udaysutaria/tithinow.data/wp-json/wp/v2/types/festival"
-                }
-            ],
-            "wp:attachment": [
-                {
-                    "href": "http://localhost:8888/udaysutaria/tithinow.data/wp-json/wp/v2/media?parent=36"
-                }
-            ],
-            "curies": [
-                {
-                    "name": "wp",
-                    "href": "https://api.w.org/{rel}",
-                    "templated": true
-                }
-            ]
-        }
-    },
-    {
-        "id": 35,
-        "date": "2026-09-21T16:50:07",
-        "date_gmt": "2026-09-21T16:50:07",
-        "guid": {
-            "rendered": "http://localhost:8888/udaysutaria/tithinow.data/?post_type=festival&#038;p=35"
-        },
-        "modified": "2026-09-21T16:50:07",
-        "modified_gmt": "2026-09-21T16:50:07",
-        "slug": "nirjala-ekadashi",
-        "status": "publish",
-        "type": "festival",
-        "link": "http://localhost:8888/udaysutaria/tithinow.data/festival/nirjala-ekadashi/",
-        "title": {
-            "rendered": "Nirjala Ekadashi"
-        },
-        "template": "",
-        "meta": {
-            "_acf_changed": false
-        },
-        "class_list": [
-            "post-35",
-            "festival",
-            "type-festival",
-            "status-publish",
-            "hentry"
-        ],
-        "acf": {
-            "festival_id": "nirjala_ekadashi",
-            "category": "vrat",
-            "importance_level": "major",
-            "is_fasting": true,
-            "festival_name_en": "Nirjala Ekadashi",
-            "festival_name_hi": "\u0928\u093f\u0930\u094d\u091c\u0932\u093e \u090f\u0915\u093e\u0926\u0936\u0940",
-            "festival_name_gu": "\u0aa8\u0abf\u0ab0\u0acd\u0a9c\u0ab3\u0abe \u0a8f\u0a95\u0abe\u0aa6\u0ab6\u0ac0",
-            "description_en": "",
-            "description_hi": "",
-            "description_gu": "",
-            "event_type": "lunar_tithi",
-            "day_selection_rule": "udaya",
-            "lunar_month": "jyeshtha",
-            "paksha": "shukla",
-            "tithi_number": 11,
-            "solar_month": "makara",
-            "nakshatra_constraint": "none",
-            "region_variant": "national",
-            "rule_version": 1
-        },
-        "_links": {
-            "self": [
-                {
-                    "href": "http://localhost:8888/udaysutaria/tithinow.data/wp-json/wp/v2/festivals/35",
-                    "targetHints": {
-                        "allow": [
-                            "GET"
-                        ]
-                    }
-                }
-            ],
-            "collection": [
-                {
-                    "href": "http://localhost:8888/udaysutaria/tithinow.data/wp-json/wp/v2/festivals"
-                }
-            ],
-            "about": [
-                {
-                    "href": "http://localhost:8888/udaysutaria/tithinow.data/wp-json/wp/v2/types/festival"
-                }
-            ],
-            "wp:attachment": [
-                {
-                    "href": "http://localhost:8888/udaysutaria/tithinow.data/wp-json/wp/v2/media?parent=35"
-                }
-            ],
-            "curies": [
-                {
-                    "name": "wp",
-                    "href": "https://api.w.org/{rel}",
-                    "templated": true
-                }
-            ]
-        }
-    },
-    {
-        "id": 34,
-        "date": "2026-09-21T16:48:42",
-        "date_gmt": "2026-09-21T16:48:42",
-        "guid": {
-            "rendered": "http://localhost:8888/udaysutaria/tithinow.data/?post_type=festival&#038;p=34"
-        },
-        "modified": "2026-09-21T16:48:42",
-        "modified_gmt": "2026-09-21T16:48:42",
-        "slug": "holi",
-        "status": "publish",
-        "type": "festival",
-        "link": "http://localhost:8888/udaysutaria/tithinow.data/festival/holi/",
-        "title": {
-            "rendered": "Holi"
-        },
-        "template": "",
-        "meta": {
-            "_acf_changed": false
-        },
-        "class_list": [
-            "post-34",
-            "festival",
-            "type-festival",
-            "status-publish",
-            "hentry"
-        ],
-        "acf": {
-            "festival_id": "holi",
-            "category": "festival",
-            "importance_level": "major",
-            "is_fasting": false,
-            "festival_name_en": "Holika Dahan",
-            "festival_name_hi": "\u0939\u094b\u0932\u093f\u0915\u093e \u0926\u0939\u0928",
-            "festival_name_gu": "\u0ab9\u0acb\u0ab2\u0abf\u0a95\u0abe \u0aa6\u0ab9\u0aa8",
-            "description_en": "",
-            "description_hi": "",
-            "description_gu": "",
-            "event_type": "lunar_tithi",
-            "day_selection_rule": "pradosha",
-            "lunar_month": "phalguna",
-            "paksha": "shukla",
-            "tithi_number": 15,
-            "solar_month": "makara",
-            "nakshatra_constraint": "none",
-            "region_variant": "national",
-            "rule_version": 1
-        },
-        "_links": {
-            "self": [
-                {
-                    "href": "http://localhost:8888/udaysutaria/tithinow.data/wp-json/wp/v2/festivals/34",
-                    "targetHints": {
-                        "allow": [
-                            "GET"
-                        ]
-                    }
-                }
-            ],
-            "collection": [
-                {
-                    "href": "http://localhost:8888/udaysutaria/tithinow.data/wp-json/wp/v2/festivals"
-                }
-            ],
-            "about": [
-                {
-                    "href": "http://localhost:8888/udaysutaria/tithinow.data/wp-json/wp/v2/types/festival"
-                }
-            ],
-            "wp:attachment": [
-                {
-                    "href": "http://localhost:8888/udaysutaria/tithinow.data/wp-json/wp/v2/media?parent=34"
-                }
-            ],
-            "curies": [
-                {
-                    "name": "wp",
-                    "href": "https://api.w.org/{rel}",
-                    "templated": true
-                }
-            ]
-        }
-    },
-    {
-        "id": 33,
-        "date": "2026-09-21T16:46:14",
-        "date_gmt": "2026-09-21T16:46:14",
-        "guid": {
-            "rendered": "http://localhost:8888/udaysutaria/tithinow.data/?post_type=festival&#038;p=33"
-        },
-        "modified": "2026-09-22T08:32:17",
-        "modified_gmt": "2026-09-22T08:32:17",
-        "slug": "maha-shivaratri",
-        "status": "publish",
-        "type": "festival",
-        "link": "http://localhost:8888/udaysutaria/tithinow.data/festival/maha-shivaratri/",
-        "title": {
-            "rendered": "Maha Shivaratri"
-        },
-        "template": "",
-        "meta": {
-            "_acf_changed": false
-        },
-        "class_list": [
-            "post-33",
-            "festival",
-            "type-festival",
-            "status-publish",
-            "hentry"
-        ],
-        "acf": {
-            "festival_id": "maha_shivaratri",
-            "category": "both",
-            "importance_level": "major",
-            "is_fasting": true,
-            "festival_name_en": "Maha Shivaratri",
-            "festival_name_hi": "\u092e\u0939\u093e\u0936\u093f\u0935\u0930\u093e\u0924\u094d\u0930\u093f",
-            "festival_name_gu": "\u0aae\u0ab9\u0abe\u0ab6\u0abf\u0ab5\u0ab0\u0abe\u0aa4\u0acd\u0ab0\u0ac0",
-            "description_en": "",
-            "description_hi": "",
-            "description_gu": "",
-            "event_type": "lunar_tithi",
-            "day_selection_rule": "nishita",
-            "lunar_month": "magha",
-            "paksha": "krishna",
-            "tithi_number": 14,
-            "solar_month": "makara",
-            "nakshatra_constraint": "none",
-            "region_variant": "national",
-            "rule_version": 2
-        },
-        "_links": {
-            "self": [
-                {
-                    "href": "http://localhost:8888/udaysutaria/tithinow.data/wp-json/wp/v2/festivals/33",
-                    "targetHints": {
-                        "allow": [
-                            "GET"
-                        ]
-                    }
-                }
-            ],
-            "collection": [
-                {
-                    "href": "http://localhost:8888/udaysutaria/tithinow.data/wp-json/wp/v2/festivals"
-                }
-            ],
-            "about": [
-                {
-                    "href": "http://localhost:8888/udaysutaria/tithinow.data/wp-json/wp/v2/types/festival"
-                }
-            ],
-            "wp:attachment": [
-                {
-                    "href": "http://localhost:8888/udaysutaria/tithinow.data/wp-json/wp/v2/media?parent=33"
-                }
-            ],
-            "curies": [
-                {
-                    "name": "wp",
-                    "href": "https://api.w.org/{rel}",
-                    "templated": true
-                }
-            ]
-        }
+    "acf": {
+      "festival_id": "parama_ekadashi",
+      "category": "vrat",
+      "importance_level": "regular",
+      "is_fasting": true,
+      "festival_name_en": "Parama Ekadashi",
+      "festival_name_hi": "परमा एकादशी",
+      "festival_name_gu": "પરમા એકાદશી",
+      "description_en": "Falls only in the dark fortnight of an Adhika (extra) lunar month. Observed for prosperity and relief from poverty, with worship of Lord Vishnu.",
+      "description_hi": "यह एकादशी केवल अधिक मास के कृष्ण पक्ष में आती है। समृद्धि और दरिद्रता से मुक्ति के लिए भगवान विष्णु की पूजा के साथ रखी जाती है।",
+      "description_gu": "આ એકાદશી ફક્ત અધિક માસના કૃષ્ણ પક્ષમાં આવે છે. સમૃદ્ધિ અને દરિદ્રતામાંથી મુક્તિ માટે ભગવાન વિષ્ણુની પૂજા સાથે કરવામાં આવે છે.",
+      "fasting_type": "phalahar",
+      "parana_rule": "dwadashi_sunrise",
+      "duration_days": 1,
+      "end_festival_id": "",
+      "event_type": "lunar_tithi",
+      "parent_festival_id": "",
+      "offset_days": "",
+      "fixed_month": false,
+      "fixed_day": "",
+      "eclipse_type": false,
+      "sutak_applies": false,
+      "day_selection_rule": "udaya",
+      "tie_break_rule": "avoid_viddha",
+      "lunar_month": "any",
+      "paksha": "krishna",
+      "tithi_number": 11,
+      "adhika_masa_policy": "adhika_only",
+      "weekday": false,
+      "weekday_rule": false,
+      "repeat_weekday": false,
+      "avoid_bhadra": false,
+      "purnimanta_month": false,
+      "solar_month": false,
+      "nakshatra_trigger": false,
+      "nakshatra_solar_month": false,
+      "nakshatra_lunar_month": false,
+      "nakshatra_constraint": "none",
+      "region_variant": "national",
+      "sampradaya": "common",
+      "source_reference": "",
+      "ayanamsa": "lahiri",
+      "verified": false,
+      "verification_notes": "Smarta rule (udaya + avoid_viddha). Vaishnava dates can differ in some years; add a separate ..._vaishnava entry then. Occurs only in years with an Adhika masa (roughly every 2.5-3 years); the app must skip it in other years. lunar_month = any means \"whichever month is Adhika\".",
+      "rule_version": 1
     }
+  },
+  {
+    "id": 2025,
+    "slug": "padmini-ekadashi",
+    "modified": "2026-09-30T10:00:00",
+    "title": {
+      "rendered": "Padmini Ekadashi"
+    },
+    "acf": {
+      "festival_id": "padmini_ekadashi",
+      "category": "vrat",
+      "importance_level": "regular",
+      "is_fasting": true,
+      "festival_name_en": "Padmini Ekadashi",
+      "festival_name_hi": "पद्मिनी एकादशी",
+      "festival_name_gu": "પદ્મિની એકાદશી",
+      "description_en": "Falls only in the bright fortnight of an Adhika (extra) lunar month. Also called Kamala Ekadashi; observed for merit and fulfilment of wishes.",
+      "description_hi": "यह एकादशी केवल अधिक मास के शुक्ल पक्ष में आती है। इसे कमला एकादशी भी कहते हैं और पुण्य व मनोकामना पूर्ति के लिए रखी जाती है।",
+      "description_gu": "આ એકાદશી ફક્ત અધિક માસના શુક્લ પક્ષમાં આવે છે. તેને કમલા એકાદશી પણ કહે છે અને પુણ્ય તથા મનોકામના પૂર્તિ માટે કરવામાં આવે છે.",
+      "fasting_type": "phalahar",
+      "parana_rule": "dwadashi_sunrise",
+      "duration_days": 1,
+      "end_festival_id": "",
+      "event_type": "lunar_tithi",
+      "parent_festival_id": "",
+      "offset_days": "",
+      "fixed_month": false,
+      "fixed_day": "",
+      "eclipse_type": false,
+      "sutak_applies": false,
+      "day_selection_rule": "udaya",
+      "tie_break_rule": "avoid_viddha",
+      "lunar_month": "any",
+      "paksha": "shukla",
+      "tithi_number": 11,
+      "adhika_masa_policy": "adhika_only",
+      "weekday": false,
+      "weekday_rule": false,
+      "repeat_weekday": false,
+      "avoid_bhadra": false,
+      "purnimanta_month": false,
+      "solar_month": false,
+      "nakshatra_trigger": false,
+      "nakshatra_solar_month": false,
+      "nakshatra_lunar_month": false,
+      "nakshatra_constraint": "none",
+      "region_variant": "national",
+      "sampradaya": "common",
+      "source_reference": "",
+      "ayanamsa": "lahiri",
+      "verified": false,
+      "verification_notes": "Smarta rule (udaya + avoid_viddha). Vaishnava dates can differ in some years; add a separate ..._vaishnava entry then. Occurs only in years with an Adhika masa; the app must skip it in other years. lunar_month = any means \"whichever month is Adhika\".",
+      "rule_version": 1
+    }
+  },
+  {
+    "id": 2024,
+    "slug": "papmochani-ekadashi",
+    "modified": "2026-09-30T10:00:00",
+    "title": {
+      "rendered": "Papmochani Ekadashi"
+    },
+    "acf": {
+      "festival_id": "papmochani_ekadashi",
+      "category": "vrat",
+      "importance_level": "regular",
+      "is_fasting": true,
+      "festival_name_en": "Papmochani Ekadashi",
+      "festival_name_hi": "पापमोचनी एकादशी",
+      "festival_name_gu": "પાપમોચની એકાદશી",
+      "description_en": "The name means remover of sins. It falls between Holi and Chaitra Navratri and is observed with Vishnu worship for atonement and purification.",
+      "description_hi": "\"पापमोचनी\" का अर्थ है पापों को हरने वाली। यह होली और चैत्र नवरात्रि के बीच आती है और भगवान विष्णु की पूजा से पाप-शुद्धि की जाती है।",
+      "description_gu": "\"પાપમોચની\" એટલે પાપોનો નાશ કરનારી. તે હોળી અને ચૈત્ર નવરાત્રિ વચ્ચે આવે છે અને ભગવાન વિષ્ણુની પૂજાથી પાપશુદ્ધિ માટે કરવામાં આવે છે.",
+      "fasting_type": "phalahar",
+      "parana_rule": "dwadashi_sunrise",
+      "duration_days": 1,
+      "end_festival_id": "",
+      "event_type": "lunar_tithi",
+      "parent_festival_id": "",
+      "offset_days": "",
+      "fixed_month": false,
+      "fixed_day": "",
+      "eclipse_type": false,
+      "sutak_applies": false,
+      "day_selection_rule": "udaya",
+      "tie_break_rule": "avoid_viddha",
+      "lunar_month": "phalguna",
+      "paksha": "krishna",
+      "tithi_number": 11,
+      "adhika_masa_policy": "nija_only",
+      "weekday": false,
+      "weekday_rule": false,
+      "repeat_weekday": false,
+      "avoid_bhadra": false,
+      "purnimanta_month": false,
+      "solar_month": false,
+      "nakshatra_trigger": false,
+      "nakshatra_solar_month": false,
+      "nakshatra_lunar_month": false,
+      "nakshatra_constraint": "none",
+      "region_variant": "national",
+      "sampradaya": "common",
+      "source_reference": "",
+      "ayanamsa": "lahiri",
+      "verified": false,
+      "verification_notes": "Smarta rule (udaya + avoid_viddha). Vaishnava dates can differ in some years; add a separate ..._vaishnava entry then.",
+      "rule_version": 1
+    }
+  },
+  {
+    "id": 2023,
+    "slug": "amalaki-ekadashi",
+    "modified": "2026-09-30T10:00:00",
+    "title": {
+      "rendered": "Amalaki Ekadashi"
+    },
+    "acf": {
+      "festival_id": "amalaki_ekadashi",
+      "category": "vrat",
+      "importance_level": "regular",
+      "is_fasting": true,
+      "festival_name_en": "Amalaki Ekadashi",
+      "festival_name_hi": "आमलकी एकादशी",
+      "festival_name_gu": "આમલકી એકાદશી",
+      "description_en": "Falls shortly before Holi. The Amalaki (Indian gooseberry) tree is worshipped, as Lord Vishnu is believed to dwell in it.",
+      "description_hi": "होली से कुछ दिन पहले आने वाली इस एकादशी पर आंवले के वृक्ष की पूजा की जाती है, जिसमें भगवान विष्णु का वास माना जाता है।",
+      "description_gu": "હોળી પહેલાં આવતી આ એકાદશીએ આમળાના વૃક્ષની પૂજા કરવામાં આવે છે, જેમાં ભગવાન વિષ્ણુનો વાસ મનાય છે.",
+      "fasting_type": "phalahar",
+      "parana_rule": "dwadashi_sunrise",
+      "duration_days": 1,
+      "end_festival_id": "",
+      "event_type": "lunar_tithi",
+      "parent_festival_id": "",
+      "offset_days": "",
+      "fixed_month": false,
+      "fixed_day": "",
+      "eclipse_type": false,
+      "sutak_applies": false,
+      "day_selection_rule": "udaya",
+      "tie_break_rule": "avoid_viddha",
+      "lunar_month": "phalguna",
+      "paksha": "shukla",
+      "tithi_number": 11,
+      "adhika_masa_policy": "nija_only",
+      "weekday": false,
+      "weekday_rule": false,
+      "repeat_weekday": false,
+      "avoid_bhadra": false,
+      "purnimanta_month": false,
+      "solar_month": false,
+      "nakshatra_trigger": false,
+      "nakshatra_solar_month": false,
+      "nakshatra_lunar_month": false,
+      "nakshatra_constraint": "none",
+      "region_variant": "national",
+      "sampradaya": "common",
+      "source_reference": "",
+      "ayanamsa": "lahiri",
+      "verified": false,
+      "verification_notes": "Smarta rule (udaya + avoid_viddha). Vaishnava dates can differ in some years; add a separate ..._vaishnava entry then.",
+      "rule_version": 1
+    }
+  },
+  {
+    "id": 2022,
+    "slug": "vijaya-ekadashi",
+    "modified": "2026-09-30T10:00:00",
+    "title": {
+      "rendered": "Vijaya Ekadashi"
+    },
+    "acf": {
+      "festival_id": "vijaya_ekadashi",
+      "category": "vrat",
+      "importance_level": "regular",
+      "is_fasting": true,
+      "festival_name_en": "Vijaya Ekadashi",
+      "festival_name_hi": "विजया एकादशी",
+      "festival_name_gu": "વિજયા એકાદશી",
+      "description_en": "Said to have been observed by Lord Rama before crossing the ocean to Lanka; the fast is kept for victory over obstacles and enemies.",
+      "description_hi": "मान्यता है कि भगवान राम ने लंका जाने से पहले समुद्र तट पर यह व्रत किया था। बाधाओं और शत्रुओं पर विजय के लिए यह व्रत रखा जाता है।",
+      "description_gu": "માન્યતા છે કે ભગવાન રામે લંકા જતાં પહેલાં સમુદ્રકિનારે આ વ્રત કર્યું હતું. અવરોધો અને શત્રુઓ પર વિજય માટે આ વ્રત કરવામાં આવે છે.",
+      "fasting_type": "phalahar",
+      "parana_rule": "dwadashi_sunrise",
+      "duration_days": 1,
+      "end_festival_id": "",
+      "event_type": "lunar_tithi",
+      "parent_festival_id": "",
+      "offset_days": "",
+      "fixed_month": false,
+      "fixed_day": "",
+      "eclipse_type": false,
+      "sutak_applies": false,
+      "day_selection_rule": "udaya",
+      "tie_break_rule": "avoid_viddha",
+      "lunar_month": "magha",
+      "paksha": "krishna",
+      "tithi_number": 11,
+      "adhika_masa_policy": "nija_only",
+      "weekday": false,
+      "weekday_rule": false,
+      "repeat_weekday": false,
+      "avoid_bhadra": false,
+      "purnimanta_month": false,
+      "solar_month": false,
+      "nakshatra_trigger": false,
+      "nakshatra_solar_month": false,
+      "nakshatra_lunar_month": false,
+      "nakshatra_constraint": "none",
+      "region_variant": "national",
+      "sampradaya": "common",
+      "source_reference": "",
+      "ayanamsa": "lahiri",
+      "verified": false,
+      "verification_notes": "Smarta rule (udaya + avoid_viddha). Vaishnava dates can differ in some years; add a separate ..._vaishnava entry then.",
+      "rule_version": 1
+    }
+  },
+  {
+    "id": 2021,
+    "slug": "jaya-ekadashi",
+    "modified": "2026-09-30T10:00:00",
+    "title": {
+      "rendered": "Jaya Ekadashi"
+    },
+    "acf": {
+      "festival_id": "jaya_ekadashi",
+      "category": "vrat",
+      "importance_level": "regular",
+      "is_fasting": true,
+      "festival_name_en": "Jaya Ekadashi",
+      "festival_name_hi": "जया एकादशी",
+      "festival_name_gu": "જયા એકાદશી",
+      "description_en": "Observed on Magha Shukla Ekadashi; believed to release one from curses and lowly births and to grant merit through devotion to Lord Vishnu.",
+      "description_hi": "माघ शुक्ल एकादशी का यह व्रत शाप और नीच योनि से मुक्ति दिलाने वाला माना जाता है। भगवान विष्णु की भक्ति से पुण्य प्राप्त होता है।",
+      "description_gu": "મહા સુદ એકાદશીનું આ વ્રત શાપ અને નીચ યોનિમાંથી મુક્તિ અપાવનારું મનાય છે. ભગવાન વિષ્ણુની ભક્તિથી પુણ્ય પ્રાપ્ત થાય છે.",
+      "fasting_type": "phalahar",
+      "parana_rule": "dwadashi_sunrise",
+      "duration_days": 1,
+      "end_festival_id": "",
+      "event_type": "lunar_tithi",
+      "parent_festival_id": "",
+      "offset_days": "",
+      "fixed_month": false,
+      "fixed_day": "",
+      "eclipse_type": false,
+      "sutak_applies": false,
+      "day_selection_rule": "udaya",
+      "tie_break_rule": "avoid_viddha",
+      "lunar_month": "magha",
+      "paksha": "shukla",
+      "tithi_number": 11,
+      "adhika_masa_policy": "nija_only",
+      "weekday": false,
+      "weekday_rule": false,
+      "repeat_weekday": false,
+      "avoid_bhadra": false,
+      "purnimanta_month": false,
+      "solar_month": false,
+      "nakshatra_trigger": false,
+      "nakshatra_solar_month": false,
+      "nakshatra_lunar_month": false,
+      "nakshatra_constraint": "none",
+      "region_variant": "national",
+      "sampradaya": "common",
+      "source_reference": "",
+      "ayanamsa": "lahiri",
+      "verified": false,
+      "verification_notes": "Smarta rule (udaya + avoid_viddha). Vaishnava dates can differ in some years; add a separate ..._vaishnava entry then.",
+      "rule_version": 1
+    }
+  },
+  {
+    "id": 2020,
+    "slug": "shattila-ekadashi",
+    "modified": "2026-09-30T10:00:00",
+    "title": {
+      "rendered": "Shattila Ekadashi"
+    },
+    "acf": {
+      "festival_id": "shattila_ekadashi",
+      "category": "vrat",
+      "importance_level": "regular",
+      "is_fasting": true,
+      "festival_name_en": "Shattila Ekadashi",
+      "festival_name_hi": "षटतिला एकादशी",
+      "festival_name_gu": "ષટતિલા એકાદશી",
+      "description_en": "Named for til (sesame), which is used in six ways on this day: bathing, body paste, havan, offering to ancestors, eating and donating, in worship of Lord Vishnu.",
+      "description_hi": "इस दिन तिल का छह प्रकार से प्रयोग किया जाता है: स्नान, उबटन, हवन, तर्पण, भोजन और दान। इसी से इसे षटतिला कहते हैं। भगवान विष्णु की पूजा की जाती है।",
+      "description_gu": "આ દિવસે તલનો છ રીતે ઉપયોગ થાય છે: સ્નાન, ઉબટન, હવન, તર્પણ, ભોજન અને દાન. તેથી તેને ષટતિલા કહેવાય છે. ભગવાન વિષ્ણુની પૂજા કરવામાં આવે છે.",
+      "fasting_type": "phalahar",
+      "parana_rule": "dwadashi_sunrise",
+      "duration_days": 1,
+      "end_festival_id": "",
+      "event_type": "lunar_tithi",
+      "parent_festival_id": "",
+      "offset_days": "",
+      "fixed_month": false,
+      "fixed_day": "",
+      "eclipse_type": false,
+      "sutak_applies": false,
+      "day_selection_rule": "udaya",
+      "tie_break_rule": "avoid_viddha",
+      "lunar_month": "pausha",
+      "paksha": "krishna",
+      "tithi_number": 11,
+      "adhika_masa_policy": "nija_only",
+      "weekday": false,
+      "weekday_rule": false,
+      "repeat_weekday": false,
+      "avoid_bhadra": false,
+      "purnimanta_month": false,
+      "solar_month": false,
+      "nakshatra_trigger": false,
+      "nakshatra_solar_month": false,
+      "nakshatra_lunar_month": false,
+      "nakshatra_constraint": "none",
+      "region_variant": "national",
+      "sampradaya": "common",
+      "source_reference": "",
+      "ayanamsa": "lahiri",
+      "verified": false,
+      "verification_notes": "Smarta rule (udaya + avoid_viddha). Vaishnava dates can differ in some years; add a separate ..._vaishnava entry then.",
+      "rule_version": 1
+    }
+  },
+  {
+    "id": 2019,
+    "slug": "pausha-putrada-ekadashi",
+    "modified": "2026-09-30T10:00:00",
+    "title": {
+      "rendered": "Putrada Ekadashi (Pausha)"
+    },
+    "acf": {
+      "festival_id": "pausha_putrada_ekadashi",
+      "category": "vrat",
+      "importance_level": "regular",
+      "is_fasting": true,
+      "festival_name_en": "Putrada Ekadashi (Pausha)",
+      "festival_name_hi": "पुत्रदा एकादशी (पौष)",
+      "festival_name_gu": "પુત્રદા એકાદશી (પોષ)",
+      "description_en": "Observed on the Pausha Shukla Ekadashi by devotees seeking the blessing of a worthy child, with worship of Lord Vishnu.",
+      "description_hi": "पौष शुक्ल एकादशी को संतान-सुख की कामना से भगवान विष्णु की पूजा और व्रत किया जाता है।",
+      "description_gu": "પોષ સુદ એકાદશીએ સંતાનસુખની કામના સાથે ભગવાન વિષ્ણુની પૂજા અને વ્રત કરવામાં આવે છે.",
+      "fasting_type": "phalahar",
+      "parana_rule": "dwadashi_sunrise",
+      "duration_days": 1,
+      "end_festival_id": "",
+      "event_type": "lunar_tithi",
+      "parent_festival_id": "",
+      "offset_days": "",
+      "fixed_month": false,
+      "fixed_day": "",
+      "eclipse_type": false,
+      "sutak_applies": false,
+      "day_selection_rule": "udaya",
+      "tie_break_rule": "avoid_viddha",
+      "lunar_month": "pausha",
+      "paksha": "shukla",
+      "tithi_number": 11,
+      "adhika_masa_policy": "nija_only",
+      "weekday": false,
+      "weekday_rule": false,
+      "repeat_weekday": false,
+      "avoid_bhadra": false,
+      "purnimanta_month": false,
+      "solar_month": false,
+      "nakshatra_trigger": false,
+      "nakshatra_solar_month": false,
+      "nakshatra_lunar_month": false,
+      "nakshatra_constraint": "none",
+      "region_variant": "national",
+      "sampradaya": "common",
+      "source_reference": "",
+      "ayanamsa": "lahiri",
+      "verified": false,
+      "verification_notes": "Smarta rule (udaya + avoid_viddha). Vaishnava dates can differ in some years; add a separate ..._vaishnava entry then.",
+      "rule_version": 1
+    }
+  },
+  {
+    "id": 2018,
+    "slug": "saphala-ekadashi",
+    "modified": "2026-09-30T10:00:00",
+    "title": {
+      "rendered": "Saphala Ekadashi"
+    },
+    "acf": {
+      "festival_id": "saphala_ekadashi",
+      "category": "vrat",
+      "importance_level": "regular",
+      "is_fasting": true,
+      "festival_name_en": "Saphala Ekadashi",
+      "festival_name_hi": "सफला एकादशी",
+      "festival_name_gu": "સફલા એકાદશી",
+      "description_en": "Observed to bring success in one's efforts (\"saphala\" means fruitful), with worship of Lord Vishnu and night-time devotion.",
+      "description_hi": "कार्यों में सफलता के लिए रखा जाने वाला व्रत है। इस दिन भगवान विष्णु की पूजा और रात्रि जागरण किया जाता है।",
+      "description_gu": "કાર્યોમાં સફળતા માટે કરવામાં આવતું વ્રત છે. આ દિવસે ભગવાન વિષ્ણુની પૂજા અને રાત્રિ જાગરણ કરવામાં આવે છે.",
+      "fasting_type": "phalahar",
+      "parana_rule": "dwadashi_sunrise",
+      "duration_days": 1,
+      "end_festival_id": "",
+      "event_type": "lunar_tithi",
+      "parent_festival_id": "",
+      "offset_days": "",
+      "fixed_month": false,
+      "fixed_day": "",
+      "eclipse_type": false,
+      "sutak_applies": false,
+      "day_selection_rule": "udaya",
+      "tie_break_rule": "avoid_viddha",
+      "lunar_month": "margashirsha",
+      "paksha": "krishna",
+      "tithi_number": 11,
+      "adhika_masa_policy": "nija_only",
+      "weekday": false,
+      "weekday_rule": false,
+      "repeat_weekday": false,
+      "avoid_bhadra": false,
+      "purnimanta_month": false,
+      "solar_month": false,
+      "nakshatra_trigger": false,
+      "nakshatra_solar_month": false,
+      "nakshatra_lunar_month": false,
+      "nakshatra_constraint": "none",
+      "region_variant": "national",
+      "sampradaya": "common",
+      "source_reference": "",
+      "ayanamsa": "lahiri",
+      "verified": false,
+      "verification_notes": "Smarta rule (udaya + avoid_viddha). Vaishnava dates can differ in some years; add a separate ..._vaishnava entry then.",
+      "rule_version": 1
+    }
+  },
+  {
+    "id": 2017,
+    "slug": "mokshada-ekadashi",
+    "modified": "2026-09-30T10:00:00",
+    "title": {
+      "rendered": "Mokshada Ekadashi"
+    },
+    "acf": {
+      "festival_id": "mokshada_ekadashi",
+      "category": "both",
+      "importance_level": "major",
+      "is_fasting": true,
+      "festival_name_en": "Mokshada Ekadashi",
+      "festival_name_hi": "मोक्षदा एकादशी",
+      "festival_name_gu": "મોક્ષદા એકાદશી",
+      "description_en": "Falls on the same day as Gita Jayanti, the day Krishna is said to have given the Bhagavad Gita to Arjuna. The fast is observed for liberation (moksha).",
+      "description_hi": "यह गीता जयंती का दिन भी है, जब श्रीकृष्ण ने अर्जुन को गीता का उपदेश दिया। मोक्ष की प्राप्ति के लिए यह व्रत रखा जाता है।",
+      "description_gu": "આ દિવસ ગીતા જયંતી પણ છે, જ્યારે શ્રીકૃષ્ણે અર્જુનને ગીતાનો ઉપદેશ આપ્યો. મોક્ષ પ્રાપ્તિ માટે આ વ્રત કરવામાં આવે છે.",
+      "fasting_type": "phalahar",
+      "parana_rule": "dwadashi_sunrise",
+      "duration_days": 1,
+      "end_festival_id": "",
+      "event_type": "lunar_tithi",
+      "parent_festival_id": "",
+      "offset_days": "",
+      "fixed_month": false,
+      "fixed_day": "",
+      "eclipse_type": false,
+      "sutak_applies": false,
+      "day_selection_rule": "udaya",
+      "tie_break_rule": "avoid_viddha",
+      "lunar_month": "margashirsha",
+      "paksha": "shukla",
+      "tithi_number": 11,
+      "adhika_masa_policy": "nija_only",
+      "weekday": false,
+      "weekday_rule": false,
+      "repeat_weekday": false,
+      "avoid_bhadra": false,
+      "purnimanta_month": false,
+      "solar_month": false,
+      "nakshatra_trigger": false,
+      "nakshatra_solar_month": false,
+      "nakshatra_lunar_month": false,
+      "nakshatra_constraint": "none",
+      "region_variant": "national",
+      "sampradaya": "common",
+      "source_reference": "",
+      "ayanamsa": "lahiri",
+      "verified": false,
+      "verification_notes": "Smarta rule (udaya + avoid_viddha). Vaishnava dates can differ in some years; add a separate ..._vaishnava entry then.",
+      "rule_version": 1
+    }
+  },
+  {
+    "id": 2016,
+    "slug": "utpanna-ekadashi",
+    "modified": "2026-09-30T10:00:00",
+    "title": {
+      "rendered": "Utpanna Ekadashi"
+    },
+    "acf": {
+      "festival_id": "utpanna_ekadashi",
+      "category": "vrat",
+      "importance_level": "regular",
+      "is_fasting": true,
+      "festival_name_en": "Utpanna Ekadashi",
+      "festival_name_hi": "उत्पन्ना एकादशी",
+      "festival_name_gu": "ઉત્પન્ના એકાદશી",
+      "description_en": "Commemorates the birth of Goddess Ekadashi from Lord Vishnu to defeat the demon Mura. Many devotees begin their annual Ekadashi fasting on this day.",
+      "description_hi": "इस दिन भगवान विष्णु से देवी एकादशी प्रकट हुईं और उन्होंने मुर दैत्य का वध किया। अनेक भक्त इसी दिन से एकादशी व्रत आरंभ करते हैं।",
+      "description_gu": "આ દિવસે ભગવાન વિષ્ણુમાંથી દેવી એકાદશી પ્રગટ થયાં અને મુર દૈત્યનો વધ કર્યો. ઘણા ભક્તો આ દિવસથી એકાદશી વ્રતની શરૂઆત કરે છે.",
+      "fasting_type": "phalahar",
+      "parana_rule": "dwadashi_sunrise",
+      "duration_days": 1,
+      "end_festival_id": "",
+      "event_type": "lunar_tithi",
+      "parent_festival_id": "",
+      "offset_days": "",
+      "fixed_month": false,
+      "fixed_day": "",
+      "eclipse_type": false,
+      "sutak_applies": false,
+      "day_selection_rule": "udaya",
+      "tie_break_rule": "avoid_viddha",
+      "lunar_month": "kartika",
+      "paksha": "krishna",
+      "tithi_number": 11,
+      "adhika_masa_policy": "nija_only",
+      "weekday": false,
+      "weekday_rule": false,
+      "repeat_weekday": false,
+      "avoid_bhadra": false,
+      "purnimanta_month": false,
+      "solar_month": false,
+      "nakshatra_trigger": false,
+      "nakshatra_solar_month": false,
+      "nakshatra_lunar_month": false,
+      "nakshatra_constraint": "none",
+      "region_variant": "national",
+      "sampradaya": "common",
+      "source_reference": "",
+      "ayanamsa": "lahiri",
+      "verified": false,
+      "verification_notes": "Smarta rule (udaya + avoid_viddha). Vaishnava dates can differ in some years; add a separate ..._vaishnava entry then.",
+      "rule_version": 1
+    }
+  },
+  {
+    "id": 2015,
+    "slug": "prabodhini-ekadashi",
+    "modified": "2026-09-30T10:00:00",
+    "title": {
+      "rendered": "Prabodhini Ekadashi (Devuthi Ekadashi)"
+    },
+    "acf": {
+      "festival_id": "prabodhini_ekadashi",
+      "category": "both",
+      "importance_level": "major",
+      "is_fasting": true,
+      "festival_name_en": "Prabodhini Ekadashi (Devuthi Ekadashi)",
+      "festival_name_hi": "प्रबोधिनी एकादशी (देवउठनी एकादशी)",
+      "festival_name_gu": "પ્રબોધિની એકાદશી (દેવઉઠી એકાદશી)",
+      "description_en": "Marks Lord Vishnu awakening from his four-month Chaturmas rest. Tulsi Vivah begins and the wedding season reopens from this day.",
+      "description_hi": "इस दिन भगवान विष्णु चार माह की योगनिद्रा (चातुर्मास) से जागते हैं। तुलसी विवाह और विवाह आदि शुभ कार्य इसी दिन से आरंभ होते हैं।",
+      "description_gu": "આ દિવસે ભગવાન વિષ્ણુ ચાર મહિનાની યોગનિદ્રા (ચાતુર્માસ)માંથી જાગે છે. તુલસી વિવાહ અને લગ્ન જેવાં શુભ કાર્યો આ દિવસથી શરૂ થાય છે.",
+      "fasting_type": "phalahar",
+      "parana_rule": "dwadashi_sunrise",
+      "duration_days": 1,
+      "end_festival_id": "",
+      "event_type": "lunar_tithi",
+      "parent_festival_id": "",
+      "offset_days": "",
+      "fixed_month": false,
+      "fixed_day": "",
+      "eclipse_type": false,
+      "sutak_applies": false,
+      "day_selection_rule": "udaya",
+      "tie_break_rule": "avoid_viddha",
+      "lunar_month": "kartika",
+      "paksha": "shukla",
+      "tithi_number": 11,
+      "adhika_masa_policy": "nija_only",
+      "weekday": false,
+      "weekday_rule": false,
+      "repeat_weekday": false,
+      "avoid_bhadra": false,
+      "purnimanta_month": false,
+      "solar_month": false,
+      "nakshatra_trigger": false,
+      "nakshatra_solar_month": false,
+      "nakshatra_lunar_month": false,
+      "nakshatra_constraint": "none",
+      "region_variant": "national",
+      "sampradaya": "common",
+      "source_reference": "",
+      "ayanamsa": "lahiri",
+      "verified": false,
+      "verification_notes": "Smarta rule (udaya + avoid_viddha). Vaishnava dates can differ in some years; add a separate ..._vaishnava entry then.",
+      "rule_version": 1
+    }
+  },
+  {
+    "id": 2014,
+    "slug": "rama-ekadashi",
+    "modified": "2026-09-30T10:00:00",
+    "title": {
+      "rendered": "Rama Ekadashi"
+    },
+    "acf": {
+      "festival_id": "rama_ekadashi",
+      "category": "vrat",
+      "importance_level": "regular",
+      "is_fasting": true,
+      "festival_name_en": "Rama Ekadashi",
+      "festival_name_hi": "रमा एकादशी",
+      "festival_name_gu": "રમા એકાદશી",
+      "description_en": "Observed on the Krishna Paksha Ekadashi just before Diwali, this fast honours Lord Vishnu and Goddess Lakshmi (Rama) and is believed to cleanse sins.",
+      "description_hi": "दीपावली से पहले कृष्ण पक्ष की एकादशी, जो भगवान विष्णु और माता लक्ष्मी (रमा) को समर्पित है। मान्यता है कि इसके व्रत से पाप नष्ट होते हैं।",
+      "description_gu": "દિવાળી પહેલાંની કૃષ્ણ પક્ષની એકાદશી, જે ભગવાન વિષ્ણુ અને માતા લક્ષ્મી (રમા)ને સમર્પિત છે. માન્યતા છે કે આ વ્રતથી પાપ નાશ પામે છે.",
+      "fasting_type": "phalahar",
+      "parana_rule": "dwadashi_sunrise",
+      "duration_days": 1,
+      "end_festival_id": "",
+      "event_type": "lunar_tithi",
+      "parent_festival_id": "",
+      "offset_days": "",
+      "fixed_month": false,
+      "fixed_day": "",
+      "eclipse_type": false,
+      "sutak_applies": false,
+      "day_selection_rule": "udaya",
+      "tie_break_rule": "avoid_viddha",
+      "lunar_month": "ashvina",
+      "paksha": "krishna",
+      "tithi_number": 11,
+      "adhika_masa_policy": "nija_only",
+      "weekday": false,
+      "weekday_rule": false,
+      "repeat_weekday": false,
+      "avoid_bhadra": false,
+      "purnimanta_month": false,
+      "solar_month": false,
+      "nakshatra_trigger": false,
+      "nakshatra_solar_month": false,
+      "nakshatra_lunar_month": false,
+      "nakshatra_constraint": "none",
+      "region_variant": "national",
+      "sampradaya": "common",
+      "source_reference": "",
+      "ayanamsa": "lahiri",
+      "verified": false,
+      "verification_notes": "Smarta rule (udaya + avoid_viddha). Vaishnava dates can differ in some years; add a separate ..._vaishnava entry then.",
+      "rule_version": 1
+    }
+  },
+  {
+    "id": 2013,
+    "slug": "papankusha-ekadashi",
+    "modified": "2026-09-30T10:00:00",
+    "title": {
+      "rendered": "Papankusha Ekadashi"
+    },
+    "acf": {
+      "festival_id": "papankusha_ekadashi",
+      "category": "vrat",
+      "importance_level": "regular",
+      "is_fasting": true,
+      "festival_name_en": "Papankusha Ekadashi",
+      "festival_name_hi": "पापांकुशा एकादशी",
+      "festival_name_gu": "પાપાંકુશા એકાદશી",
+      "description_en": "Falls after Dussehra; the name means a goad (ankusha) on sin. Observed with worship of Lord Vishnu as Padmanabha for merit and freedom from sin.",
+      "description_hi": "दशहरे के बाद आने वाली यह एकादशी पापों पर अंकुश लगाने वाली मानी जाती है। भगवान पद्मनाभ (विष्णु) की पूजा से पुण्य और पाप-मुक्ति मिलती है।",
+      "description_gu": "દશેરા પછી આવતી આ એકાદશી પાપો પર અંકુશ રાખનારી મનાય છે. ભગવાન પદ્મનાભ (વિષ્ણુ)ની પૂજાથી પુણ્ય અને પાપમુક્તિ મળે છે.",
+      "fasting_type": "phalahar",
+      "parana_rule": "dwadashi_sunrise",
+      "duration_days": 1,
+      "end_festival_id": "",
+      "event_type": "lunar_tithi",
+      "parent_festival_id": "",
+      "offset_days": "",
+      "fixed_month": false,
+      "fixed_day": "",
+      "eclipse_type": false,
+      "sutak_applies": false,
+      "day_selection_rule": "udaya",
+      "tie_break_rule": "avoid_viddha",
+      "lunar_month": "ashvina",
+      "paksha": "shukla",
+      "tithi_number": 11,
+      "adhika_masa_policy": "nija_only",
+      "weekday": false,
+      "weekday_rule": false,
+      "repeat_weekday": false,
+      "avoid_bhadra": false,
+      "purnimanta_month": false,
+      "solar_month": false,
+      "nakshatra_trigger": false,
+      "nakshatra_solar_month": false,
+      "nakshatra_lunar_month": false,
+      "nakshatra_constraint": "none",
+      "region_variant": "national",
+      "sampradaya": "common",
+      "source_reference": "",
+      "ayanamsa": "lahiri",
+      "verified": false,
+      "verification_notes": "Smarta rule (udaya + avoid_viddha). Vaishnava dates can differ in some years; add a separate ..._vaishnava entry then.",
+      "rule_version": 1
+    }
+  },
+  {
+    "id": 2012,
+    "slug": "indira-ekadashi",
+    "modified": "2026-09-30T10:00:00",
+    "title": {
+      "rendered": "Indira Ekadashi"
+    },
+    "acf": {
+      "festival_id": "indira_ekadashi",
+      "category": "vrat",
+      "importance_level": "regular",
+      "is_fasting": true,
+      "festival_name_en": "Indira Ekadashi",
+      "festival_name_hi": "इंदिरा एकादशी",
+      "festival_name_gu": "ઇન્દિરા એકાદશી",
+      "description_en": "Falls in Pitru Paksha; observed to help ancestors attain liberation, with Shraddha offerings and worship of Lord Vishnu.",
+      "description_hi": "पितृ पक्ष में आने वाली यह एकादशी पितरों की मुक्ति के लिए श्राद्ध और भगवान विष्णु की पूजा के साथ रखी जाती है।",
+      "description_gu": "પિતૃ પક્ષમાં આવતી આ એકાદશી પિતૃઓની મુક્તિ માટે શ્રાદ્ધ અને ભગવાન વિષ્ણુની પૂજા સાથે કરવામાં આવે છે.",
+      "fasting_type": "phalahar",
+      "parana_rule": "dwadashi_sunrise",
+      "duration_days": 1,
+      "end_festival_id": "",
+      "event_type": "lunar_tithi",
+      "parent_festival_id": "",
+      "offset_days": "",
+      "fixed_month": false,
+      "fixed_day": "",
+      "eclipse_type": false,
+      "sutak_applies": false,
+      "day_selection_rule": "udaya",
+      "tie_break_rule": "avoid_viddha",
+      "lunar_month": "bhadrapada",
+      "paksha": "krishna",
+      "tithi_number": 11,
+      "adhika_masa_policy": "nija_only",
+      "weekday": false,
+      "weekday_rule": false,
+      "repeat_weekday": false,
+      "avoid_bhadra": false,
+      "purnimanta_month": false,
+      "solar_month": false,
+      "nakshatra_trigger": false,
+      "nakshatra_solar_month": false,
+      "nakshatra_lunar_month": false,
+      "nakshatra_constraint": "none",
+      "region_variant": "national",
+      "sampradaya": "common",
+      "source_reference": "",
+      "ayanamsa": "lahiri",
+      "verified": false,
+      "verification_notes": "Smarta rule (udaya + avoid_viddha). Vaishnava dates can differ in some years; add a separate ..._vaishnava entry then.",
+      "rule_version": 1
+    }
+  },
+  {
+    "id": 2011,
+    "slug": "parivartini-ekadashi",
+    "modified": "2026-09-30T10:00:00",
+    "title": {
+      "rendered": "Parivartini / Jal Jhilani Ekadashi"
+    },
+    "acf": {
+      "festival_id": "parivartini_ekadashi",
+      "category": "both",
+      "importance_level": "regular",
+      "is_fasting": true,
+      "festival_name_en": "Parivartini / Jal Jhilani Ekadashi",
+      "festival_name_hi": "परिवर्तिनी (जलझूलनी) एकादशी",
+      "festival_name_gu": "પરિવર્તિની (જળઝીલણી) એકાદશી",
+      "description_en": "Lord Vishnu is said to turn onto his other side during his Chaturmas sleep. Also called Jal Jhilani Ekadashi, when deities are taken out for a ceremonial boat bath in many temples.",
+      "description_hi": "मान्यता है कि चातुर्मास की योगनिद्रा में भगवान विष्णु इस दिन करवट बदलते हैं। इसे जलझूलनी एकादशी भी कहते हैं, जब अनेक मंदिरों में भगवान को जल-विहार (नौका-स्नान) कराया जाता है।",
+      "description_gu": "માન્યતા છે કે ચાતુર્માસની યોગનિદ્રામાં ભગવાન વિષ્ણુ આ દિવસે પડખું ફેરવે છે. તેને જળઝીલણી એકાદશી પણ કહે છે, જ્યારે અનેક મંદિરોમાં ભગવાનને જળ-વિહાર કરાવવામાં આવે છે.",
+      "fasting_type": "phalahar",
+      "parana_rule": "dwadashi_sunrise",
+      "duration_days": 1,
+      "end_festival_id": "",
+      "event_type": "lunar_tithi",
+      "parent_festival_id": "",
+      "offset_days": "",
+      "fixed_month": false,
+      "fixed_day": "",
+      "eclipse_type": false,
+      "sutak_applies": false,
+      "day_selection_rule": "udaya",
+      "tie_break_rule": "avoid_viddha",
+      "lunar_month": "bhadrapada",
+      "paksha": "shukla",
+      "tithi_number": 11,
+      "adhika_masa_policy": "nija_only",
+      "weekday": false,
+      "weekday_rule": false,
+      "repeat_weekday": false,
+      "avoid_bhadra": false,
+      "purnimanta_month": false,
+      "solar_month": false,
+      "nakshatra_trigger": false,
+      "nakshatra_solar_month": false,
+      "nakshatra_lunar_month": false,
+      "nakshatra_constraint": "none",
+      "region_variant": "national",
+      "sampradaya": "common",
+      "source_reference": "",
+      "ayanamsa": "lahiri",
+      "verified": false,
+      "verification_notes": "Smarta rule (udaya + avoid_viddha). Vaishnava dates can differ in some years; add a separate ..._vaishnava entry then.",
+      "rule_version": 1
+    }
+  },
+  {
+    "id": 2010,
+    "slug": "aja-ekadashi",
+    "modified": "2026-09-30T10:00:00",
+    "title": {
+      "rendered": "Aja Ekadashi"
+    },
+    "acf": {
+      "festival_id": "aja_ekadashi",
+      "category": "vrat",
+      "importance_level": "regular",
+      "is_fasting": true,
+      "festival_name_en": "Aja Ekadashi",
+      "festival_name_hi": "अजा एकादशी",
+      "festival_name_gu": "અજા એકાદશી",
+      "description_en": "Observed to be freed from sins and hardships. King Harishchandra is believed to have kept this fast to regain his lost kingdom and family.",
+      "description_hi": "पापों और कष्टों से मुक्ति के लिए रखा जाने वाला व्रत। मान्यता है कि राजा हरिश्चंद्र ने यह व्रत करके अपना खोया राज्य और परिवार पाया।",
+      "description_gu": "પાપો અને કષ્ટોમાંથી મુક્તિ માટે કરાતું વ્રત. માન્યતા છે કે રાજા હરિશ્ચંદ્રે આ વ્રત કરીને પોતાનું ગુમાવેલું રાજ્ય અને પરિવાર પાછાં મેળવ્યાં.",
+      "fasting_type": "phalahar",
+      "parana_rule": "dwadashi_sunrise",
+      "duration_days": 1,
+      "end_festival_id": "",
+      "event_type": "lunar_tithi",
+      "parent_festival_id": "",
+      "offset_days": "",
+      "fixed_month": false,
+      "fixed_day": "",
+      "eclipse_type": false,
+      "sutak_applies": false,
+      "day_selection_rule": "udaya",
+      "tie_break_rule": "avoid_viddha",
+      "lunar_month": "shravana",
+      "paksha": "krishna",
+      "tithi_number": 11,
+      "adhika_masa_policy": "nija_only",
+      "weekday": false,
+      "weekday_rule": false,
+      "repeat_weekday": false,
+      "avoid_bhadra": false,
+      "purnimanta_month": false,
+      "solar_month": false,
+      "nakshatra_trigger": false,
+      "nakshatra_solar_month": false,
+      "nakshatra_lunar_month": false,
+      "nakshatra_constraint": "none",
+      "region_variant": "national",
+      "sampradaya": "common",
+      "source_reference": "",
+      "ayanamsa": "lahiri",
+      "verified": false,
+      "verification_notes": "Smarta rule (udaya + avoid_viddha). Vaishnava dates can differ in some years; add a separate ..._vaishnava entry then.",
+      "rule_version": 1
+    }
+  },
+  {
+    "id": 2009,
+    "slug": "shravana-putrada-ekadashi",
+    "modified": "2026-09-30T10:00:00",
+    "title": {
+      "rendered": "Pavitra / Putrada Ekadashi (Shravana)"
+    },
+    "acf": {
+      "festival_id": "shravana_putrada_ekadashi",
+      "category": "both",
+      "importance_level": "regular",
+      "is_fasting": true,
+      "festival_name_en": "Pavitra / Putrada Ekadashi (Shravana)",
+      "festival_name_hi": "पवित्रा / पुत्रदा एकादशी (श्रावण)",
+      "festival_name_gu": "પવિત્રા / પુત્રદા એકાદશી (શ્રાવણ)",
+      "description_en": "Observed on Shravana Shukla Ekadashi for the blessing of a worthy child and for purity. In some traditions, including Pushtimarg, sacred threads (pavitra) are offered to the deity.",
+      "description_hi": "श्रावण शुक्ल एकादशी संतान-सुख और पवित्रता के लिए रखी जाती है। पुष्टिमार्ग सहित कुछ परंपराओं में देवता को पवित्रा (पवित्र धागे) अर्पित किए जाते हैं।",
+      "description_gu": "શ્રાવણ સુદ એકાદશી સંતાનસુખ અને પવિત્રતા માટે કરવામાં આવે છે. પુષ્ટિમાર્ગ સહિત કેટલીક પરંપરાઓમાં દેવને પવિત્રા (પવિત્ર દોરા) અર્પણ કરવામાં આવે છે.",
+      "fasting_type": "phalahar",
+      "parana_rule": "dwadashi_sunrise",
+      "duration_days": 1,
+      "end_festival_id": "",
+      "event_type": "lunar_tithi",
+      "parent_festival_id": "",
+      "offset_days": "",
+      "fixed_month": false,
+      "fixed_day": "",
+      "eclipse_type": false,
+      "sutak_applies": false,
+      "day_selection_rule": "udaya",
+      "tie_break_rule": "avoid_viddha",
+      "lunar_month": "shravana",
+      "paksha": "shukla",
+      "tithi_number": 11,
+      "adhika_masa_policy": "nija_only",
+      "weekday": false,
+      "weekday_rule": false,
+      "repeat_weekday": false,
+      "avoid_bhadra": false,
+      "purnimanta_month": false,
+      "solar_month": false,
+      "nakshatra_trigger": false,
+      "nakshatra_solar_month": false,
+      "nakshatra_lunar_month": false,
+      "nakshatra_constraint": "none",
+      "region_variant": "national",
+      "sampradaya": "common",
+      "source_reference": "",
+      "ayanamsa": "lahiri",
+      "verified": false,
+      "verification_notes": "Smarta rule (udaya + avoid_viddha). Vaishnava dates can differ in some years; add a separate ..._vaishnava entry then.",
+      "rule_version": 1
+    }
+  },
+  {
+    "id": 2008,
+    "slug": "kamika-ekadashi",
+    "modified": "2026-09-30T10:00:00",
+    "title": {
+      "rendered": "Kamika Ekadashi"
+    },
+    "acf": {
+      "festival_id": "kamika_ekadashi",
+      "category": "vrat",
+      "importance_level": "regular",
+      "is_fasting": true,
+      "festival_name_en": "Kamika Ekadashi",
+      "festival_name_hi": "कामिका एकादशी",
+      "festival_name_gu": "કામિકા એકાદશી",
+      "description_en": "Observed during Chaturmas; worship of Lord Vishnu with Tulsi leaves is considered especially meritorious and sin-destroying.",
+      "description_hi": "चातुर्मास में आने वाली इस एकादशी पर तुलसी दल से भगवान विष्णु की पूजा विशेष पुण्यदायी और पाप-नाशक मानी जाती है।",
+      "description_gu": "ચાતુર્માસમાં આવતી આ એકાદશીએ તુલસીદળથી ભગવાન વિષ્ણુની પૂજા વિશેષ પુણ્યદાયી અને પાપનાશક મનાય છે.",
+      "fasting_type": "phalahar",
+      "parana_rule": "dwadashi_sunrise",
+      "duration_days": 1,
+      "end_festival_id": "",
+      "event_type": "lunar_tithi",
+      "parent_festival_id": "",
+      "offset_days": "",
+      "fixed_month": false,
+      "fixed_day": "",
+      "eclipse_type": false,
+      "sutak_applies": false,
+      "day_selection_rule": "udaya",
+      "tie_break_rule": "avoid_viddha",
+      "lunar_month": "ashadha",
+      "paksha": "krishna",
+      "tithi_number": 11,
+      "adhika_masa_policy": "nija_only",
+      "weekday": false,
+      "weekday_rule": false,
+      "repeat_weekday": false,
+      "avoid_bhadra": false,
+      "purnimanta_month": false,
+      "solar_month": false,
+      "nakshatra_trigger": false,
+      "nakshatra_solar_month": false,
+      "nakshatra_lunar_month": false,
+      "nakshatra_constraint": "none",
+      "region_variant": "national",
+      "sampradaya": "common",
+      "source_reference": "",
+      "ayanamsa": "lahiri",
+      "verified": false,
+      "verification_notes": "Smarta rule (udaya + avoid_viddha). Vaishnava dates can differ in some years; add a separate ..._vaishnava entry then.",
+      "rule_version": 1
+    }
+  },
+  {
+    "id": 2007,
+    "slug": "devshayani-ekadashi",
+    "modified": "2026-09-30T10:00:00",
+    "title": {
+      "rendered": "Devshayani / Ashadhi Ekadashi"
+    },
+    "acf": {
+      "festival_id": "devshayani_ekadashi",
+      "category": "both",
+      "importance_level": "major",
+      "is_fasting": true,
+      "festival_name_en": "Devshayani / Ashadhi Ekadashi",
+      "festival_name_hi": "देवशयनी (आषाढ़ी) एकादशी",
+      "festival_name_gu": "દેવશયની (દેવપોઢી) એકાદશી",
+      "description_en": "Lord Vishnu is said to begin his four-month yoga nidra today, marking the start of Chaturmas. Also celebrated as Ashadhi Ekadashi, with the Pandharpur pilgrimage to Vitthal.",
+      "description_hi": "मान्यता है कि इस दिन भगवान विष्णु चार माह की योगनिद्रा में जाते हैं और चातुर्मास आरंभ होता है। इसे आषाढ़ी एकादशी भी कहते हैं, जब पंढरपुर में विठ्ठल के दर्शन की वारी होती है।",
+      "description_gu": "માન્યતા છે કે આ દિવસે ભગવાન વિષ્ણુ ચાર મહિનાની યોગનિદ્રામાં પ્રવેશે છે અને ચાતુર્માસ શરૂ થાય છે. મહારાષ્ટ્રમાં તેને અષાઢી એકાદશી કહે છે, જ્યારે પંઢરપુરમાં વિઠ્ઠલના દર્શને વારી જાય છે.",
+      "fasting_type": "phalahar",
+      "parana_rule": "dwadashi_sunrise",
+      "duration_days": 1,
+      "end_festival_id": "",
+      "event_type": "lunar_tithi",
+      "parent_festival_id": "",
+      "offset_days": "",
+      "fixed_month": false,
+      "fixed_day": "",
+      "eclipse_type": false,
+      "sutak_applies": false,
+      "day_selection_rule": "udaya",
+      "tie_break_rule": "avoid_viddha",
+      "lunar_month": "ashadha",
+      "paksha": "shukla",
+      "tithi_number": 11,
+      "adhika_masa_policy": "nija_only",
+      "weekday": false,
+      "weekday_rule": false,
+      "repeat_weekday": false,
+      "avoid_bhadra": false,
+      "purnimanta_month": false,
+      "solar_month": false,
+      "nakshatra_trigger": false,
+      "nakshatra_solar_month": false,
+      "nakshatra_lunar_month": false,
+      "nakshatra_constraint": "none",
+      "region_variant": "national",
+      "sampradaya": "common",
+      "source_reference": "",
+      "ayanamsa": "lahiri",
+      "verified": false,
+      "verification_notes": "Smarta rule (udaya + avoid_viddha). Vaishnava dates can differ in some years; add a separate ..._vaishnava entry then.",
+      "rule_version": 1
+    }
+  },
+  {
+    "id": 2006,
+    "slug": "yogini-ekadashi",
+    "modified": "2026-09-30T10:00:00",
+    "title": {
+      "rendered": "Yogini Ekadashi"
+    },
+    "acf": {
+      "festival_id": "yogini_ekadashi",
+      "category": "vrat",
+      "importance_level": "regular",
+      "is_fasting": true,
+      "festival_name_en": "Yogini Ekadashi",
+      "festival_name_hi": "योगिनी एकादशी",
+      "festival_name_gu": "યોગિની એકાદશી",
+      "description_en": "Observed to be relieved of ailments and sins, with worship of Lord Vishnu. It falls in the fortnight before Devshayani Ekadashi.",
+      "description_hi": "रोगों और पापों से मुक्ति के लिए भगवान विष्णु की पूजा के साथ यह व्रत किया जाता है। यह देवशयनी एकादशी से पहले के पक्ष में आती है।",
+      "description_gu": "રોગો અને પાપોમાંથી મુક્તિ માટે ભગવાન વિષ્ણુની પૂજા સાથે આ વ્રત કરવામાં આવે છે. તે દેવપોઢી એકાદશી પહેલાંના પખવાડિયામાં આવે છે.",
+      "fasting_type": "phalahar",
+      "parana_rule": "dwadashi_sunrise",
+      "duration_days": 1,
+      "end_festival_id": "",
+      "event_type": "lunar_tithi",
+      "parent_festival_id": "",
+      "offset_days": "",
+      "fixed_month": false,
+      "fixed_day": "",
+      "eclipse_type": false,
+      "sutak_applies": false,
+      "day_selection_rule": "udaya",
+      "tie_break_rule": "avoid_viddha",
+      "lunar_month": "jyeshtha",
+      "paksha": "krishna",
+      "tithi_number": 11,
+      "adhika_masa_policy": "nija_only",
+      "weekday": false,
+      "weekday_rule": false,
+      "repeat_weekday": false,
+      "avoid_bhadra": false,
+      "purnimanta_month": false,
+      "solar_month": false,
+      "nakshatra_trigger": false,
+      "nakshatra_solar_month": false,
+      "nakshatra_lunar_month": false,
+      "nakshatra_constraint": "none",
+      "region_variant": "national",
+      "sampradaya": "common",
+      "source_reference": "",
+      "ayanamsa": "lahiri",
+      "verified": false,
+      "verification_notes": "Smarta rule (udaya + avoid_viddha). Vaishnava dates can differ in some years; add a separate ..._vaishnava entry then.",
+      "rule_version": 1
+    }
+  },
+  {
+    "id": 2005,
+    "slug": "nirjala-ekadashi",
+    "modified": "2026-09-30T10:00:00",
+    "title": {
+      "rendered": "Nirjala Ekadashi"
+    },
+    "acf": {
+      "festival_id": "nirjala_ekadashi",
+      "category": "vrat",
+      "importance_level": "major",
+      "is_fasting": true,
+      "festival_name_en": "Nirjala Ekadashi",
+      "festival_name_hi": "निर्जला एकादशी",
+      "festival_name_gu": "નિર્જલા એકાદશી",
+      "description_en": "The strictest Ekadashi, kept without food or water. Also called Bhima Ekadashi, it is believed to give the merit of all Ekadashis in the year.",
+      "description_hi": "सबसे कठोर एकादशी, जिसमें अन्न और जल दोनों का त्याग किया जाता है। इसे भीमसेनी एकादशी भी कहते हैं और वर्ष की सभी एकादशियों के पुण्य के बराबर फल देने वाली मानी जाती है।",
+      "description_gu": "સૌથી કઠિન એકાદશી, જેમાં અન્ન અને જળ બંનેનો ત્યાગ કરવામાં આવે છે. તેને ભીમ એકાદશી પણ કહે છે અને વર્ષની બધી એકાદશીઓનું પુણ્ય આપનારી મનાય છે.",
+      "fasting_type": "nirjala",
+      "parana_rule": "dwadashi_sunrise",
+      "duration_days": 1,
+      "end_festival_id": "",
+      "event_type": "lunar_tithi",
+      "parent_festival_id": "",
+      "offset_days": "",
+      "fixed_month": false,
+      "fixed_day": "",
+      "eclipse_type": false,
+      "sutak_applies": false,
+      "day_selection_rule": "udaya",
+      "tie_break_rule": "avoid_viddha",
+      "lunar_month": "jyeshtha",
+      "paksha": "shukla",
+      "tithi_number": 11,
+      "adhika_masa_policy": "nija_only",
+      "weekday": false,
+      "weekday_rule": false,
+      "repeat_weekday": false,
+      "avoid_bhadra": false,
+      "purnimanta_month": false,
+      "solar_month": false,
+      "nakshatra_trigger": false,
+      "nakshatra_solar_month": false,
+      "nakshatra_lunar_month": false,
+      "nakshatra_constraint": "none",
+      "region_variant": "national",
+      "sampradaya": "common",
+      "source_reference": "",
+      "ayanamsa": "lahiri",
+      "verified": false,
+      "verification_notes": "Smarta rule (udaya + avoid_viddha). Vaishnava dates can differ in some years; add a separate ..._vaishnava entry then.",
+      "rule_version": 1
+    }
+  },
+  {
+    "id": 2004,
+    "slug": "apara-ekadashi",
+    "modified": "2026-09-30T10:00:00",
+    "title": {
+      "rendered": "Apara Ekadashi"
+    },
+    "acf": {
+      "festival_id": "apara_ekadashi",
+      "category": "vrat",
+      "importance_level": "regular",
+      "is_fasting": true,
+      "festival_name_en": "Apara Ekadashi",
+      "festival_name_hi": "अपरा एकादशी",
+      "festival_name_gu": "અપરા એકાદશી",
+      "description_en": "Also called Achala Ekadashi. Its fast is believed to bring boundless merit, remove sins and grant good repute.",
+      "description_hi": "इसे अचला एकादशी भी कहते हैं। माना जाता है कि इसका व्रत अपार पुण्य देता है, पापों का नाश करता है और यश दिलाता है।",
+      "description_gu": "તેને અચલા એકાદશી પણ કહે છે. માન્યતા છે કે તેનું વ્રત અપાર પુણ્ય આપે છે, પાપ નાશ કરે છે અને યશ અપાવે છે.",
+      "fasting_type": "phalahar",
+      "parana_rule": "dwadashi_sunrise",
+      "duration_days": 1,
+      "end_festival_id": "",
+      "event_type": "lunar_tithi",
+      "parent_festival_id": "",
+      "offset_days": "",
+      "fixed_month": false,
+      "fixed_day": "",
+      "eclipse_type": false,
+      "sutak_applies": false,
+      "day_selection_rule": "udaya",
+      "tie_break_rule": "avoid_viddha",
+      "lunar_month": "vaishakha",
+      "paksha": "krishna",
+      "tithi_number": 11,
+      "adhika_masa_policy": "nija_only",
+      "weekday": false,
+      "weekday_rule": false,
+      "repeat_weekday": false,
+      "avoid_bhadra": false,
+      "purnimanta_month": false,
+      "solar_month": false,
+      "nakshatra_trigger": false,
+      "nakshatra_solar_month": false,
+      "nakshatra_lunar_month": false,
+      "nakshatra_constraint": "none",
+      "region_variant": "national",
+      "sampradaya": "common",
+      "source_reference": "",
+      "ayanamsa": "lahiri",
+      "verified": false,
+      "verification_notes": "Smarta rule (udaya + avoid_viddha). Vaishnava dates can differ in some years; add a separate ..._vaishnava entry then.",
+      "rule_version": 1
+    }
+  },
+  {
+    "id": 2003,
+    "slug": "mohini-ekadashi",
+    "modified": "2026-09-30T10:00:00",
+    "title": {
+      "rendered": "Mohini Ekadashi"
+    },
+    "acf": {
+      "festival_id": "mohini_ekadashi",
+      "category": "vrat",
+      "importance_level": "regular",
+      "is_fasting": true,
+      "festival_name_en": "Mohini Ekadashi",
+      "festival_name_hi": "मोहिनी एकादशी",
+      "festival_name_gu": "મોહિની એકાદશી",
+      "description_en": "Named after Lord Vishnu's Mohini avatar. The fast is kept to be freed from sins and from delusion (moha).",
+      "description_hi": "भगवान विष्णु के मोहिनी अवतार के नाम पर यह एकादशी है। पाप और मोह से मुक्ति के लिए व्रत रखा जाता है।",
+      "description_gu": "ભગવાન વિષ્ણુના મોહિની અવતાર પરથી આ એકાદશી ઓળખાય છે. પાપ અને મોહમાંથી મુક્તિ માટે વ્રત કરવામાં આવે છે.",
+      "fasting_type": "phalahar",
+      "parana_rule": "dwadashi_sunrise",
+      "duration_days": 1,
+      "end_festival_id": "",
+      "event_type": "lunar_tithi",
+      "parent_festival_id": "",
+      "offset_days": "",
+      "fixed_month": false,
+      "fixed_day": "",
+      "eclipse_type": false,
+      "sutak_applies": false,
+      "day_selection_rule": "udaya",
+      "tie_break_rule": "avoid_viddha",
+      "lunar_month": "vaishakha",
+      "paksha": "shukla",
+      "tithi_number": 11,
+      "adhika_masa_policy": "nija_only",
+      "weekday": false,
+      "weekday_rule": false,
+      "repeat_weekday": false,
+      "avoid_bhadra": false,
+      "purnimanta_month": false,
+      "solar_month": false,
+      "nakshatra_trigger": false,
+      "nakshatra_solar_month": false,
+      "nakshatra_lunar_month": false,
+      "nakshatra_constraint": "none",
+      "region_variant": "national",
+      "sampradaya": "common",
+      "source_reference": "",
+      "ayanamsa": "lahiri",
+      "verified": false,
+      "verification_notes": "Smarta rule (udaya + avoid_viddha). Vaishnava dates can differ in some years; add a separate ..._vaishnava entry then.",
+      "rule_version": 1
+    }
+  },
+  {
+    "id": 2002,
+    "slug": "varuthini-ekadashi",
+    "modified": "2026-09-30T10:00:00",
+    "title": {
+      "rendered": "Varuthini Ekadashi"
+    },
+    "acf": {
+      "festival_id": "varuthini_ekadashi",
+      "category": "vrat",
+      "importance_level": "regular",
+      "is_fasting": true,
+      "festival_name_en": "Varuthini Ekadashi",
+      "festival_name_hi": "वरूथिनी एकादशी",
+      "festival_name_gu": "વરુથિની એકાદશી",
+      "description_en": "Varuthini means protection. The fast is observed for protection, good fortune and merit equal to great acts of charity.",
+      "description_hi": "\"वरूथिनी\" का अर्थ है रक्षा करने वाली। सुरक्षा, सौभाग्य और दान के समान पुण्य के लिए यह व्रत रखा जाता है।",
+      "description_gu": "\"વરુથિની\" એટલે રક્ષણ કરનારી. રક્ષણ, સૌભાગ્ય અને દાન સમાન પુણ્ય માટે આ વ્રત કરવામાં આવે છે.",
+      "fasting_type": "phalahar",
+      "parana_rule": "dwadashi_sunrise",
+      "duration_days": 1,
+      "end_festival_id": "",
+      "event_type": "lunar_tithi",
+      "parent_festival_id": "",
+      "offset_days": "",
+      "fixed_month": false,
+      "fixed_day": "",
+      "eclipse_type": false,
+      "sutak_applies": false,
+      "day_selection_rule": "udaya",
+      "tie_break_rule": "avoid_viddha",
+      "lunar_month": "chaitra",
+      "paksha": "krishna",
+      "tithi_number": 11,
+      "adhika_masa_policy": "nija_only",
+      "weekday": false,
+      "weekday_rule": false,
+      "repeat_weekday": false,
+      "avoid_bhadra": false,
+      "purnimanta_month": false,
+      "solar_month": false,
+      "nakshatra_trigger": false,
+      "nakshatra_solar_month": false,
+      "nakshatra_lunar_month": false,
+      "nakshatra_constraint": "none",
+      "region_variant": "national",
+      "sampradaya": "common",
+      "source_reference": "",
+      "ayanamsa": "lahiri",
+      "verified": false,
+      "verification_notes": "Smarta rule (udaya + avoid_viddha). Vaishnava dates can differ in some years; add a separate ..._vaishnava entry then.",
+      "rule_version": 1
+    }
+  },
+  {
+    "id": 2001,
+    "slug": "kamada-ekadashi",
+    "modified": "2026-09-30T10:00:00",
+    "title": {
+      "rendered": "Kamada Ekadashi"
+    },
+    "acf": {
+      "festival_id": "kamada_ekadashi",
+      "category": "vrat",
+      "importance_level": "regular",
+      "is_fasting": true,
+      "festival_name_en": "Kamada Ekadashi",
+      "festival_name_hi": "कामदा एकादशी",
+      "festival_name_gu": "કામદા એકાદશી",
+      "description_en": "Observed on the first Shukla Ekadashi of Chaitra and believed to fulfil wishes and remove sins.",
+      "description_hi": "चैत्र की पहली (शुक्ल) एकादशी मनोकामना पूर्ति और पापों के नाश के लिए रखी जाती है।",
+      "description_gu": "ચૈત્રની પ્રથમ (સુદ) એકાદશી મનોકામના પૂર્ણ કરનારી અને પાપનાશક મનાય છે.",
+      "fasting_type": "phalahar",
+      "parana_rule": "dwadashi_sunrise",
+      "duration_days": 1,
+      "end_festival_id": "",
+      "event_type": "lunar_tithi",
+      "parent_festival_id": "",
+      "offset_days": "",
+      "fixed_month": false,
+      "fixed_day": "",
+      "eclipse_type": false,
+      "sutak_applies": false,
+      "day_selection_rule": "udaya",
+      "tie_break_rule": "avoid_viddha",
+      "lunar_month": "chaitra",
+      "paksha": "shukla",
+      "tithi_number": 11,
+      "adhika_masa_policy": "nija_only",
+      "weekday": false,
+      "weekday_rule": false,
+      "repeat_weekday": false,
+      "avoid_bhadra": false,
+      "purnimanta_month": false,
+      "solar_month": false,
+      "nakshatra_trigger": false,
+      "nakshatra_solar_month": false,
+      "nakshatra_lunar_month": false,
+      "nakshatra_constraint": "none",
+      "region_variant": "national",
+      "sampradaya": "common",
+      "source_reference": "",
+      "ayanamsa": "lahiri",
+      "verified": false,
+      "verification_notes": "Smarta rule (udaya + avoid_viddha). Vaishnava dates can differ in some years; add a separate ..._vaishnava entry then.",
+      "rule_version": 1
+    }
+  },
+  {
+    "id": 38,
+    "slug": "anant-chaturdashi",
+    "modified": "2026-09-22T18:22:43",
+    "title": {
+      "rendered": "Anant Chaturdashi"
+    },
+    "acf": {
+      "festival_id": "anant_chaturdashi",
+      "category": "festival",
+      "importance_level": "major",
+      "is_fasting": true,
+      "festival_name_en": "Anant Chaturdashi",
+      "festival_name_hi": "अनंत चतुर्दशी",
+      "festival_name_gu": "અનંત ચતુર્દશી",
+      "description_en": "",
+      "description_hi": "",
+      "description_gu": "",
+      "event_type": "lunar_tithi",
+      "day_selection_rule": "udaya",
+      "lunar_month": "bhadrapada",
+      "paksha": "shukla",
+      "tithi_number": 14,
+      "solar_month": "makara",
+      "nakshatra_constraint": "none",
+      "region_variant": "national",
+      "rule_version": 1,
+      "adhika_masa_policy": "nija_only",
+      "fasting_type": "phalahar",
+      "parana_rule": "",
+      "duration_days": 1,
+      "tie_break_rule": "none",
+      "ayanamsa": "lahiri",
+      "sampradaya": "common",
+      "verified": true
+    }
+  },
+  {
+    "id": 37,
+    "slug": "krishna-janmashtami",
+    "modified": "2026-09-21T16:53:08",
+    "title": {
+      "rendered": "Krishna Janmashtami"
+    },
+    "acf": {
+      "festival_id": "krishna_janmashtami",
+      "category": "festival",
+      "importance_level": "major",
+      "is_fasting": true,
+      "festival_name_en": "Krishna Janmashtami",
+      "festival_name_hi": "श्रीकृष्ण जन्माष्टमी ",
+      "festival_name_gu": "શ્રીકૃષ્ણ જન્માષ્ટમી",
+      "description_en": "",
+      "description_hi": "",
+      "description_gu": "",
+      "event_type": "lunar_tithi",
+      "day_selection_rule": "udaya",
+      "lunar_month": "bhadrapada",
+      "paksha": "krishna",
+      "tithi_number": 8,
+      "solar_month": "makara",
+      "nakshatra_constraint": "none",
+      "region_variant": "national",
+      "rule_version": 2,
+      "adhika_masa_policy": "nija_only",
+      "fasting_type": "phalahar",
+      "parana_rule": "",
+      "duration_days": 1,
+      "tie_break_rule": "none",
+      "ayanamsa": "lahiri",
+      "sampradaya": "common",
+      "verified": true
+    }
+  },
+  {
+    "id": 36,
+    "slug": "makar-sankranti",
+    "modified": "2026-09-21T16:51:30",
+    "title": {
+      "rendered": "Makar Sankranti"
+    },
+    "acf": {
+      "festival_id": "makar_sankranti",
+      "category": "festival",
+      "importance_level": "major",
+      "is_fasting": false,
+      "festival_name_en": "Makar Sankranti",
+      "festival_name_hi": "मकर संक्रांति",
+      "festival_name_gu": "મકર સંક્રાંતિ",
+      "description_en": "",
+      "description_hi": "",
+      "description_gu": "",
+      "event_type": "solar_sankranti",
+      "day_selection_rule": "punyakaal",
+      "lunar_month": "chaitra",
+      "paksha": "shukla",
+      "tithi_number": 1,
+      "solar_month": "makara",
+      "nakshatra_constraint": "none",
+      "region_variant": "national",
+      "rule_version": 1,
+      "adhika_masa_policy": "nija_only",
+      "fasting_type": "",
+      "parana_rule": "",
+      "duration_days": 1,
+      "tie_break_rule": "none",
+      "ayanamsa": "lahiri",
+      "sampradaya": "common",
+      "verified": true
+    }
+  },
+  {
+    "id": 34,
+    "slug": "holi",
+    "modified": "2026-09-21T16:48:42",
+    "title": {
+      "rendered": "Holi"
+    },
+    "acf": {
+      "festival_id": "holi",
+      "category": "festival",
+      "importance_level": "major",
+      "is_fasting": false,
+      "festival_name_en": "Holika Dahan",
+      "festival_name_hi": "होलिका दहन",
+      "festival_name_gu": "હોલિકા દહન",
+      "description_en": "",
+      "description_hi": "",
+      "description_gu": "",
+      "event_type": "lunar_tithi",
+      "day_selection_rule": "pradosha",
+      "lunar_month": "phalguna",
+      "paksha": "shukla",
+      "tithi_number": 15,
+      "solar_month": "makara",
+      "nakshatra_constraint": "none",
+      "region_variant": "national",
+      "rule_version": 1,
+      "adhika_masa_policy": "nija_only",
+      "fasting_type": "",
+      "parana_rule": "",
+      "duration_days": 1,
+      "tie_break_rule": "none",
+      "ayanamsa": "lahiri",
+      "sampradaya": "common",
+      "verified": true
+    }
+  },
+  {
+    "id": 33,
+    "slug": "maha-shivaratri",
+    "modified": "2026-09-22T08:32:17",
+    "title": {
+      "rendered": "Maha Shivaratri"
+    },
+    "acf": {
+      "festival_id": "maha_shivaratri",
+      "category": "both",
+      "importance_level": "major",
+      "is_fasting": true,
+      "festival_name_en": "Maha Shivaratri",
+      "festival_name_hi": "महाशिवरात्रि",
+      "festival_name_gu": "મહાશિવરાત્રી",
+      "description_en": "",
+      "description_hi": "",
+      "description_gu": "",
+      "event_type": "lunar_tithi",
+      "day_selection_rule": "nishita",
+      "lunar_month": "magha",
+      "paksha": "krishna",
+      "tithi_number": 14,
+      "solar_month": "makara",
+      "nakshatra_constraint": "none",
+      "region_variant": "national",
+      "rule_version": 2,
+      "adhika_masa_policy": "nija_only",
+      "fasting_type": "phalahar",
+      "parana_rule": "",
+      "duration_days": 1,
+      "tie_break_rule": "none",
+      "ayanamsa": "lahiri",
+      "sampradaya": "common",
+      "verified": true
+    }
+  }
 ]

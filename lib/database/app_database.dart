@@ -58,7 +58,7 @@ class AppDatabase {
   static const String metaCitiesImported = 'cities_imported';
   static const String metaFestivalsImported = 'festivals_imported';
   static const String metaFestivalsSeedVersion = 'festivals_seed_version';
-  static const int currentFestivalsSeedVersion = 3;
+  static const int currentFestivalsSeedVersion = 4;
   static const String metaFestivalsLastSync = 'festivals_last_sync';
   static const String metaOnboardingCompleted = 'onboarding_completed';
   static const String metaLunarSystem = 'lunar_system';
@@ -193,7 +193,32 @@ class AppDatabase {
         nakshatra_constraint TEXT,
         region_variant TEXT NOT NULL,
         rule_version INTEGER NOT NULL,
-        modified TEXT
+        modified TEXT,
+        fasting_type TEXT,
+        parana_rule TEXT,
+        duration_days INTEGER DEFAULT 1,
+        end_festival_id TEXT,
+        parent_festival_id TEXT,
+        offset_days INTEGER,
+        fixed_month INTEGER,
+        fixed_day INTEGER,
+        eclipse_type TEXT,
+        sutak_applies INTEGER DEFAULT 0,
+        tie_break_rule TEXT,
+        adhika_masa_policy TEXT,
+        weekday TEXT,
+        weekday_rule TEXT,
+        repeat_weekday INTEGER DEFAULT 0,
+        avoid_bhadra INTEGER DEFAULT 0,
+        purnimanta_month TEXT,
+        nakshatra_trigger TEXT,
+        nakshatra_solar_month TEXT,
+        nakshatra_lunar_month TEXT,
+        sampradaya TEXT,
+        source_reference TEXT,
+        ayanamsa TEXT,
+        verified INTEGER DEFAULT 0,
+        verification_notes TEXT
       )
     ''');
 
@@ -208,6 +233,38 @@ class AppDatabase {
   /// Ensures festivals table exists (for existing app databases without version bump).
   Future<void> _ensureFestivalsTable(Database db) async {
     await _createFestivalsTable(db);
+    const newColumns = [
+      'fasting_type TEXT',
+      'parana_rule TEXT',
+      'duration_days INTEGER DEFAULT 1',
+      'end_festival_id TEXT',
+      'parent_festival_id TEXT',
+      'offset_days INTEGER',
+      'fixed_month INTEGER',
+      'fixed_day INTEGER',
+      'eclipse_type TEXT',
+      'sutak_applies INTEGER DEFAULT 0',
+      'tie_break_rule TEXT',
+      'adhika_masa_policy TEXT',
+      'weekday TEXT',
+      'weekday_rule TEXT',
+      'repeat_weekday INTEGER DEFAULT 0',
+      'avoid_bhadra INTEGER DEFAULT 0',
+      'purnimanta_month TEXT',
+      'nakshatra_trigger TEXT',
+      'nakshatra_solar_month TEXT',
+      'nakshatra_lunar_month TEXT',
+      'sampradaya TEXT',
+      'source_reference TEXT',
+      'ayanamsa TEXT',
+      'verified INTEGER DEFAULT 0',
+      'verification_notes TEXT',
+    ];
+    for (final col in newColumns) {
+      try {
+        await db.execute('ALTER TABLE $tableFestivals ADD COLUMN $col');
+      } catch (_) {}
+    }
   }
 
   /// Creates the alarms table and performance indexes.
@@ -795,12 +852,24 @@ class AppDatabase {
     final normalizedMonth = lunarMonth.toLowerCase().trim();
     final normalizedPaksha = paksha.toLowerCase().trim();
 
+    final List<String> monthAliases = [normalizedMonth];
+    if (normalizedMonth == 'ashwin') {
+      monthAliases.add('ashvina');
+    } else if (normalizedMonth == 'ashvina') {
+      monthAliases.add('ashwin');
+    } else if (normalizedMonth == 'kartika') {
+      monthAliases.add('kartik');
+    } else if (normalizedMonth == 'kartik') {
+      monthAliases.add('kartika');
+    }
+
+    final placeholders = List.filled(monthAliases.length, '?').join(',');
     final maps = await targetDb.query(
       tableFestivals,
-      where: 'event_type = ? AND (lunar_month = ? OR lunar_month = ? OR lunar_month IS NULL) AND (paksha = ? OR paksha = ? OR paksha IS NULL) AND tithi_number = ?',
+      where: 'event_type = ? AND (lunar_month IN ($placeholders) OR lunar_month = ? OR lunar_month IS NULL) AND (paksha = ? OR paksha = ? OR paksha IS NULL) AND tithi_number = ?',
       whereArgs: [
         'lunar_tithi',
-        normalizedMonth,
+        ...monthAliases,
         'any',
         normalizedPaksha,
         'both',

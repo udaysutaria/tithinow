@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io' show SocketException;
-import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
+import '../config/api_config.dart';
 import '../database/app_database.dart';
 import '../models/festival_rule.dart';
 
@@ -51,8 +51,8 @@ class SyncResult {
 /// Service that handles syncing Vedic festival & vrat rules from the WordPress REST API.
 ///
 /// Features:
-/// - Connects to `/wp-json/wp/v2/festivals`.
-/// - Resolves host address automatically: `localhost` on macOS Desktop/iOS vs `10.0.2.2` on Android Emulator.
+/// - Connects to the WordPress REST endpoint configured via [ApiConfig].
+/// - Supports automated pagination (`per_page=100`, reading `X-WP-TotalPages`).
 /// - Parses ACF multilingual fields and astronomical rules.
 /// - Persists records into SQLite (`AppDatabase.tableFestivals`).
 /// - 100% Offline-first: Falls back to cached SQLite data or bundled seed JSON on network loss.
@@ -60,19 +60,10 @@ class WordPressSyncService {
   static final WordPressSyncService instance = WordPressSyncService._init();
   WordPressSyncService._init();
 
-  /// Default production/staging base path for festivals REST endpoint.
-  static const String defaultEndpointPath =
-      '/udaysutaria/tithinow.data/wp-json/wp/v2/festivals';
+  /// Default production festivals API endpoint URL from [ApiConfig].
+  static String get defaultEndpointUrl => ApiConfig.festivalsEndpoint;
 
-  /// Resolves the default API endpoint URL according to running platform.
-  static String get defaultEndpointUrl {
-    final bool isAndroid =
-        !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
-    final String host = isAndroid ? '10.0.2.2' : 'localhost';
-    return 'http://$host:8888$defaultEndpointPath';
-  }
-
-  /// Custom endpoint URL override (if user configures a live WordPress server).
+  /// Custom endpoint URL override (if user configures a custom server).
   String? customEndpointUrl;
 
   /// Returns the active endpoint URL to fetch from.
@@ -82,11 +73,11 @@ class WordPressSyncService {
   ///
   /// - [endpointUrl]: Optional URL override.
   /// - [client]: Optional [http.Client] (useful for tests).
-  /// - [timeout]: Request timeout (defaults to 10 seconds).
+  /// - [timeout]: Request timeout (defaults to 15 seconds).
   Future<SyncResult> syncFestivals({
     String? endpointUrl,
     http.Client? client,
-    Duration timeout = const Duration(seconds: 10),
+    Duration timeout = const Duration(seconds: 15),
   }) async {
     final targetUrl = endpointUrl ?? activeEndpointUrl;
     final isTest = WidgetsBinding.instance.runtimeType.toString().contains('Test');
@@ -96,42 +87,56 @@ class WordPressSyncService {
     final httpClient = client ?? http.Client();
 
     try {
-      final uri = Uri.parse(targetUrl).replace(
-        queryParameters: {
-          'per_page': '100',
-        },
+      int page = 1;
+      int totalPages = 1;
+      final allRules = <FestivalRule>[];
+
+      do {
+        final uri = Uri.parse(targetUrl).replace(
+          queryParameters: {
+            'per_page': '100',
+            'page': page.toString(),
+          },
+        );
+
+        final response = await httpClient.get(
+          uri,
+          headers: {
+            'Accept': 'application/json',
+          },
+        ).timeout(timeout);
+
+        if (response.statusCode == 200) {
+          final totalPagesHeader = response.headers['x-wp-totalpages'];
+          if (totalPagesHeader != null) {
+            totalPages = int.tryParse(totalPagesHeader) ?? 1;
+          }
+
+          final decoded = jsonDecode(response.body);
+          if (decoded is List) {
+            final pageRules = decoded
+                .whereType<Map<String, dynamic>>()
+                .map(FestivalRule.fromWordPressJson)
+                .toList();
+            allRules.addAll(pageRules);
+            page++;
+          } else {
+            return await _fallbackOrSeed('Invalid JSON format received from server.');
+          }
+        } else {
+          return await _fallbackOrSeed(
+            'WordPress server returned HTTP ${response.statusCode}: ${response.reasonPhrase}',
+          );
+        }
+      } while (page <= totalPages);
+
+      final count = await AppDatabase.instance.upsertFestivals(allRules);
+      await AppDatabase.instance.setMeta(
+        AppDatabase.metaFestivalsLastSync,
+        DateTime.now().toIso8601String(),
       );
 
-      final response = await httpClient.get(
-        uri,
-        headers: {
-          'Accept': 'application/json',
-        },
-      ).timeout(timeout);
-
-      if (response.statusCode == 200) {
-        final decoded = jsonDecode(response.body);
-        if (decoded is List) {
-          final rules = decoded
-              .whereType<Map<String, dynamic>>()
-              .map(FestivalRule.fromWordPressJson)
-              .toList();
-
-          final count = await AppDatabase.instance.upsertFestivals(rules);
-          await AppDatabase.instance.setMeta(
-            AppDatabase.metaFestivalsLastSync,
-            DateTime.now().toIso8601String(),
-          );
-
-          return SyncResult.success(count: count);
-        } else {
-          return await _fallbackOrSeed('Invalid JSON format received from server.');
-        }
-      } else {
-        return await _fallbackOrSeed(
-          'WordPress server returned HTTP ${response.statusCode}: ${response.reasonPhrase}',
-        );
-      }
+      return SyncResult.success(count: count);
     } on TimeoutException {
       return await _fallbackOrSeed('Connection timed out while reaching WordPress server.');
     } on SocketException catch (e) {
