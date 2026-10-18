@@ -190,7 +190,10 @@ void main() {
         const MaterialApp(
           home: Scaffold(
             body: SingleChildScrollView(
-              child: ListTithis(data: sampleTithis),
+              child: ListTithis(
+                data: sampleTithis,
+                showVratFestival: true,
+              ),
             ),
           ),
         ),
@@ -469,6 +472,7 @@ void main() {
                   ),
                 ],
                 language: AppLanguage.hindi,
+                showVratFestival: true,
               ),
             ),
           ),
@@ -516,6 +520,7 @@ void main() {
                   ),
                 ],
                 language: AppLanguage.gujarati,
+                showVratFestival: true,
               ),
             ),
           ),

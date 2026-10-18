@@ -189,6 +189,15 @@ class _TithiDetailViewState extends State<TithiDetailView> {
       widget.tithiData?.festivalRule ?? _calculationResult?.primaryFestival;
 
   String? get _effectiveVrat {
+    if (widget.tithiData != null && widget.tithiData!.effectiveVrats.isNotEmpty) {
+      return widget.tithiData!.resolveVrat(_language);
+    }
+    if (_calculationResult != null && _calculationResult!.vrats.isNotEmpty) {
+      return _calculationResult!.vrats
+          .map((v) => v.name(_language))
+          .where((n) => n.isNotEmpty && !PanchangLabels.isInactiveValue(n))
+          .join(', ');
+    }
     if (_effectiveVratRule != null) {
       final name = _effectiveVratRule!.name(_language);
       if (name.isNotEmpty && !PanchangLabels.isInactiveValue(name)) {
@@ -205,6 +214,15 @@ class _TithiDetailViewState extends State<TithiDetailView> {
   }
 
   String? get _effectiveFestival {
+    if (widget.tithiData != null && widget.tithiData!.effectiveFestivals.isNotEmpty) {
+      return widget.tithiData!.resolveFestival(_language);
+    }
+    if (_calculationResult != null && _calculationResult!.festivals.isNotEmpty) {
+      return _calculationResult!.festivals
+          .map((f) => f.name(_language))
+          .where((n) => n.isNotEmpty && !PanchangLabels.isInactiveValue(n))
+          .join(', ');
+    }
     if (_effectiveFestivalRule != null) {
       final name = _effectiveFestivalRule!.name(_language);
       if (name.isNotEmpty && !PanchangLabels.isInactiveValue(name)) {

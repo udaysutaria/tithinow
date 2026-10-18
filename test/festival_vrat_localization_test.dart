@@ -190,6 +190,44 @@ void main() {
       expect(copied.festivalRule, equals(festivalRule));
       expect(copied.resolveVrat(AppLanguage.gujarati), 'કામદા એકાદશી');
     });
+
+    test('Multiple festivals and vrats on same day resolve comma-separated and preserve both in copyWith', () {
+      const kaliChaudas = FestivalRule(
+        id: 4016,
+        festivalId: 'kali_chaudas',
+        nameEn: 'Kali Chaudas',
+        nameHi: 'काली चौदस',
+        nameGu: 'કાળી ચૌદશ',
+        category: 'festival',
+      );
+
+      const diwali = FestivalRule(
+        id: 4017,
+        festivalId: 'diwali',
+        nameEn: 'Diwali',
+        nameHi: 'दीपावली',
+        nameGu: 'દિવાળી',
+        category: 'festival',
+      );
+
+      final data = TithiData(
+        tithi: 'Chaturdashi',
+        paksha: 'Krishna',
+        date: 'Sun, 08 Nov 2026',
+        festivals: const [kaliChaudas, diwali],
+      );
+
+      expect(data.effectiveFestivals.length, 2);
+      expect(data.effectiveFestivalRule, equals(kaliChaudas));
+      expect(data.resolveFestival(AppLanguage.english), 'Kali Chaudas, Diwali');
+      expect(data.resolveFestival(AppLanguage.gujarati), 'કાળી ચૌદશ, દિવાળી');
+      expect(data.resolveFestival(AppLanguage.hindi), 'काली चौदस, दीपावली');
+
+      final copied = data.copyWith(isAlarmActive: true);
+      expect(copied.effectiveFestivals.length, 2);
+      expect(copied.festivals, equals([kaliChaudas, diwali]));
+      expect(copied.resolveFestival(AppLanguage.english), 'Kali Chaudas, Diwali');
+    });
   });
 
   group('ListItemTithi UI Localization Tests', () {
@@ -226,6 +264,7 @@ void main() {
                 festivalRule: festivalRule,
                 language: AppLanguage.gujarati,
                 lunarDay: 14,
+                showVratFestival: true,
               ),
             ),
           ),
@@ -260,6 +299,7 @@ void main() {
                 vratRule: vratRule,
                 language: AppLanguage.hindi,
                 lunarDay: 14,
+                showVratFestival: true,
               ),
             ),
           ),
@@ -284,6 +324,7 @@ void main() {
                 festival: 'No Festival',
                 language: AppLanguage.gujarati,
                 lunarDay: 12,
+                showVratFestival: true,
               ),
             ),
           ),
@@ -329,7 +370,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('મહાશિવરાત્રી'), findsOneWidget);
-      expect(find.text('કોઈ તહેવાર નથી'), findsOneWidget);
+      expect(find.text('ટૂંક સમયમાં'), findsOneWidget);
     });
 
     testWidgets('Renders Hindi vrat and festival in CardPanchang', (tester) async {
@@ -363,7 +404,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('कोई व्रत नहीं'), findsOneWidget);
+      expect(find.text('जल्द आ रहा है'), findsOneWidget);
       expect(find.text('श्रीकृष्ण जन्माष्टमी'), findsOneWidget);
     });
   });

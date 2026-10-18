@@ -194,6 +194,39 @@ class PanchangLabels {
   static String aboutText(AppLanguage lang) => aboutDescription(lang);
   static String aboutAppDescription(AppLanguage lang) => aboutDescription(lang);
 
+  static String author(AppLanguage lang) => switch (lang) {
+        AppLanguage.english => 'Author',
+        AppLanguage.hindi => 'लेखक',
+        AppLanguage.gujarati => 'લેખક',
+      };
+
+  static String authorRole(AppLanguage lang) => switch (lang) {
+        AppLanguage.english => 'Creator & Developer',
+        AppLanguage.hindi => 'निर्माता और डेवलपर',
+        AppLanguage.gujarati => 'નિર્માતા અને ડેવલપર',
+      };
+
+  static String authorBio(AppLanguage lang) => switch (lang) {
+        AppLanguage.english =>
+          'Hi, I\'m Uday Sutaria — the creator and developer of TithiNow. I built TithiNow to make ancient Vedic wisdom and daily Panchang easily accessible, accurate, and actionable in modern life. From high-precision astronomical calculations to instant alarms and offline privacy, every feature is crafted with care.',
+        AppLanguage.hindi =>
+          'नमस्ते, मैं उदय सुतारिया हूँ — TithiNow का निर्माता और डेवलपर। मैंने प्राचीन वैदिक ज्ञान और दैनिक पंचांग को आधुनिक जीवन में सरल, सटीक और सुलभ बनाने के उद्देश्य से TithiNow का निर्माण किया। उच्च-सटीक खगोलीय गणनाओं से लेकर त्वरित अलार्म और ऑफ़लाइन गोपनीयता तक, हर सुविधा को पूरे समर्पण के साथ तैयार किया गया है।',
+        AppLanguage.gujarati =>
+          'નમસ્તે, હું ઉદય સુતારીયા છું — TithiNow નો નિર્માતા અને ડેવલપર. પ્રાચીન વૈદિક જ્ઞાન અને દૈનિક પંચાંગને આજના આધુનિક જીવનમાં સરળ, સચોટ અને ઉપયોગી બનાવવાના ઉદ્દેશ્ય સાથે મેં TithiNow નું નિર્માણ કર્યું છે. સચોટ ખગોળીય ગણતરીઓથી લઈને ત્વરિત એલાર્મ અને સંપૂર્ણ ઑફલાઇન સુરક્ષા સુધી, દરેક ફીચર ખૂબ જ કાળજીપૂર્વક તૈયાર કરવામાં આવ્યું છે.',
+      };
+
+  static String libraries(AppLanguage lang) => switch (lang) {
+        AppLanguage.english => 'Libraries',
+        AppLanguage.hindi => 'लाइब्रेरीज़',
+        AppLanguage.gujarati => 'લાઇબ્રેરીઓ',
+      };
+
+  static String openSourceLibraries(AppLanguage lang) => switch (lang) {
+        AppLanguage.english => 'Open Source Libraries',
+        AppLanguage.hindi => 'ओपन सोर्स लाइब्रेरीज़',
+        AppLanguage.gujarati => 'ઓપન સોર્સ લાઇબ્રેરીઓ',
+      };
+
 
   static String yoga(AppLanguage lang) => switch (lang) {
         AppLanguage.english => 'Yoga',
@@ -235,6 +268,12 @@ class PanchangLabels {
         AppLanguage.english => 'No Festival',
         AppLanguage.hindi => 'कोई त्योहार नहीं',
         AppLanguage.gujarati => 'કોઈ તહેવાર નથી',
+      };
+
+  static String comingSoon(AppLanguage lang) => switch (lang) {
+        AppLanguage.english => 'Coming Soon',
+        AppLanguage.hindi => 'जल्द आ रहा है',
+        AppLanguage.gujarati => 'ટૂંક સમયમાં',
       };
 
   static String now(AppLanguage lang) => switch (lang) {
@@ -489,7 +528,10 @@ class PanchangLabels {
         trimmed == 'કોઈ વ્રત નથી' ||
         trimmed == 'કોઈ તહેવાર નથી' ||
         trimmed == 'વ્રત નથી' ||
-        trimmed == 'તહેવાર નથી';
+        trimmed == 'તહેવાર નથી' ||
+        trimmed == 'coming soon' ||
+        trimmed == 'जल्द आ रहा है' ||
+        trimmed == 'ટૂંક સમયમાં';
   }
 
   /// Internal lookup helper across dynamic registry, static vrats, and static festivals.

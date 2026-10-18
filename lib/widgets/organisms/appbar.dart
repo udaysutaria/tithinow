@@ -10,6 +10,7 @@ import '../../theme/design_system.dart';
 ///   'Back' button with icon and text.
 class Appbar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
+  final Widget? titleWidget;
   final bool showBackButton;
   final VoidCallback? onBackPressed;
   final VoidCallback? onMenuPressed;
@@ -18,6 +19,7 @@ class Appbar extends StatelessWidget implements PreferredSizeWidget {
   const Appbar({
     super.key,
     this.title = 'Today',
+    this.titleWidget,
     this.showBackButton = false,
     this.onBackPressed,
     this.onMenuPressed,
@@ -51,15 +53,16 @@ class Appbar extends StatelessWidget implements PreferredSizeWidget {
           _buildMobileLeadingButton(context),
           const SizedBox(width: AppSpacing.spacing8),
 
-          // Title
+          // Title or TitleWidget
           Expanded(
-            child: Text(
-              title,
-              style: context.appTypography.h3(
-                weight: AppTypography.semiBold,
-                color: AppColors.onSurfaceVariant,
-              ),
-            ),
+            child: titleWidget ??
+                Text(
+                  title,
+                  style: context.appTypography.h3(
+                    weight: AppTypography.semiBold,
+                    color: AppColors.onSurfaceVariant,
+                  ),
+                ),
           ),
 
           // Optional trailing actions
@@ -118,14 +121,19 @@ class Appbar extends StatelessWidget implements PreferredSizeWidget {
             _buildDesktopBackButton(context),
             const SizedBox(width: AppSpacing.spacing24),
           ],
-          Text(
-            title,
-            style: context.appTypography.h2(
-              weight: AppTypography.semiBold,
-              color: AppColors.onSurfaceVariant,
+          if (titleWidget != null) ...[
+            Expanded(child: titleWidget!),
+            const SizedBox(width: AppSpacing.spacing16),
+          ] else ...[
+            Text(
+              title,
+              style: context.appTypography.h2(
+                weight: AppTypography.semiBold,
+                color: AppColors.onSurfaceVariant,
+              ),
             ),
-          ),
-          const Spacer(),
+            const Spacer(),
+          ],
           ...?actions,
         ],
       ),

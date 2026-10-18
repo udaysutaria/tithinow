@@ -44,6 +44,8 @@ class PanchangData {
   final String? festival;
   final FestivalRule? vratRule;
   final FestivalRule? festivalRule;
+  final List<FestivalRule> vrats;
+  final List<FestivalRule> festivals;
   final String sunrise;
   final String sunset;
   final String moonrise;
@@ -82,6 +84,8 @@ class PanchangData {
     this.festival = 'No Festival',
     this.vratRule,
     this.festivalRule,
+    this.vrats = const [],
+    this.festivals = const [],
     this.sunrise = '06:27 AM',
     this.sunset = '06:33 PM',
     this.moonrise = '05:08 PM',
@@ -134,24 +138,40 @@ class PanchangData {
 
   /// Resolves the localized Vrat value.
   String resolveVrat(AppLanguage lang) {
-    if (vratRule != null) {
-      final name = vratRule!.name(lang);
-      if (name.isNotEmpty && !isInactive(name)) {
-        return name;
-      }
+    final allVrats = vrats.isNotEmpty
+        ? vrats
+        : (vratRule != null ? [vratRule!] : const <FestivalRule>[]);
+    if (allVrats.isNotEmpty) {
+      final names = allVrats
+          .map((v) => v.name(lang))
+          .where((n) => n.isNotEmpty && !isInactive(n))
+          .toList();
+      if (names.isNotEmpty) return names.join(', ');
     }
-    return PanchangLabels.resolveVrat(vrat, lang);
+    final resolved = PanchangLabels.resolveVrat(vrat, lang);
+    if (isInactive(resolved) || resolved == PanchangLabels.noVrat(lang)) {
+      return PanchangLabels.comingSoon(lang);
+    }
+    return resolved;
   }
 
   /// Resolves the localized Festival value.
   String resolveFestival(AppLanguage lang) {
-    if (festivalRule != null) {
-      final name = festivalRule!.name(lang);
-      if (name.isNotEmpty && !isInactive(name)) {
-        return name;
-      }
+    final allFestivals = festivals.isNotEmpty
+        ? festivals
+        : (festivalRule != null ? [festivalRule!] : const <FestivalRule>[]);
+    if (allFestivals.isNotEmpty) {
+      final names = allFestivals
+          .map((f) => f.name(lang))
+          .where((n) => n.isNotEmpty && !isInactive(n))
+          .toList();
+      if (names.isNotEmpty) return names.join(', ');
     }
-    return PanchangLabels.resolveFestival(festival, lang);
+    final resolved = PanchangLabels.resolveFestival(festival, lang);
+    if (isInactive(resolved) || resolved == PanchangLabels.noFestival(lang)) {
+      return PanchangLabels.comingSoon(lang);
+    }
+    return resolved;
   }
 
   /// Resolves label for Nakshatra.
@@ -304,14 +324,14 @@ class PanchangData {
         label: resolveLabelVrat(lang),
         value: effectiveVrat,
         isConditional: true,
-        isInactive: isInactive(vrat),
+        isInactive: isInactive(effectiveVrat),
       ),
       PanchangSubItemData(
         iconAsset: 'assets/icons/IconFestival.svg',
         label: resolveLabelFestival(lang),
         value: effectiveFestival,
         isConditional: true,
-        isInactive: isInactive(festival),
+        isInactive: isInactive(effectiveFestival),
       ),
     ];
   }
@@ -511,10 +531,16 @@ class CardPanchang extends StatefulWidget {
       data: PanchangData(
         nakshatraEnum: result.nakshatra,
         monthEnum: result.hinduMonth,
-        vrat: result.primaryVrat?.nameEn ?? 'No Vrat',
-        festival: result.primaryFestival?.nameEn ?? 'No Festival',
+        vrat: result.vrats.isNotEmpty
+            ? result.vrats.map((v) => v.nameEn).join(', ')
+            : (result.primaryVrat?.nameEn ?? 'No Vrat'),
+        festival: result.festivals.isNotEmpty
+            ? result.festivals.map((f) => f.nameEn).join(', ')
+            : (result.primaryFestival?.nameEn ?? 'No Festival'),
         vratRule: result.primaryVrat,
         festivalRule: result.primaryFestival,
+        vrats: result.vrats,
+        festivals: result.festivals,
         sunrise: result.sunriseFormatted,
         sunset: result.sunsetFormatted,
         moonrise: result.moonriseFormatted,

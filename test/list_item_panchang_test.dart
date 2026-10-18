@@ -40,9 +40,8 @@ void main() {
       expect(find.text('Month'), findsOneWidget);
       expect(find.text('Bhadrapada'), findsOneWidget);
       expect(find.text('Vrat'), findsOneWidget);
-      expect(find.text('No Vrat'), findsOneWidget);
+      expect(find.text('Coming Soon'), findsNWidgets(2));
       expect(find.text('Festival'), findsOneWidget);
-      expect(find.text('No Festival'), findsOneWidget);
 
       // Verify PageView is present
       expect(find.byType(PageView), findsOneWidget);
@@ -80,8 +79,8 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // Find "No Vrat" text widget
-      final noVratFinder = find.text('No Vrat');
+      // Find "Coming Soon" text widget
+      final noVratFinder = find.text('Coming Soon');
       expect(noVratFinder, findsOneWidget);
       final Text noVratText = tester.widget(noVratFinder);
       expect(noVratText.style?.color, AppColors.onSurface);

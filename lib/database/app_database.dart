@@ -807,6 +807,11 @@ class AppDatabase {
     }
   }
 
+  static List<FestivalRule>? _cachedFestivalRules;
+
+  /// Returns cached festival rules if already loaded into memory.
+  static List<FestivalRule>? get cachedFestivalRules => _cachedFestivalRules;
+
   /// Upserts a batch of [FestivalRule] records into the SQLite database.
   Future<int> upsertFestivals(List<FestivalRule> rules, {Database? db}) async {
     if (rules.isEmpty) return 0;
@@ -822,6 +827,7 @@ class AppDatabase {
     }
 
     await batch.commit(noResult: true);
+    _cachedFestivalRules = rules;
     FestivalRule.registerRules(rules);
     festivalsNotifier.value++;
     return rules.length;
@@ -836,6 +842,9 @@ class AppDatabase {
 
   /// Retrieves all cached [FestivalRule] records.
   Future<List<FestivalRule>> getAllFestivalRules({Database? db}) async {
+    if (db == null && _cachedFestivalRules != null && _cachedFestivalRules!.isNotEmpty) {
+      return _cachedFestivalRules!;
+    }
     final targetDb = db ?? await database;
     final maps = await targetDb.query(
       tableFestivals,
@@ -843,6 +852,7 @@ class AppDatabase {
     );
     final rules = maps.map(FestivalRule.fromMap).toList();
     if (rules.isNotEmpty) {
+      _cachedFestivalRules = rules;
       FestivalRule.registerRules(rules);
     }
     return rules;

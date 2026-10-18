@@ -13,6 +13,7 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   setUpAll(() async {
+    AppDatabase.initializeFfiIfNeeded();
     await Sweph.init();
     Sweph.swe_set_sid_mode(SiderealMode.SE_SIDM_LAHIRI);
   });
@@ -382,6 +383,260 @@ void main() {
       final listTithisAfter = tester.widget<ListTithis>(find.byType(ListTithis));
       expect(listTithisAfter.data!.length, greaterThan(initialCount));
       expect(listTithisAfter.data!.first.dateTime!.year, lessThanOrEqualTo(2025));
+    });
+  });
+
+  group('TithiView Search Tests', () {
+    testWidgets('Search button exists on AppBar and activates search mode when tapped', (tester) async {
+      await tester.pumpWidget(
+        buildTestableWidget(const TithiView()),
+      );
+      await tester.pumpAndSettle();
+
+      final searchButton = find.byKey(const ValueKey('button_tithi_search'));
+      expect(searchButton, findsOneWidget);
+
+      await tester.tap(searchButton);
+      await tester.pumpAndSettle();
+
+      // Search input should now be visible
+      expect(find.byKey(const ValueKey('input_tithi_search')), findsOneWidget);
+
+      // Filter chips should be hidden by default
+      expect(find.byKey(const ValueKey('chip_filter_all')), findsNothing);
+      expect(find.byKey(const ValueKey('chip_filter_festivals')), findsNothing);
+      expect(find.byKey(const ValueKey('chip_filter_vrats')), findsNothing);
+      expect(find.byKey(const ValueKey('chip_filter_tithis')), findsNothing);
+
+      // Suggestions view is hidden by default
+      expect(find.byKey(const ValueKey('chip_suggestion_ekadashi')), findsNothing);
+      expect(find.byKey(const ValueKey('chip_suggestion_poonam')), findsNothing);
+    });
+
+    testWidgets('Tapping Ekadashi suggestion chip displays upcoming Ekadashi cards with alarms', (tester) async {
+      await tester.pumpWidget(
+        buildTestableWidget(const TithiView(showPopularSearches: true)),
+      );
+      await tester.pumpAndSettle();
+
+      // Tap search icon
+      await tester.tap(find.byKey(const ValueKey('button_tithi_search')));
+      await tester.pumpAndSettle();
+
+      // Tap Ekadashi suggestion chip
+      await tester.tap(find.byKey(const ValueKey('chip_suggestion_ekadashi')));
+      await tester.pumpAndSettle();
+
+      // Results should be displayed using ListItemTithi cards
+      final resultCards = find.byType(ListItemTithi);
+      expect(resultCards, findsWidgets);
+
+      // Verify matching card tithi is Ekadashi
+      final firstCard = tester.widget<ListItemTithi>(resultCards.first);
+      expect(firstCard.tithi.toLowerCase(), contains('ekadashi'));
+
+      // Alarm buttons exist on future cards
+      expect(find.byType(ButtonAlarm), findsWidgets);
+    });
+
+    testWidgets('Transliteration search: typing "agiyaras" matches Ekadashi tithis', (tester) async {
+      await tester.pumpWidget(
+        buildTestableWidget(const TithiView()),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const ValueKey('button_tithi_search')));
+      await tester.pumpAndSettle();
+
+      // Enter transliterated Gujarati term "agiyaras"
+      await tester.enterText(find.byKey(const ValueKey('input_tithi_search')), 'agiyaras');
+      await tester.pumpAndSettle();
+
+      final resultCards = find.byType(ListItemTithi);
+      expect(resultCards, findsWidgets);
+
+      final firstCard = tester.widget<ListItemTithi>(resultCards.first);
+      expect(firstCard.tithi, 'Ekadashi');
+    });
+
+    testWidgets('Transliteration search: typing "poonam" matches Purnima tithis', (tester) async {
+      await tester.pumpWidget(
+        buildTestableWidget(const TithiView()),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const ValueKey('button_tithi_search')));
+      await tester.pumpAndSettle();
+
+      // Enter transliterated term "poonam"
+      await tester.enterText(find.byKey(const ValueKey('input_tithi_search')), 'poonam');
+      await tester.pumpAndSettle();
+
+      final resultCards = find.byType(ListItemTithi);
+      expect(resultCards, findsWidgets);
+
+      final firstCard = tester.widget<ListItemTithi>(resultCards.first);
+      expect(firstCard.tithi, 'Purnima');
+    });
+
+    testWidgets('Transliteration search: typing "amas" matches Amavasya tithis', (tester) async {
+      await tester.pumpWidget(
+        buildTestableWidget(const TithiView()),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const ValueKey('button_tithi_search')));
+      await tester.pumpAndSettle();
+
+      // Enter transliterated term "amas"
+      await tester.enterText(find.byKey(const ValueKey('input_tithi_search')), 'amas');
+      await tester.pumpAndSettle();
+
+      final resultCards = find.byType(ListItemTithi);
+      expect(resultCards, findsWidgets);
+
+      final firstCard = tester.widget<ListItemTithi>(resultCards.first);
+      expect(firstCard.tithi, 'Amavasya');
+    });
+
+    testWidgets('Clear button clears search query and restores suggestions', (tester) async {
+      await tester.pumpWidget(
+        buildTestableWidget(const TithiView(showPopularSearches: true)),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const ValueKey('button_tithi_search')));
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.byKey(const ValueKey('input_tithi_search')), 'ekadashi');
+      await tester.pumpAndSettle();
+
+      final clearButton = find.byKey(const ValueKey('button_clear_search'));
+      expect(clearButton, findsOneWidget);
+
+      await tester.tap(clearButton);
+      await tester.pumpAndSettle();
+
+      // Suggestions view should be restored
+      expect(find.byKey(const ValueKey('chip_suggestion_ekadashi')), findsOneWidget);
+    });
+
+    testWidgets('Closing search restores normal calendar and pagination view', (tester) async {
+      await tester.pumpWidget(
+        buildTestableWidget(const TithiView()),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const ValueKey('button_tithi_search')));
+      await tester.pumpAndSettle();
+
+      // Back button in search mode
+      final closeButton = find.byKey(const ValueKey('button_close_search'));
+      expect(closeButton, findsOneWidget);
+
+      await tester.tap(closeButton);
+      await tester.pumpAndSettle();
+
+      // Main calendar list and month pagination should be restored
+      expect(find.byType(CalendarMonthPagination), findsOneWidget);
+      expect(find.byType(ListTithis), findsOneWidget);
+      expect(find.byKey(const ValueKey('button_tithi_search')), findsOneWidget);
+    });
+
+    testWidgets('Search filter tabs have equal width, fill full screen, and display correct tab styling', (tester) async {
+      await tester.pumpWidget(
+        buildTestableWidget(
+          const TithiView(showSearchFilterTabs: true),
+          size: const Size(400, 800),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const ValueKey('button_tithi_search')));
+      await tester.pumpAndSettle();
+
+      final allTab = find.byKey(const ValueKey('chip_filter_all'));
+      final festivalsTab = find.byKey(const ValueKey('chip_filter_festivals'));
+      final vratsTab = find.byKey(const ValueKey('chip_filter_vrats'));
+      final tithisTab = find.byKey(const ValueKey('chip_filter_tithis'));
+
+      expect(allTab, findsOneWidget);
+      expect(festivalsTab, findsOneWidget);
+      expect(vratsTab, findsOneWidget);
+      expect(tithisTab, findsOneWidget);
+
+      final allSize = tester.getSize(allTab);
+      final festivalsSize = tester.getSize(festivalsTab);
+      final vratsSize = tester.getSize(vratsTab);
+      final tithisSize = tester.getSize(tithisTab);
+
+      // All 4 tabs have equal width
+      expect(allSize.width, festivalsSize.width);
+      expect(allSize.width, vratsSize.width);
+      expect(allSize.width, tithisSize.width);
+
+      // Total width fills the entire width of the screen (800 in test environment)
+      final totalWidth = allSize.width + festivalsSize.width + vratsSize.width + tithisSize.width;
+      expect(totalWidth, 800.0);
+    });
+
+    testWidgets('Popular search chips show only 1 language according to settings', (tester) async {
+      AppDatabase.instance.languageNotifier.value = AppLanguage.english;
+      await tester.pumpWidget(
+        buildTestableWidget(const TithiView(showPopularSearches: true)),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const ValueKey('button_tithi_search')));
+      await tester.pumpAndSettle();
+
+      // In English, chip should only have 'Ekadashi', not 'Ekadashi (અગિયારસ)'
+      expect(find.text('Ekadashi'), findsOneWidget);
+      expect(find.text('Ekadashi (અગિયારસ)'), findsNothing);
+
+      // Switch language to Gujarati
+      AppDatabase.instance.languageNotifier.value = AppLanguage.gujarati;
+      await tester.pumpAndSettle();
+
+      // In Gujarati, chip should only have 'અગિયારસ', not 'અગિયારસ (Ekadashi)'
+      expect(find.text('અગિયારસ'), findsOneWidget);
+      expect(find.text('અગિયારસ (Ekadashi)'), findsNothing);
+
+      // Restore language
+      AppDatabase.instance.languageNotifier.value = AppLanguage.english;
+    });
+
+    testWidgets('Popular search chips use AppColors.surface, AppColors.outline and AppColors.onSurfaceVariant', (tester) async {
+      await tester.pumpWidget(
+        buildTestableWidget(const TithiView(showPopularSearches: true)),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const ValueKey('button_tithi_search')));
+      await tester.pumpAndSettle();
+
+      final actionChip = tester.widget<ActionChip>(find.byKey(const ValueKey('chip_suggestion_ekadashi')));
+      expect(actionChip.backgroundColor, AppColors.surface);
+      expect(actionChip.side?.color, AppColors.outline);
+      expect(actionChip.labelStyle?.color, AppColors.onSurfaceVariant);
+    });
+
+    testWidgets('Search finds festival even when multiple festivals are assigned to a day', (tester) async {
+      await tester.pumpWidget(
+        buildTestableWidget(const TithiView(showSearchFilterTabs: true)),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const ValueKey('button_tithi_search')));
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.byKey(const ValueKey('input_tithi_search')), 'kali chaudas');
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const ValueKey('chip_filter_festivals')));
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(const ValueKey('input_tithi_search')), findsOneWidget);
     });
   });
 }

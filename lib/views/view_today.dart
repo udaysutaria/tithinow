@@ -1,10 +1,8 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import '../constants/panchang_terms.dart';
 import '../database/app_database.dart';
 import '../models/city.dart';
 import '../services/sweph_service.dart';
-import '../services/wordpress_sync_service.dart';
 import '../theme/design_system.dart';
 import '../widgets/widgets.dart';
 import 'app_navigator.dart';
@@ -52,11 +50,10 @@ class _TodayViewState extends State<TodayView> {
     _panchangResult = widget.initialPanchangResult ?? SwephService.instance.cachedTodayResult;
     _loadSavedLanguage();
     _loadPanchangData();
-    unawaited(WordPressSyncService.instance.syncFestivals());
   }
 
   void _onFestivalsChanged() {
-    _loadPanchangData();
+    _loadPanchangData(force: true);
   }
 
   @override
@@ -80,12 +77,12 @@ class _TodayViewState extends State<TodayView> {
     final newCity = AppDatabase.instance.cityNotifier.value;
     if (newCity != null && newCity != _selectedCity) {
       _selectedCity = newCity;
-      _loadPanchangData();
+      _loadPanchangData(force: true);
     }
   }
 
   void _onLunarSystemChanged() {
-    _loadPanchangData();
+    _loadPanchangData(force: true);
   }
 
   Future<void> _loadSavedLanguage() async {
@@ -100,13 +97,24 @@ class _TodayViewState extends State<TodayView> {
     } catch (_) {}
   }
 
-  Future<void> _loadPanchangData() async {
+  Future<void> _loadPanchangData({bool force = false}) async {
     try {
       final savedCity = await AppDatabase.instance.getSavedCity();
       if (savedCity != null) {
         _selectedCity = savedCity;
       }
       final savedLunarSystem = await AppDatabase.instance.getSavedLunarSystem();
+
+      if (!force && _panchangResult != null) {
+        final now = DateTime.now();
+        if (_panchangResult!.date.year == now.year &&
+            _panchangResult!.date.month == now.month &&
+            _panchangResult!.date.day == now.day &&
+            _panchangResult!.city.id == _selectedCity.id) {
+          return;
+        }
+      }
+
       final festivalRules = await AppDatabase.instance.getAllFestivalRules();
       final result = await SwephService.instance.calculatePanchang(
         date: DateTime.now(),
