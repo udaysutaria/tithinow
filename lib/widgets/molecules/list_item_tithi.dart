@@ -27,6 +27,8 @@ class ListItemTithi extends StatelessWidget {
   final String? festival;
   final FestivalRule? vratRule;
   final FestivalRule? festivalRule;
+  final List<FestivalRule> vrats;
+  final List<FestivalRule> festivals;
   final String? moonPhaseAsset;
   final int? lunarDay;
   final bool isAlarmActive;
@@ -42,6 +44,10 @@ class ListItemTithi extends StatelessWidget {
   /// If provided, used to derive localized weekday and month when [language] != [AppLanguage.english].
   final DateTime? dateTime;
 
+  /// Whether to display the bottom Vrat and Festival badges row.
+  /// Defaults to false (hidden for compact calendar listing).
+  final bool showVratFestival;
+
   const ListItemTithi({
     super.key,
     this.state = ItemTemporalState.current,
@@ -52,6 +58,8 @@ class ListItemTithi extends StatelessWidget {
     this.festival = 'No Festival',
     this.vratRule,
     this.festivalRule,
+    this.vrats = const [],
+    this.festivals = const [],
     this.moonPhaseAsset,
     this.lunarDay,
     this.isAlarmActive = false,
@@ -60,6 +68,7 @@ class ListItemTithi extends StatelessWidget {
     this.maxWidth,
     this.language = AppLanguage.english,
     this.dateTime,
+    this.showVratFestival = false,
   });
 
   /// Factory constructor for Past Tithi items.
@@ -72,12 +81,15 @@ class ListItemTithi extends StatelessWidget {
     String? festival = 'No Festival',
     FestivalRule? vratRule,
     FestivalRule? festivalRule,
+    List<FestivalRule> vrats = const [],
+    List<FestivalRule> festivals = const [],
     String? moonPhaseAsset,
     int? lunarDay,
     VoidCallback? onTap,
     double? maxWidth,
     AppLanguage language = AppLanguage.english,
     DateTime? dateTime,
+    bool showVratFestival = false,
   }) {
     return ListItemTithi(
       key: key,
@@ -89,12 +101,15 @@ class ListItemTithi extends StatelessWidget {
       festival: festival,
       vratRule: vratRule,
       festivalRule: festivalRule,
+      vrats: vrats,
+      festivals: festivals,
       moonPhaseAsset: moonPhaseAsset,
       lunarDay: lunarDay,
       onTap: onTap,
       maxWidth: maxWidth,
       language: language,
       dateTime: dateTime,
+      showVratFestival: showVratFestival,
     );
   }
 
@@ -108,12 +123,15 @@ class ListItemTithi extends StatelessWidget {
     String? festival = 'No Festival',
     FestivalRule? vratRule,
     FestivalRule? festivalRule,
+    List<FestivalRule> vrats = const [],
+    List<FestivalRule> festivals = const [],
     String? moonPhaseAsset,
     int? lunarDay,
     VoidCallback? onTap,
     double? maxWidth,
     AppLanguage language = AppLanguage.english,
     DateTime? dateTime,
+    bool showVratFestival = false,
   }) {
     return ListItemTithi(
       key: key,
@@ -125,12 +143,15 @@ class ListItemTithi extends StatelessWidget {
       festival: festival,
       vratRule: vratRule,
       festivalRule: festivalRule,
+      vrats: vrats,
+      festivals: festivals,
       moonPhaseAsset: moonPhaseAsset,
       lunarDay: lunarDay,
       onTap: onTap,
       maxWidth: maxWidth,
       language: language,
       dateTime: dateTime,
+      showVratFestival: showVratFestival,
     );
   }
 
@@ -144,6 +165,8 @@ class ListItemTithi extends StatelessWidget {
     String? festival = 'No Festival',
     FestivalRule? vratRule,
     FestivalRule? festivalRule,
+    List<FestivalRule> vrats = const [],
+    List<FestivalRule> festivals = const [],
     String? moonPhaseAsset,
     int? lunarDay,
     bool isAlarmActive = false,
@@ -152,6 +175,7 @@ class ListItemTithi extends StatelessWidget {
     double? maxWidth,
     AppLanguage language = AppLanguage.english,
     DateTime? dateTime,
+    bool showVratFestival = false,
   }) {
     return ListItemTithi(
       key: key,
@@ -163,6 +187,8 @@ class ListItemTithi extends StatelessWidget {
       festival: festival,
       vratRule: vratRule,
       festivalRule: festivalRule,
+      vrats: vrats,
+      festivals: festivals,
       moonPhaseAsset: moonPhaseAsset,
       lunarDay: lunarDay,
       isAlarmActive: isAlarmActive,
@@ -171,6 +197,7 @@ class ListItemTithi extends StatelessWidget {
       maxWidth: maxWidth,
       language: language,
       dateTime: dateTime,
+      showVratFestival: showVratFestival,
     );
   }
 
@@ -429,21 +456,29 @@ class ListItemTithi extends StatelessWidget {
   }
 
   String _resolveLocalizedVrat() {
-    if (vratRule != null) {
-      final name = vratRule!.name(language);
-      if (name.isNotEmpty && !isInactiveValue(name)) {
-        return name;
-      }
+    final allVrats = vrats.isNotEmpty
+        ? vrats
+        : (vratRule != null ? [vratRule!] : const <FestivalRule>[]);
+    if (allVrats.isNotEmpty) {
+      final names = allVrats
+          .map((v) => v.name(language))
+          .where((n) => n.isNotEmpty && !isInactiveValue(n))
+          .toList();
+      if (names.isNotEmpty) return names.join(', ');
     }
     return PanchangLabels.resolveVrat(vrat, language);
   }
 
   String _resolveLocalizedFestival() {
-    if (festivalRule != null) {
-      final name = festivalRule!.name(language);
-      if (name.isNotEmpty && !isInactiveValue(name)) {
-        return name;
-      }
+    final allFestivals = festivals.isNotEmpty
+        ? festivals
+        : (festivalRule != null ? [festivalRule!] : const <FestivalRule>[]);
+    if (allFestivals.isNotEmpty) {
+      final names = allFestivals
+          .map((f) => f.name(language))
+          .where((n) => n.isNotEmpty && !isInactiveValue(n))
+          .toList();
+      if (names.isNotEmpty) return names.join(', ');
     }
     return PanchangLabels.resolveFestival(festival, language);
   }
@@ -499,10 +534,12 @@ class ListItemTithi extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           topRow,
-          const SizedBox(height: AppSpacing.spacing12),
-          divider,
-          const SizedBox(height: AppSpacing.spacing12),
-          bottomRow,
+          if (showVratFestival) ...[
+            const SizedBox(height: AppSpacing.spacing12),
+            divider,
+            const SizedBox(height: AppSpacing.spacing12),
+            bottomRow,
+          ],
         ],
       ),
     );

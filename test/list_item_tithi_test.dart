@@ -19,6 +19,7 @@ void main() {
                 vrat: 'No Vrat',
                 festival: 'No Festival',
                 lunarDay: 13,
+                showVratFestival: true,
               ),
             ),
           ),
@@ -89,6 +90,7 @@ void main() {
                 onAlarmTap: () {
                   alarmToggled = true;
                 },
+                showVratFestival: true,
               ),
             ),
           ),
@@ -127,6 +129,7 @@ void main() {
                 vrat: 'Pradosh Vrat',
                 festival: 'No Festival',
                 language: AppLanguage.hindi,
+                showVratFestival: true,
               ),
             ),
           ),
@@ -158,6 +161,7 @@ void main() {
                 vrat: 'No Vrat',
                 festival: 'Anant Chaturdashi',
                 language: AppLanguage.gujarati,
+                showVratFestival: true,
               ),
             ),
           ),

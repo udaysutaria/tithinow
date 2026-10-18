@@ -1,4 +1,4 @@
-package com.example.tithinow
+package com.udaysutaria.tithinow
 
 import android.app.Activity
 import android.app.KeyguardManager

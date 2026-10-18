@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../constants/panchang_terms.dart';
 import '../database/app_database.dart';
 import '../theme/design_system.dart';
@@ -196,6 +197,493 @@ class Content extends StatelessWidget {
 /// Compatibility alias for Content
 typedef AboutContent = Content;
 
+/// Model for third-party open-source libraries used in TithiNow.
+class LibraryItem {
+  final String name;
+  final String version;
+  final String description;
+  final String? url;
+
+  const LibraryItem({
+    required this.name,
+    required this.version,
+    required this.description,
+    this.url,
+  });
+}
+
+/// Modal Bottom Sheet displaying open-source libraries used by TithiNow.
+class LibrariesBottomSheet extends StatelessWidget {
+  final AppLanguage language;
+  final ValueChanged<String>? onUrlTap;
+
+  const LibrariesBottomSheet({
+    super.key,
+    this.language = AppLanguage.english,
+    this.onUrlTap,
+  });
+
+  static const List<LibraryItem> libraries = [
+    LibraryItem(
+      name: 'sweph',
+      version: '4.1.0',
+      description:
+          'Swiss Ephemeris astronomical calculation library for high-precision planetary positions, Tithi, Nakshatra, and Muhurta.',
+      url: 'https://pub.dev/packages/sweph',
+    ),
+    LibraryItem(
+      name: 'sqflite',
+      version: '2.4.4',
+      description:
+          'SQLite database engine for Flutter, enabling instant offline access to 7,100+ cities, cached Panchang calculations, and alarms.',
+      url: 'https://pub.dev/packages/sqflite',
+    ),
+    LibraryItem(
+      name: 'alarm',
+      version: '5.13.2',
+      description:
+          'Background alarm scheduler ensuring timely, reliable alerts for Tithi, Choghadiya, and Sunrise/Sunset.',
+      url: 'https://pub.dev/packages/alarm',
+    ),
+    LibraryItem(
+      name: 'audioplayers',
+      version: '6.8.1',
+      description:
+          'Seamless audio playback for devotional alarm chimes and bell sounds.',
+      url: 'https://pub.dev/packages/audioplayers',
+    ),
+    LibraryItem(
+      name: 'flutter_svg',
+      version: '2.3.0',
+      description:
+          'Vector graphics renderer for crisp astrological glyphs and icons across all screen resolutions.',
+      url: 'https://pub.dev/packages/flutter_svg',
+    ),
+    LibraryItem(
+      name: 'google_fonts',
+      version: '8.2.1',
+      description:
+          'Typography package providing beautiful rendering of English, Devanagari (Hindi), and Gujarati scripts.',
+      url: 'https://pub.dev/packages/google_fonts',
+    ),
+    LibraryItem(
+      name: 'permission_handler',
+      version: '12.0.3',
+      description:
+          'Granular runtime permission management for notifications and exact alarms.',
+      url: 'https://pub.dev/packages/permission_handler',
+    ),
+    LibraryItem(
+      name: 'url_launcher',
+      version: '6.3.3',
+      description:
+          'Safe dispatcher to launch external links and websites in the device\'s default browser.',
+      url: 'https://pub.dev/packages/url_launcher',
+    ),
+    LibraryItem(
+      name: 'http',
+      version: '1.6.0',
+      description:
+          'Composable HTTP client for network requests and remote services.',
+      url: 'https://pub.dev/packages/http',
+    ),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final maxHeight = MediaQuery.of(context).size.height * 0.85;
+
+    return Container(
+      constraints: BoxConstraints(maxHeight: maxHeight),
+      decoration: const BoxDecoration(
+        color: AppColors.background,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        border: Border(
+          top: BorderSide(
+            color: Color(0x26FFFFFF),
+            width: 1,
+          ),
+        ),
+      ),
+      child: SafeArea(
+        top: false,
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 520),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(height: 12),
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: AppColors.outline,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              PanchangLabels.openSourceLibraries(language),
+                              style: const TextStyle(
+                                fontFamily: 'Sora',
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.onSurfaceVariant,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'TithiNow is built with gratitude to the open-source community',
+                              style: TextStyle(
+                                fontFamily: 'Inter',
+                                fontSize: 12,
+                                color: AppColors.onSurface.withValues(alpha: 0.8),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close_rounded, color: AppColors.onSurfaceVariant),
+                        onPressed: () => Navigator.of(context).pop(),
+                      ),
+                    ],
+                  ),
+                ),
+                const Divider(color: Color(0x26FFFFFF), height: 20),
+                Flexible(
+                  child: ListView.separated(
+                    shrinkWrap: true,
+                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+                    itemCount: libraries.length,
+                    separatorBuilder: (_, _) => const SizedBox(height: 10),
+                    itemBuilder: (context, index) {
+                      final item = libraries[index];
+                      return Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.04),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.1),
+                          ),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Text(
+                                  item.name,
+                                  style: const TextStyle(
+                                    fontFamily: 'Inter',
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w700,
+                                    color: AppColors.primary,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.primary.withValues(alpha: 0.15),
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: Text(
+                                    'v${item.version}',
+                                    style: const TextStyle(
+                                      fontFamily: 'Inter',
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w500,
+                                      color: AppColors.primary,
+                                    ),
+                                  ),
+                                ),
+                                const Spacer(),
+                                if (item.url != null && onUrlTap != null)
+                                  InkWell(
+                                    onTap: () => onUrlTap!(item.url!),
+                                    borderRadius: BorderRadius.circular(4),
+                                    child: const Padding(
+                                      padding: EdgeInsets.all(4),
+                                      child: Icon(
+                                        Icons.open_in_new_rounded,
+                                        size: 16,
+                                        color: AppColors.onSurface,
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              item.description,
+                              style: const TextStyle(
+                                fontFamily: 'Inter',
+                                fontSize: 13,
+                                height: 1.4,
+                                color: AppColors.onSurface,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Modal Bottom Sheet displaying Author details and profile.
+class AuthorBottomSheet extends StatelessWidget {
+  final AppLanguage language;
+  final VoidCallback? onWebsiteTap;
+  final VoidCallback? onGithubTap;
+  final VoidCallback? onEmailTap;
+
+  const AuthorBottomSheet({
+    super.key,
+    this.language = AppLanguage.english,
+    this.onWebsiteTap,
+    this.onGithubTap,
+    this.onEmailTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: AppColors.background,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        border: Border(
+          top: BorderSide(
+            color: Color(0x26FFFFFF),
+            width: 1,
+          ),
+        ),
+      ),
+      child: SafeArea(
+        top: false,
+        child: SingleChildScrollView(
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 520),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const SizedBox(height: 12),
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: AppColors.outline,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          PanchangLabels.author(language),
+                          style: const TextStyle(
+                            fontFamily: 'Sora',
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.onSurfaceVariant,
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.close_rounded, color: AppColors.onSurfaceVariant),
+                          onPressed: () => Navigator.of(context).pop(),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Center(
+                      child: Column(
+                        children: [
+                          Container(
+                            width: 72,
+                            height: 72,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              gradient: LinearGradient(
+                                colors: [
+                                  AppColors.primary.withValues(alpha: 0.3),
+                                  const Color(0xFF4A9FA5).withValues(alpha: 0.15),
+                                ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              border: Border.all(
+                                color: AppColors.primary.withValues(alpha: 0.5),
+                                width: 2,
+                              ),
+                            ),
+                            alignment: Alignment.center,
+                            child: const Text(
+                              'US',
+                              style: TextStyle(
+                                fontFamily: 'Sora',
+                                fontSize: 26,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.primary,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          const Text(
+                            'Uday Sutaria',
+                            style: TextStyle(
+                              fontFamily: 'Sora',
+                              fontSize: 20,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.onSurfaceVariant,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            PanchangLabels.authorRole(language),
+                            style: const TextStyle(
+                              fontFamily: 'Inter',
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: AppColors.primary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.04),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.1),
+                        ),
+                      ),
+                      child: Text(
+                        PanchangLabels.authorBio(language),
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontFamily: 'Inter',
+                          fontSize: 14,
+                          fontWeight: FontWeight.w400,
+                          height: 1.6,
+                          color: AppColors.onSurface,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    Row(
+                      children: [
+                        if (onWebsiteTap != null)
+                          Expanded(
+                            child: _buildContactButton(
+                              icon: Icons.language_rounded,
+                              label: 'Website',
+                              onTap: onWebsiteTap!,
+                            ),
+                          ),
+                        if (onWebsiteTap != null && onGithubTap != null)
+                          const SizedBox(width: 8),
+                        if (onGithubTap != null)
+                          Expanded(
+                            child: _buildContactButton(
+                              icon: Icons.code_rounded,
+                              label: 'GitHub',
+                              onTap: onGithubTap!,
+                            ),
+                          ),
+                        if (onEmailTap != null) ...[
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: _buildContactButton(
+                              icon: Icons.mail_outline_rounded,
+                              label: 'Email',
+                              onTap: onEmailTap!,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                    const SizedBox(height: 28),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildContactButton({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+        decoration: BoxDecoration(
+          color: AppColors.primary.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: AppColors.primary.withValues(alpha: 0.3),
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 16, color: AppColors.primary),
+            const SizedBox(width: 6),
+            Flexible(
+              child: Text(
+                label,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontFamily: 'Inter',
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.primary,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 /// About View displaying information about TithiNow.
 class AboutView extends StatefulWidget {
   /// Initial language override. If null, dynamically follows [AppDatabase.instance.languageNotifier].
@@ -286,6 +774,56 @@ class _AboutViewState extends State<AboutView> {
     navigateToDestination(context, index, currentIndex: 4);
   }
 
+  Future<void> _openExternalUrl(String url) async {
+    final uri = Uri.parse(url);
+    try {
+      final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+      if (!launched) {
+        debugPrint('Could not launch $url');
+      }
+    } catch (e) {
+      debugPrint('Error launching $url: $e');
+    }
+  }
+
+  void _showLibrariesModal(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => LibrariesBottomSheet(
+        language: _language,
+        onUrlTap: _openExternalUrl,
+      ),
+    );
+  }
+
+  void _showAuthorModal(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => AuthorBottomSheet(
+        language: _language,
+        onWebsiteTap: () => _openExternalUrl('https://udaysutaria.com'),
+        onGithubTap: () => _openExternalUrl('https://github.com/udaysutaria'),
+        onEmailTap: () => _openExternalUrl('mailto:hello@tithinow.com'),
+      ),
+    );
+  }
+
+  Widget _buildContent(BuildContext context) {
+    return widget.content ??
+        Content(
+          language: _language,
+          onWebsiteTap: () => _openExternalUrl('https://tithinow.com'),
+          onSourceCodeTap: () =>
+              _openExternalUrl('https://github.com/udaysutaria/tithinow/'),
+          onLibrariesTap: () => _showLibrariesModal(context),
+          onAuthorTap: () => _showAuthorModal(context),
+        );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (context.isDesktop) {
@@ -320,7 +858,7 @@ class _AboutViewState extends State<AboutView> {
                     child: Center(
                       child: ConstrainedBox(
                         constraints: const BoxConstraints(maxWidth: 420),
-                        child: widget.content ?? Content(language: _language),
+                        child: _buildContent(context),
                       ),
                     ),
                   ),
@@ -357,7 +895,7 @@ class _AboutViewState extends State<AboutView> {
                 child: Center(
                   child: ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: 420),
-                    child: widget.content ?? Content(language: _language),
+                    child: _buildContent(context),
                   ),
                 ),
               ),
@@ -368,3 +906,4 @@ class _AboutViewState extends State<AboutView> {
     );
   }
 }
+

@@ -78,36 +78,53 @@ class AppShell extends StatefulWidget {
 
 class AppShellState extends State<AppShell> {
   late int _currentIndex;
-
-  static const List<Widget> destinations = [
-    TodayView(),
-    TithiView(),
-    AlarmsView(),
-    Settings(),
-    AboutView(),
-  ];
+  late final Set<int> _activatedIndices;
 
   @override
   void initState() {
     super.initState();
     _currentIndex = widget.initialIndex;
+    _activatedIndices = {widget.initialIndex};
   }
 
   void setDestination(int index) {
-    if (index >= 0 && index < destinations.length && index != _currentIndex) {
+    if (index >= 0 && index < 5 && index != _currentIndex) {
       setState(() {
         _currentIndex = index;
+        _activatedIndices.add(index);
       });
     }
   }
 
   int get currentIndex => _currentIndex;
 
+  Widget _buildDestination(int index) {
+    switch (index) {
+      case 0:
+        return const TodayView();
+      case 1:
+        return const TithiView();
+      case 2:
+        return const AlarmsView();
+      case 3:
+        return const Settings();
+      case 4:
+        return const AboutView();
+      default:
+        return const SizedBox.shrink();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return IndexedStack(
       index: _currentIndex,
-      children: destinations,
+      children: List<Widget>.generate(5, (index) {
+        if (_activatedIndices.contains(index)) {
+          return _buildDestination(index);
+        }
+        return const SizedBox.shrink();
+      }),
     );
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:sweph/sweph.dart';
 import 'package:tithinow/theme/design_system.dart';
 import 'package:tithinow/views/app_navigator.dart';
 import 'package:tithinow/views/view_about.dart';
@@ -11,6 +12,11 @@ import 'package:tithinow/widgets/widgets.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+
+  setUpAll(() async {
+    await Sweph.init();
+    Sweph.swe_set_sid_mode(SiderealMode.SE_SIDM_LAHIRI);
+  });
 
   Widget buildTestableWidget(Widget child, {Size size = const Size(390, 844)}) {
     return MaterialApp(
@@ -400,6 +406,72 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.descendant(of: find.byType(Appbar), matching: find.text('પરિચય')), findsOneWidget);
     });
+
+    testWidgets('Tapping Libraries button opens LibrariesBottomSheet', (tester) async {
+      await tester.pumpWidget(
+        buildTestableWidget(
+          const AboutView(),
+          size: const Size(390, 844),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final librariesButton = find.text('Libraries');
+      expect(librariesButton, findsOneWidget);
+
+      await tester.ensureVisible(librariesButton);
+      await tester.pumpAndSettle();
+
+      await tester.tap(librariesButton);
+      await tester.pumpAndSettle();
+
+      expect(find.byType(LibrariesBottomSheet), findsOneWidget);
+      expect(find.text('sweph'), findsOneWidget);
+      expect(find.text('sqflite'), findsOneWidget);
+
+      // Dismiss bottom sheet via close button
+      final closeButton = find.byIcon(Icons.close_rounded);
+      expect(closeButton, findsOneWidget);
+      await tester.tap(closeButton);
+      await tester.pumpAndSettle();
+
+      expect(find.byType(LibrariesBottomSheet), findsNothing);
+    });
+
+    testWidgets('Tapping Author button opens AuthorBottomSheet with localized author details', (tester) async {
+      await tester.pumpWidget(
+        buildTestableWidget(
+          const AboutView(initialLanguage: AppLanguage.gujarati),
+          size: const Size(390, 844),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final authorButton = find.text('Author');
+      expect(authorButton, findsOneWidget);
+
+      await tester.ensureVisible(authorButton);
+      await tester.pumpAndSettle();
+
+      await tester.tap(authorButton);
+      await tester.pumpAndSettle();
+
+      expect(find.byType(AuthorBottomSheet), findsOneWidget);
+      expect(find.text('Uday Sutaria'), findsOneWidget);
+      expect(find.text('નિર્માતા અને ડેવલપર'), findsOneWidget);
+      expect(find.text('US'), findsOneWidget);
+      expect(find.text('Website'), findsOneWidget);
+      expect(find.text('GitHub'), findsOneWidget);
+      expect(find.text('Email'), findsOneWidget);
+
+      // Dismiss bottom sheet
+      final closeButton = find.byIcon(Icons.close_rounded);
+      expect(closeButton, findsOneWidget);
+      await tester.tap(closeButton);
+      await tester.pumpAndSettle();
+
+      expect(find.byType(AuthorBottomSheet), findsNothing);
+    });
   });
 
   group('NavBottom and NavSide Localization Tests', () {
@@ -490,9 +562,9 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // TodayView is visible onstage; other tabs are preserved in memory (offstage)
+      // TodayView is visible onstage; unvisited tabs are lazy loaded on demand
       expect(find.byType(TodayView), findsOneWidget);
-      expect(find.byType(TithiView, skipOffstage: false), findsOneWidget);
+      expect(find.byType(TithiView, skipOffstage: false), findsNothing);
       final indexedStackFinder = find.byType(IndexedStack);
       expect(indexedStackFinder, findsOneWidget);
       var indexedStack = tester.widget<IndexedStack>(indexedStackFinder);

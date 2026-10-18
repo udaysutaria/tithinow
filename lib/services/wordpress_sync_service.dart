@@ -69,21 +69,66 @@ class WordPressSyncService {
   /// Returns the active endpoint URL to fetch from.
   String get activeEndpointUrl => customEndpointUrl ?? defaultEndpointUrl;
 
+  /// In-flight sync future to deduplicate concurrent sync operations.
+  Future<SyncResult>? _activeSync;
+
+  /// Timestamp of the last successful sync operation.
+  DateTime? _lastSyncCompleted;
+
   /// Syncs festivals from WordPress REST API into local SQLite database.
   ///
   /// - [endpointUrl]: Optional URL override.
   /// - [client]: Optional [http.Client] (useful for tests).
   /// - [timeout]: Request timeout (defaults to 15 seconds).
+  /// - [forceRefresh]: Whether to bypass the recent-sync cooldown (e.g. pull-to-refresh).
   Future<SyncResult> syncFestivals({
     String? endpointUrl,
     http.Client? client,
     Duration timeout = const Duration(seconds: 15),
+    bool forceRefresh = false,
   }) async {
-    final targetUrl = endpointUrl ?? activeEndpointUrl;
     final isTest = WidgetsBinding.instance.runtimeType.toString().contains('Test');
     if (isTest && client == null) {
       return SyncResult.success(count: 0);
     }
+
+    // Deduplicate in-flight sync requests
+    if (_activeSync != null) {
+      return _activeSync!;
+    }
+
+    // Cooldown: If synced within the last 5 minutes and not forced, return cached status
+    if (!forceRefresh && client == null && _lastSyncCompleted != null) {
+      final elapsed = DateTime.now().difference(_lastSyncCompleted!);
+      if (elapsed < const Duration(minutes: 5)) {
+        final count = await AppDatabase.instance.getFestivalsCount();
+        return SyncResult.success(count: count, syncTime: _lastSyncCompleted);
+      }
+    }
+
+    final future = _performSync(
+      endpointUrl: endpointUrl,
+      client: client,
+      timeout: timeout,
+    );
+    _activeSync = future;
+    try {
+      final result = await future;
+      if (result.isSuccess) {
+        _lastSyncCompleted = DateTime.now();
+      }
+      return result;
+    } finally {
+      _activeSync = null;
+    }
+  }
+
+  Future<SyncResult> _performSync({
+    String? endpointUrl,
+    http.Client? client,
+    required Duration timeout,
+  }) async {
+    final targetUrl = endpointUrl ?? activeEndpointUrl;
     final httpClient = client ?? http.Client();
 
     try {

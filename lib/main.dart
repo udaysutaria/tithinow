@@ -6,7 +6,6 @@ import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:tithinow/database/app_database.dart';
 import 'package:tithinow/services/alarm_service.dart';
 import 'package:tithinow/services/sweph_service.dart';
-import 'package:tithinow/services/wordpress_sync_service.dart';
 import 'package:tithinow/theme/design_system.dart';
 import 'package:tithinow/views/app_navigator.dart';
 import 'package:tithinow/views/splash_view.dart';
@@ -19,11 +18,10 @@ void main() {
     FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
   }
 
-  // Pre-warm SQLite database, language, today's Panchang calculation, alarms, and sync festivals
+  // Pre-warm SQLite database, language, today's Panchang calculation, and alarms
   unawaited(AppDatabase.instance.database);
   unawaited(AppDatabase.instance.getSavedLanguage());
   unawaited(SwephService.instance.preloadTodayPanchang());
-  unawaited(WordPressSyncService.instance.syncFestivals());
   unawaited(AlarmService.instance.init());
 
   runApp(const MyApp());
@@ -48,6 +46,7 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   late bool _isSplashVisible;
   Timer? _splashTimer;
+  Timer? _permissionTimer;
   bool _isOnboardingCompleted = false;
 
   @override
@@ -82,7 +81,19 @@ class _MyAppState extends State<MyApp> {
   @override
   void dispose() {
     _splashTimer?.cancel();
+    _permissionTimer?.cancel();
     super.dispose();
+  }
+
+  void _schedulePermissionsCheck() {
+    final isTest = WidgetsBinding.instance.runtimeType.toString().contains('Test');
+    if (isTest) return;
+    _permissionTimer?.cancel();
+    _permissionTimer = Timer(const Duration(milliseconds: 800), () {
+      if (mounted) {
+        unawaited(AlarmService.instance.requestNotificationPermissions());
+      }
+    });
   }
 
   void _initSplash() {
@@ -94,21 +105,37 @@ class _MyAppState extends State<MyApp> {
     });
 
     if (_isSplashVisible) {
+      // 1. Minimum brand display duration for visual smoothness
+      final minDurationFuture = Future.delayed(widget.splashDuration);
+
+      // 2. Preload today's Panchang calculation immediately from local SQLite database (~25ms)
+      final panchangFuture = SwephService.instance.preloadTodayPanchang();
+
+      // 3. WordPress API festival sync disabled for v1.0 Play Store release
+      // unawaited(
+      //   WordPressSyncService.instance
+      //       .syncFestivals(timeout: const Duration(seconds: 4))
+      //       .catchError((_) => SyncResult.fromCache(count: 0)),
+      // );
+
+      // Wait for brand duration and local panchang preload (both complete reliably within splashDuration)
       Future.wait([
-        Future.delayed(widget.splashDuration),
-        SwephService.instance.preloadTodayPanchang(),
-      ]).then((_) {
+        minDurationFuture,
+        panchangFuture,
+      ]).timeout(
+        const Duration(milliseconds: 3500),
+        onTimeout: () => [],
+      ).then((_) {
         if (mounted && _isSplashVisible) {
           setState(() {
             _isSplashVisible = false;
           });
-          unawaited(AlarmService.instance.requestNotificationPermissions());
+          // Defer permission check until UI frames have completely settled
+          _schedulePermissionsCheck();
         }
       });
     } else {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        unawaited(AlarmService.instance.requestNotificationPermissions());
-      });
+      _schedulePermissionsCheck();
     }
   }
 

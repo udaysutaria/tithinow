@@ -45,7 +45,14 @@ flutter run
 
 ## 📄 License
 
-<License>
+Copyright © 2026 Uday Sutaria.
+
+TithiNow is free and open-source software: you can redistribute it and/or modify it under the terms of the **GNU Affero General Public License** as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the [LICENSE](LICENSE) file for the full license text.
+
+### Third-Party Ephemeris Attribution
+This software incorporates astronomical calculation algorithms from the **Swiss Ephemeris**, developed by **Astrodienst AG, Switzerland** (authored by Dieter Koch and Alois Treindl). The Swiss Ephemeris is licensed under the GNU Affero General Public License (AGPL-3.0) and used in accordance with its licensing conditions. Learn more at [astro.com/swisseph](https://www.astro.com/swisseph/).
 
 ## 📬 Contact
 

@@ -31,9 +31,8 @@ void main() {
       expect(find.text('Month'), findsOneWidget);
       expect(find.text('Bhadrapada'), findsOneWidget);
       expect(find.text('Vrat'), findsOneWidget);
-      expect(find.text('No Vrat'), findsOneWidget);
+      expect(find.text('Coming Soon'), findsNWidgets(2));
       expect(find.text('Festival'), findsOneWidget);
-      expect(find.text('No Festival'), findsOneWidget);
 
       // Verify PageView is present
       expect(find.byType(PageView), findsOneWidget);
@@ -72,9 +71,8 @@ void main() {
       expect(find.text('मास'), findsOneWidget);
       expect(find.text('भाद्रपद'), findsOneWidget);
       expect(find.text('व्रत'), findsOneWidget);
-      expect(find.text('कोई व्रत नहीं'), findsOneWidget);
+      expect(find.text('जल्द आ रहा है'), findsNWidgets(2));
       expect(find.text('त्योहार'), findsOneWidget);
-      expect(find.text('कोई त्योहार नहीं'), findsOneWidget);
 
       // Slide 2 labels in Hindi
       expect(find.text('सूर्योदय'), findsOneWidget);
@@ -106,9 +104,8 @@ void main() {
       expect(find.text('માસ'), findsOneWidget);
       expect(find.text('ભાદરવો'), findsOneWidget);
       expect(find.text('વ્રત'), findsOneWidget);
-      expect(find.text('કોઈ વ્રત નથી'), findsOneWidget);
+      expect(find.text('ટૂંક સમયમાં'), findsNWidgets(2));
       expect(find.text('તહેવાર'), findsOneWidget);
-      expect(find.text('કોઈ તહેવાર નથી'), findsOneWidget);
 
       // Slide 2 labels in Gujarati
       expect(find.text('સૂર્યોદય'), findsOneWidget);
@@ -174,8 +171,8 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // Inactive "कोई व्रत नहीं" has onSurface color (#BAC9CB)
-      final Text noVratText = tester.widget(find.text('कोई व्रत नहीं'));
+      // Inactive "जल्द आ रहा है" has onSurface color (#BAC9CB)
+      final Text noVratText = tester.widget(find.text('जल्द आ रहा है'));
       expect(noVratText.style?.color, AppColors.onSurface);
 
       // Active "दीपावली" has onSurfaceVariant color (White)

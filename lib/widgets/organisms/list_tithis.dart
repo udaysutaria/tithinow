@@ -27,6 +27,8 @@ class TithiData {
   final String? festival;
   final FestivalRule? vratRule;
   final FestivalRule? festivalRule;
+  final List<FestivalRule> vrats;
+  final List<FestivalRule> festivals;
   final int? lunarDay;
   final String? moonPhaseAsset;
   final ItemTemporalState state;
@@ -41,29 +43,63 @@ class TithiData {
     this.festival = 'No Festival',
     this.vratRule,
     this.festivalRule,
+    this.vrats = const [],
+    this.festivals = const [],
     this.lunarDay,
     this.moonPhaseAsset,
     this.state = ItemTemporalState.current,
     this.isAlarmActive = false,
   });
 
-  /// Resolves the localized Vrat name.
+  /// Primary festival rule (explicit or first from [festivals]).
+  FestivalRule? get effectiveFestivalRule =>
+      festivalRule ?? (festivals.isNotEmpty ? festivals.first : null);
+
+  /// Primary vrat rule (explicit or first from [vrats]).
+  FestivalRule? get effectiveVratRule =>
+      vratRule ?? (vrats.isNotEmpty ? vrats.first : null);
+
+  /// Effective list of festival rules, falling back to [festivalRule] if [festivals] is empty.
+  List<FestivalRule> get effectiveFestivals {
+    if (festivals.isNotEmpty) return festivals;
+    final r = festivalRule;
+    if (r != null) return [r];
+    return const [];
+  }
+
+  /// Effective list of vrat rules, falling back to [vratRule] if [vrats] is empty.
+  List<FestivalRule> get effectiveVrats {
+    if (vrats.isNotEmpty) return vrats;
+    final r = vratRule;
+    if (r != null) return [r];
+    return const [];
+  }
+
+  /// Resolves the localized Vrat name (or comma-separated names if multiple).
   String resolveVrat(AppLanguage lang) {
-    if (vratRule != null) {
-      final name = vratRule!.name(lang);
-      if (name.isNotEmpty && !PanchangLabels.isInactiveValue(name)) {
-        return name;
+    final allVrats = effectiveVrats;
+    if (allVrats.isNotEmpty) {
+      final names = allVrats
+          .map((v) => v.name(lang))
+          .where((n) => n.isNotEmpty && !PanchangLabels.isInactiveValue(n))
+          .toList();
+      if (names.isNotEmpty) {
+        return names.join(', ');
       }
     }
     return PanchangLabels.resolveVrat(vrat, lang);
   }
 
-  /// Resolves the localized Festival name.
+  /// Resolves the localized Festival name (or comma-separated names if multiple).
   String resolveFestival(AppLanguage lang) {
-    if (festivalRule != null) {
-      final name = festivalRule!.name(lang);
-      if (name.isNotEmpty && !PanchangLabels.isInactiveValue(name)) {
-        return name;
+    final allFestivals = effectiveFestivals;
+    if (allFestivals.isNotEmpty) {
+      final names = allFestivals
+          .map((f) => f.name(lang))
+          .where((n) => n.isNotEmpty && !PanchangLabels.isInactiveValue(n))
+          .toList();
+      if (names.isNotEmpty) {
+        return names.join(', ');
       }
     }
     return PanchangLabels.resolveFestival(festival, lang);
@@ -79,6 +115,8 @@ class TithiData {
     String? festival,
     FestivalRule? vratRule,
     FestivalRule? festivalRule,
+    List<FestivalRule>? vrats,
+    List<FestivalRule>? festivals,
     int? lunarDay,
     String? moonPhaseAsset,
     ItemTemporalState? state,
@@ -93,6 +131,8 @@ class TithiData {
       festival: festival ?? this.festival,
       vratRule: vratRule ?? this.vratRule,
       festivalRule: festivalRule ?? this.festivalRule,
+      vrats: vrats ?? this.vrats,
+      festivals: festivals ?? this.festivals,
       lunarDay: lunarDay ?? this.lunarDay,
       moonPhaseAsset: moonPhaseAsset ?? this.moonPhaseAsset,
       state: state ?? this.state,
@@ -154,6 +194,10 @@ class ListTithis extends StatefulWidget {
   /// Language used for localizing Tithi items. Defaults to [AppLanguage.english].
   final AppLanguage language;
 
+  /// Whether to display the bottom Vrat and Festival badges row.
+  /// Defaults to false (hidden for compact calendar listing).
+  final bool showVratFestival;
+
   const ListTithis({
     super.key,
     this.items,
@@ -170,6 +214,7 @@ class ListTithis extends StatefulWidget {
     this.controller,
     this.itemExtent,
     this.language = AppLanguage.english,
+    this.showVratFestival = false,
   });
 
   @override
@@ -232,11 +277,14 @@ class _ListTithisState extends State<ListTithis> {
           festival: d.festival,
           vratRule: d.vratRule,
           festivalRule: d.festivalRule,
+          vrats: d.effectiveVrats,
+          festivals: d.effectiveFestivals,
           moonPhaseAsset: d.moonPhaseAsset,
           lunarDay: d.lunarDay,
           maxWidth: widget.maxWidth,
           language: widget.language,
           onTap: widget.onItemTap != null ? () => widget.onItemTap!(i) : null,
+          showVratFestival: widget.showVratFestival,
         ),
       ItemTemporalState.current => CurrentItem.current(
           key: ValueKey('tithi_item_$i'),
@@ -248,11 +296,14 @@ class _ListTithisState extends State<ListTithis> {
           festival: d.festival,
           vratRule: d.vratRule,
           festivalRule: d.festivalRule,
+          vrats: d.effectiveVrats,
+          festivals: d.effectiveFestivals,
           moonPhaseAsset: d.moonPhaseAsset,
           lunarDay: d.lunarDay,
           maxWidth: widget.maxWidth,
           language: widget.language,
           onTap: widget.onItemTap != null ? () => widget.onItemTap!(i) : null,
+          showVratFestival: widget.showVratFestival,
         ),
       ItemTemporalState.future => FutureItem.future(
           key: ValueKey('tithi_item_$i'),
@@ -264,6 +315,8 @@ class _ListTithisState extends State<ListTithis> {
           festival: d.festival,
           vratRule: d.vratRule,
           festivalRule: d.festivalRule,
+          vrats: d.effectiveVrats,
+          festivals: d.effectiveFestivals,
           moonPhaseAsset: d.moonPhaseAsset,
           lunarDay: d.lunarDay,
           isAlarmActive: _activeAlarms.contains(i),
@@ -271,6 +324,7 @@ class _ListTithisState extends State<ListTithis> {
           maxWidth: widget.maxWidth,
           language: widget.language,
           onTap: widget.onItemTap != null ? () => widget.onItemTap!(i) : null,
+          showVratFestival: widget.showVratFestival,
         ),
     };
   }

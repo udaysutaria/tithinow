@@ -169,15 +169,17 @@ class AlarmService {
 
     try {
       if (Platform.isAndroid) {
-        final notifStatus = await Permission.notification.request();
-
-        // Android 12+ exact alarm permission
-        if (await Permission.scheduleExactAlarm.isDenied) {
-          await Permission.scheduleExactAlarm.request();
+        final currentStatus = await Permission.notification.status;
+        if (currentStatus.isGranted) {
+          return true;
         }
-
+        final notifStatus = await Permission.notification.request();
         return notifStatus.isGranted;
       } else if (Platform.isIOS) {
+        final currentStatus = await Permission.notification.status;
+        if (currentStatus.isGranted) {
+          return true;
+        }
         final status = await Permission.notification.request();
         return status.isGranted;
       }
