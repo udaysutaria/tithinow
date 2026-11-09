@@ -35,8 +35,16 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
   flutter_native_splash: ^2.4.4
-  google_fonts: ^6.2.1
+  google_fonts: ^8.2.1
   sweph: ^4.1.0+2.10.3
+  flutter_svg: ^2.3.0
+  sqflite: ^2.4.4
+  path: ^1.9.1
+  http: ^1.6.0
+  alarm: ^5.13.2
+  audioplayers: ^6.8.1
+  permission_handler: 12.0.3
+  url_launcher: ^6.3.3
 
 dev_dependencies:
   flutter_test:
@@ -49,6 +57,13 @@ dev_dependencies:
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
   flutter_launcher_icons: ^0.14.3
+  msix: ^3.18.0
+
+msix_config:
+  display_name: TithiNow
+  publisher_display_name: UdaySutaria
+  identity_name: com.udaysutaria.tithinow
+
 
 flutter_launcher_icons:
   android: "launcher_icon"
@@ -95,6 +110,24 @@ flutter:
 
   assets:
     - assets/images/
+    - assets/icons/
+    - assets/moon_phases/
+    - assets/data/
+    - assets/audio/
+
+  fonts:
+    - family: Sora
+      fonts:
+        - asset: assets/fonts/Sora-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Sora-SemiBold.ttf
+          weight: 600
+    - family: Inter
+      fonts:
+        - asset: assets/fonts/Inter-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Inter-SemiBold.ttf
+          weight: 600
 
   # To add assets to your application, add an assets section, like this:
   # assets:

@@ -19,4 +19,13 @@
     <style name="NormalTheme" parent="@android:style/Theme.Light.NoTitleBar">
         <item name="android:windowBackground">?android:colorBackground</item>
     </style>
+
+    <style name="AlarmRingTheme" parent="@android:style/Theme.DeviceDefault.NoActionBar">
+        <item name="android:windowBackground">#121414</item>
+        <item name="android:statusBarColor">#121414</item>
+        <item name="android:navigationBarColor">#121414</item>
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+        <item name="android:showWhenLocked">true</item>
+        <item name="android:turnScreenOn">true</item>
+    </style>
 </resources>

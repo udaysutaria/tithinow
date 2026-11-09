@@ -1,17 +1,67 @@
-# tithinow
+# 🌙 TithiNow
 
-A new Flutter project.
+**Never miss the right time again.**
 
-## Getting Started
+TithiNow is a Flutter app that turns your daily Panchang into something you can actually act on. Track today's Tithi, see live countdowns for ongoing Muhurats and Choghadiya, and set one-tap alarms for the moments that matter — all calculated specifically for your city.
 
-This project is a starting point for a Flutter application.
+> Most Panchang apps tell you the time. TithiNow helps you act on it.
 
-A few resources to get you started if this is your first Flutter project:
+🔗 **Landing page:** [tithinow.com](https://tithinow.com)  
+📱 **Status:** Coming soon on Google Play and the App Store
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+---
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## ✨ Features
+
+- **⏰ One-Tap Alarms** — Set alarms for today's Tithis, Choghadiya, and important Muhurats with a single tap. No manual reminders, no searching later.
+- **⏳ Live Countdowns** — See exactly how much time is left in the currently running Choghadiya or Muhurat. No mental math, no guessing.
+- **📍 Location-Based Accuracy** — Panchang calculated specifically for your selected city, across 7,100+ cities in India.
+- **📡 Works Offline** — Once your daily Panchang is loaded, it's available anytime, even without an internet connection.
+- **📋 Everything You Need, Today** — Tithi, Paksha, Hindu month, Nakshatra, sunrise/sunset and moonrise/moonset timings, festivals, vrats, and every important Muhurat in one place.
+
+- **Framework:** [Flutter](https://flutter.dev)
+- **Language:** Dart
+
+## 📚 Documentation
+
+Project specifications and design guidelines are organized in the [`docs/`](docs/) directory:
+- [Product Requirements & Roadmap](docs/product.md)
+- [Design System & UI Architecture](docs/design.md)
+- [Content & Localization Guide](docs/content.md)
+- [Privacy Policy](docs/PRIVACY_POLICY.md)
+
+## 📦 Getting Started
+
+### Prerequisites
+
+- [Flutter SDK](https://docs.flutter.dev/get-started/install) installed and configured
+- A connected device or emulator (Android/iOS)
+
+### Setup
+
+```bash
+# Clone the repo
+git clone https://github.com/udaysutaria/tithinow.git
+cd tithinow
+
+# Install dependencies
+flutter pub get
+
+# Run the app
+flutter run
+```
+
+## 📄 License
+
+Copyright © 2026 Uday Sutaria.
+
+TithiNow is free and open-source software: you can redistribute it and/or modify it under the terms of the **GNU Affero General Public License** as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the [LICENSE](LICENSE) file for the full license text.
+
+### Third-Party Ephemeris Attribution
+This software incorporates astronomical calculation algorithms from the **Swiss Ephemeris**, developed by **Astrodienst AG, Switzerland** (authored by Dieter Koch and Alois Treindl). The Swiss Ephemeris is licensed under the GNU Affero General Public License (AGPL-3.0) and used in accordance with its licensing conditions. Learn more at [astro.com/swisseph](https://www.astro.com/swisseph/).
+
+## 📬 Contact
+
+Have questions or feedback? Reach out at [support@tithinow.com](mailto:support@tithinow.com)

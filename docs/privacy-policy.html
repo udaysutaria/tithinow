@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy - TithiNow</title>
+    <style>
+        :root {
+            --bg-color: #121414;
+            --surface-color: #1a1e1e;
+            --text-primary: #e6eded;
+            --text-secondary: #bac9cb;
+            --primary: #7fc9ce;
+            --outline: rgba(255, 255, 255, 0.12);
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            line-height: 1.65;
+            margin: 0;
+            padding: 40px 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: var(--surface-color);
+            padding: 40px;
+            border-radius: 16px;
+            border: 1px solid var(--outline);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        }
+        h1 {
+            color: var(--primary);
+            font-size: 2rem;
+            margin-top: 0;
+            margin-bottom: 8px;
+        }
+        .meta {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 28px;
+            border-bottom: 1px solid var(--outline);
+            padding-bottom: 16px;
+        }
+        h2 {
+            color: var(--text-primary);
+            font-size: 1.35rem;
+            margin-top: 32px;
+            margin-bottom: 12px;
+            border-bottom: 1px solid var(--outline);
+            padding-bottom: 8px;
+        }
+        p, li {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+        ul {
+            padding-left: 24px;
+            margin-bottom: 16px;
+        }
+        li {
+            margin-bottom: 8px;
+        }
+        a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .highlight-box {
+            background-color: rgba(127, 201, 206, 0.08);
+            border-left: 4px solid var(--primary);
+            padding: 16px 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .highlight-box p {
+            color: var(--text-primary);
+            margin: 0;
+        }
+        code {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            color: var(--primary);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Privacy Policy for TithiNow</h1>
+        <div class="meta">
+            <strong>Effective Date:</strong> October 18, 2026 &nbsp;|&nbsp; <strong>Last Updated:</strong> October 18, 2026
+        </div>
+
+        <div class="highlight-box">
+            <p><strong>Privacy-First Summary:</strong> TithiNow is a 100% offline-first application. We do not collect, transmit, track, or sell your personal data. All astronomical calculations occur locally on your device without user registration.</p>
+        </div>
+
+        <h2>1. Overview</h2>
+        <p>Welcome to <strong>TithiNow</strong> ("we", "our", or "us"). We respect your privacy and are committed to complete transparency. This Privacy Policy details how our mobile and desktop application handles information when you use our service.</p>
+
+        <h2>2. Information We Do NOT Collect</h2>
+        <p>We believe in absolute data minimization. TithiNow does NOT collect:</p>
+        <ul>
+            <li>Personal identifiers (names, email addresses, phone numbers, contacts).</li>
+            <li>GPS or precise real-time background location data.</li>
+            <li>Advertising IDs (GAID/IDFA) or biometric information.</li>
+            <li>Payment or financial details.</li>
+            <li>Cookies, browsing analytics, or device fingerprinting.</li>
+        </ul>
+
+        <h2>3. Data Stored Locally on Your Device</h2>
+        <p>To provide accurate Vedic Panchang timings and remember your settings, TithiNow stores minimal configuration data <strong>locally on your device</strong> via an offline SQLite database:</p>
+        <ul>
+            <li><strong>Selected City:</strong> The city name and latitude/longitude selected from our offline database of 7,100+ Indian cities are saved locally to compute daily sunrise, sunset, and Panchang periods.</li>
+            <li><strong>Language Preference:</strong> Your selected language (English, Hindi, or Gujarati) is saved locally.</li>
+            <li><strong>Alarms & Reminders:</strong> The alarms you schedule for Tithis, Choghadiya, or Muhurats are stored locally and scheduled via your device's native alarm manager.</li>
+        </ul>
+        <p><em>None of this data is ever transmitted to an external server.</em></p>
+
+        <h2>4. Device Permissions Requested</h2>
+        <p>TithiNow requests only the technical permissions necessary to operate its core alarm and timing features:</p>
+        <ul>
+            <li><code>POST_NOTIFICATIONS</code>: To notify you when a scheduled Muhurta or Tithi alarm triggers.</li>
+            <li><code>SCHEDULE_EXACT_ALARM</code> / <code>USE_EXACT_ALARM</code>: To ensure auspicious timing alerts ring at the exact minute requested.</li>
+            <li><code>FOREGROUND_SERVICE</code>: Temporarily used to play the alarm tone and present the full-screen alarm interface.</li>
+            <li><strong>Network Access:</strong> Used exclusively when you explicitly tap an external link (such as our website or GitHub source code) to open it in your device's default web browser.</li>
+        </ul>
+
+        <h2>5. Open Source & Third-Party Code</h2>
+        <p>TithiNow is free and open-source software licensed under the <strong>GNU Affero General Public License v3.0 (AGPL-3.0)</strong>.</p>
+        <ul>
+            <li>Planetary computations are powered by the <strong>Swiss Ephemeris</strong> library (developed by Astrodienst AG), running as embedded code locally on your phone with zero network calls.</li>
+            <li>Version 1.0 of the application contains no third-party tracking SDKs (no Google Analytics, Facebook SDK, or Firebase Analytics) and no third-party advertisements.</li>
+        </ul>
+
+        <h2>6. Children's Privacy</h2>
+        <p>TithiNow does not address children under 13 and does not knowingly collect any personal information from children. Because the app collects no data whatsoever, it is safe for all audiences.</p>
+
+        <h2>7. Data Retention & Deletion</h2>
+        <p>Since all data remains exclusively on your phone, you have total control:</p>
+        <ul>
+            <li>You can clear all stored preferences at any time through your device settings under <em>App Info &gt; Clear Storage / Cache</em>.</li>
+            <li>Uninstalling the app completely and permanently purges all local databases and settings.</li>
+        </ul>
+
+        <h2>8. Contact Us</h2>
+        <p>If you have any questions or feedback regarding this Privacy Policy, please contact us:</p>
+        <ul>
+            <li><strong>Email:</strong> <a href="mailto:hello@tithinow.com">hello@tithinow.com</a> / <a href="mailto:support@tithinow.com">support@tithinow.com</a></li>
+            <li><strong>Website:</strong> <a href="https://tithinow.com">https://tithinow.com</a></li>
+            <li><strong>Source Code & Issues:</strong> <a href="https://github.com/udaysutaria/tithinow" target="_blank" rel="noopener">https://github.com/udaysutaria/tithinow</a></li>
+            <li><strong>Developer:</strong> Uday Sutaria</li>
+        </ul>
+    </div>
+</body>
+</html>
